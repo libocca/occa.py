@@ -24,6 +24,12 @@ from .device import Device
 from .kernel import Kernel
 from .memory import Memory
 
+def settings():
+    pass
+
+def print_mode_info():
+    pass
+
 #---[ Device ]--------------------------
 def host():
     pass
@@ -44,16 +50,7 @@ def set_device(device=None, **kwargs):
     else:
         raise ValueError('Expected a str, dict, occa.Device, or **kwargs')
 
-def device_properties():
-    pass
-
 def finish():
-    pass
-
-def wait_for_tag(tag):
-    pass
-
-def time_between_tags(start_tag, end_tag):
     pass
 
 def create_stream():
@@ -66,6 +63,12 @@ def set_stream():
     pass
 
 def tag_stream():
+    pass
+
+def wait_for_tag(tag):
+    pass
+
+def time_between_tags(start_tag, end_tag):
     pass
 #=======================================
 

@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
 class Device:
-    def __init__(self, props, **kwargs):
+    def __init__(self, props=None, **kwargs):
         if props is None:
             props = kwargs
         if isinstance(props, str):

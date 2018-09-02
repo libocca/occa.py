@@ -20,8 +20,30 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
-from .base import *
-from .uva import *
-from .device import Device
-from .memory import Memory
-from .kernel import Kernel
+
+def is_managed(ptr):
+    pass
+
+def start_managing(ptr):
+    pass
+
+def stop_managing(ptr):
+    pass
+
+def sync_to_device(ptr):
+    pass
+
+def sync_to_host(ptr):
+    pass
+
+def needs_sync(ptr):
+    pass
+
+def sync(ptr):
+    pass
+
+def dont_sync(ptr):
+    pass
+
+def free_uva_ptr(ptr):
+    pass
