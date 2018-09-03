@@ -34,7 +34,7 @@ class OccaInstaller(build_ext.build_ext):
         self.spawn([
             'make', '-C', 'occa.git', '-j4',
         ])
-        super().run()
+        build_ext.build_ext.run(self)
 
 
 def get_ext_module(name):

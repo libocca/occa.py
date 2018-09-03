@@ -31,6 +31,7 @@
 #include <Python.h>
 #include "numpy/arrayobject.h"
 
+
 #define OCCA_PY_METHOD(FUNC)                    \
   {                                             \
     #FUNC,                                      \
@@ -40,11 +41,17 @@
   }
 
 
-#define OCCA_PY_MODULE(MODULE, ...)                     \
-  static PyMethodDef occa_c_##MODULE##_methods[] = {    \
-    __VA_ARGS__,                                        \
-    {NULL, NULL, 0, NULL}                               \
-  };                                                    \
+#define OCCA_PY_METHODS(MODULE, ...)                  \
+  static PyMethodDef occa_c_##MODULE##_methods[] = {  \
+    __VA_ARGS__,                                      \
+    {NULL, NULL, 0, NULL}                             \
+  }
+
+
+#if PY_MAJOR_VERSION == 3
+
+#  define OCCA_PY_MODULE(MODULE, ...)                   \
+  OCCA_PY_METHODS(MODULE, __VA_ARGS__);                 \
                                                         \
   static PyModuleDef occa_c_##MODULE##_module = {       \
     PyModuleDef_HEAD_INIT,                              \
@@ -55,7 +62,22 @@
   };                                                    \
                                                         \
   PyMODINIT_FUNC PyInit_##MODULE() {                    \
+    import_array();                                     \
     return PyModule_Create(&occa_c_##MODULE##_module);  \
   }
+
+#elif PY_MAJOR_VERSION == 2
+
+#  define OCCA_PY_MODULE(MODULE, ...)                         \
+  OCCA_PY_METHODS(MODULE, __VA_ARGS__);                       \
+                                                              \
+  PyMODINIT_FUNC PyInit_##MODULE() {                          \
+    import_array();                                           \
+    (void) Py_InitModule(#MODULE, occa_c_##MODULE##_methods); \
+  }
+
+#else
+#  error "Unsupported Python major version: " #PY_MAJOR_VERSION
+#endif
 
 #endif
