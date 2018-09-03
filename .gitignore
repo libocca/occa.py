@@ -1,0 +1,6 @@
+build/
+dist/
+occa.egg-info/
+
+__pycache__
+.pyc
