@@ -50,12 +50,10 @@ static int Device_init(Device *self,
   delete self->device;
   self->device = NULL;
   if (info) {
-    OCCA_TRY(
+    OCCA_TRY_AND_RETURNS(
+      -1,
       self->device = new occa::device(info);
     );
-    if (self->device == NULL) {
-      return -1;
-    }
   }
 
   return 0;

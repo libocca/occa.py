@@ -26,12 +26,16 @@
 #include "defines.hpp"
 
 
-#define OCCA_TRY(...)                           \
+#define OCCA_TRY_AND_RETURNS(RETURN, ...)       \
   try {                                         \
     __VA_ARGS__                                 \
   } catch (occa::exception e) {                 \
     occa::py::raise(e);                         \
+    return RETURN;                              \
   }
+
+#define OCCA_TRY(...)                           \
+  OCCA_TRY_AND_RETURNS(NULL, __VA_ARGS__)
 
 
 namespace occa {
