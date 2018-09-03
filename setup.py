@@ -58,11 +58,7 @@ ext_modules = [
 ]
 
 
-setup(
-    name='occa',
-    version='0.2.0',
-    description='Portable Approach for Parallel Architectures',
-    long_description='''
+long_description = ('''
 In a nutshell, OCCA (like oca-rina) is an open-source library which aims to:
 
 - Make it easy to program different types of devices (e.g. CPU, GPU, FPGA)
@@ -72,7 +68,14 @@ In a nutshell, OCCA (like oca-rina) is an open-source library which aims to:
 - Use just-in-time compilation to build backend kernels
 
 - Provide a kernel language, a minor extension to C, to abstract programming for each backend
-      ''',
+''')
+
+
+setup(
+    name='occa',
+    version='0.2.0',
+    description='Portable Approach for Parallel Architectures',
+    long_description=long_description,
     cmdclass={
         'build_ext': OccaInstaller,
     },
