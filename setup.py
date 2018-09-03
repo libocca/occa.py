@@ -24,23 +24,48 @@
 
 from setuptools.command import build_ext
 from setuptools import setup, find_packages, Extension
+import os
+import sys
 import numpy as np
 
 
 class OccaInstaller(build_ext.build_ext):
     '''Compile occa.git'''
 
+    def sys_call(self, command):
+        self.spawn(command.split(' '))
+
+    def pre_build(self):
+        # Build occa and copy libocca.so to occa/c
+        self.sys_call('make -C occa.git -j4')
+        self.sys_call('cp occa.git/lib/libocca.so occa/c')
+
+    def post_build(self):
+        # Change the rpath location for finding libocca.so
+        occa_c_path = os.path.dirname(self.get_ext_fullpath('occa.c.device'))
+        libocca_so = os.path.abspath('./occa.git/lib/libocca.so')
+
+        if sys.platform == 'darwin':
+            for output in self.get_outputs():
+                self.sys_call('install_name_tool'
+                              ' -change'
+                              ' {libocca_so}'
+                              ' $ORIGIN/../libocca.so'
+                              ' {output}'.format(libocca_so=libocca_so,
+                                                 output=output))
+        else:
+            pass
+
     def run(self):
-        self.spawn([
-            'make', '-C', 'occa.git', '-j4',
-        ])
+        self.pre_build()
         build_ext.build_ext.run(self)
+        self.post_build()
 
 
-def get_ext_module(name):
+def get_ext_module(module):
     return Extension(
-        name='occa.c.{}'.format(name),
-        sources=['occa/c/{}.c'.format(name)],
+        name='occa.c.{module}'.format(module=module),
+        sources=['occa/c/{module}.cpp'.format(module=module)],
         include_dirs=[
             'occa/c',
             'occa.git/include',
@@ -48,14 +73,18 @@ def get_ext_module(name):
         ],
         libraries=['occa'],
         library_dirs=['occa.git/lib'],
-        extra_compile_args=['-Wno-strict-prototypes'],
     )
 
 
 ext_modules = [
-    get_ext_module(mod)
-    for mod in ['base', 'device', 'kernel', 'memory', 'uva']
+    get_ext_module(module)
+    for module in ['device'] #['base', 'device', 'kernel', 'memory', 'uva']
 ]
+
+
+package_data = {
+    'occa.c': ['*.so'],
+}
 
 
 long_description = ('''
@@ -76,11 +105,13 @@ setup(
     version='0.2.0',
     description='Portable Approach for Parallel Architectures',
     long_description=long_description,
+    url='https://libocca.org',
+    author='David Medina',
     cmdclass={
         'build_ext': OccaInstaller,
     },
     packages=find_packages(),
     ext_modules=ext_modules,
-    url='https://libocca.org',
-    author='David Medina'
+    package_data=package_data,
+    zip_safe=False,
 )

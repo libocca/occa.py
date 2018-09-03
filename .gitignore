@@ -1,6 +1,7 @@
 build/
 dist/
 occa.egg-info/
+libocca.so
 
 __pycache__
 .pyc

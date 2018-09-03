@@ -19,46 +19,50 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
-#include "header.h"
+#include "header.hpp"
 
 
-static PyObject* py_occa_create(PyObject *self,
-                                PyObject *args) {
+//---[ Globals & Flags ]----------------
+static PyObject* py_occa_settings(PyObject *self,
+                                  PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occa_is_initialized(PyObject *self,
-                                        PyObject *args) {
+static PyObject* py_occa_print_mode_info(PyObject *self,
+                                         PyObject *args) {
   Py_RETURN_NONE;
 }
+//======================================
 
-static PyObject* py_occa_mode(PyObject *self,
+
+//---[ Device ]-------------------------
+static PyObject* py_occa_host(PyObject *self,
                               PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occa_properties(PyObject *self,
+static PyObject* py_occa_get_device(PyObject *self,
                                     PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occa_kernel_properties(PyObject *self,
+static PyObject* py_occa_set_device(PyObject *self,
+                                    PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_set_device_from_string(PyObject *self,
+                                                PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_device_properties(PyObject *self,
                                            PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occa_memory_properties(PyObject *self,
-                                           PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occa_memory_size(PyObject *self,
-                                     PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occa_memory_allocated(PyObject *self,
-                                          PyObject *args) {
+static PyObject* py_occa_load_kernels(PyObject *self,
+                                      PyObject *args) {
   Py_RETURN_NONE;
 }
 
@@ -67,13 +71,6 @@ static PyObject* py_occa_finish(PyObject *self,
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occa_has_separate_memory_space(PyObject *self,
-                                                   PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-
-//---[ Stream ]-------------------------
 static PyObject* py_occa_create_stream(PyObject *self,
                                        PyObject *args) {
   Py_RETURN_NONE;
@@ -138,17 +135,16 @@ static PyObject* py_occa_umalloc(PyObject *self,
 
 
 OCCA_PY_MODULE(
-  device,
-  OCCA_PY_METHOD(create),
-  OCCA_PY_METHOD(is_initialized),
-  OCCA_PY_METHOD(mode),
-  OCCA_PY_METHOD(properties),
-  OCCA_PY_METHOD(kernel_properties),
-  OCCA_PY_METHOD(memory_properties),
-  OCCA_PY_METHOD(memory_size),
-  OCCA_PY_METHOD(memory_allocated),
+  base,
+  OCCA_PY_METHOD(settings),
+  OCCA_PY_METHOD(print_mode_info),
+  OCCA_PY_METHOD(host),
+  OCCA_PY_METHOD(get_device),
+  OCCA_PY_METHOD(set_device),
+  OCCA_PY_METHOD(set_device_from_string),
+  OCCA_PY_METHOD(device_properties),
+  OCCA_PY_METHOD(load_kernels),
   OCCA_PY_METHOD(finish),
-  OCCA_PY_METHOD(has_separate_memory_space),
   OCCA_PY_METHOD(create_stream),
   OCCA_PY_METHOD(get_stream),
   OCCA_PY_METHOD(set_stream),
