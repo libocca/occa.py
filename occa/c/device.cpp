@@ -32,9 +32,10 @@ static PyObject* Device_new(PyTypeObject *type,
                             PyObject *args,
                             PyObject *kwargs) {
   Device *self = (Device*) type->tp_alloc(type, 0);
-  if (self != NULL) {
-    self->device = NULL;
-  }
+
+  self->device = NULL;
+  PyArg_ParseTuple(args, "|O", &(self->device));
+
   return (PyObject*) self;
 }
 
@@ -46,8 +47,6 @@ static int Device_init(Device *self,
     return -1;
   }
 
-  delete self->device;
-  self->device = NULL;
   if (info) {
     OCCA_TRY_AND_RETURNS(
       -1,
@@ -77,7 +76,7 @@ static PyObject* Device_is_initialized(Device *self,
 
 static PyObject* Device_mode(Device *self,
                              PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::toPy(self->device->mode());
@@ -85,7 +84,7 @@ static PyObject* Device_mode(Device *self,
 
 static PyObject* Device_properties(Device *self,
                                    PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::toPy(self->device->properties());
@@ -93,7 +92,7 @@ static PyObject* Device_properties(Device *self,
 
 static PyObject* Device_kernel_properties(Device *self,
                                           PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::toPy(self->device->kernelProperties());
@@ -101,7 +100,7 @@ static PyObject* Device_kernel_properties(Device *self,
 
 static PyObject* Device_memory_properties(Device *self,
                                           PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::toPy(self->device->memoryProperties());
@@ -109,7 +108,7 @@ static PyObject* Device_memory_properties(Device *self,
 
 static PyObject* Device_memory_size(Device *self,
                                     PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::toPy<long long>(self->device->memorySize());
@@ -117,7 +116,7 @@ static PyObject* Device_memory_size(Device *self,
 
 static PyObject* Device_memory_allocated(Device *self,
                                          PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::toPy<long long>(self->device->memoryAllocated());
@@ -133,7 +132,7 @@ static PyObject* Device_finish(Device *self,
 
 static PyObject* Device_has_separate_memory_space(Device *self,
                                                   PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::toPy(self->device->hasSeparateMemorySpace());
@@ -143,7 +142,7 @@ static PyObject* Device_has_separate_memory_space(Device *self,
 //  |---[ Stream ]----------------------
 static PyObject* Device_create_stream(Device *self,
                                       PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -151,7 +150,7 @@ static PyObject* Device_create_stream(Device *self,
 
 static PyObject* Device_get_stream(Device *self,
                                    PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -159,7 +158,7 @@ static PyObject* Device_get_stream(Device *self,
 
 static PyObject* Device_set_stream(Device *self,
                                    PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -167,7 +166,7 @@ static PyObject* Device_set_stream(Device *self,
 
 static PyObject* Device_tag_stream(Device *self,
                                    PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -175,7 +174,7 @@ static PyObject* Device_tag_stream(Device *self,
 
 static PyObject* Device_wait_for_tag(Device *self,
                                      PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -183,7 +182,7 @@ static PyObject* Device_wait_for_tag(Device *self,
 
 static PyObject* Device_time_between_tags(Device *self,
                                           PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -194,7 +193,7 @@ static PyObject* Device_time_between_tags(Device *self,
 //  |---[ Kernel ]----------------------
 static PyObject* Device_build_kernel(Device *self,
                                      PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -202,7 +201,7 @@ static PyObject* Device_build_kernel(Device *self,
 
 static PyObject* Device_build_kernel_from_string(Device *self,
                                                  PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -210,7 +209,7 @@ static PyObject* Device_build_kernel_from_string(Device *self,
 
 static PyObject* Device_build_kernel_from_binary(Device *self,
                                                  PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -221,7 +220,7 @@ static PyObject* Device_build_kernel_from_binary(Device *self,
 //  |---[ Memory ]----------------------
 static PyObject* Device_malloc(Device *self,
                                PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();
@@ -229,7 +228,7 @@ static PyObject* Device_malloc(Device *self,
 
 static PyObject* Device_umalloc(Device *self,
                                 PyObject *args) {
-  if (self->device == NULL) {
+  if (!self->device) {
     return occa::py::none();
   }
   return occa::py::none();

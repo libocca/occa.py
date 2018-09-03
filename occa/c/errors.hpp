@@ -41,23 +41,23 @@
 
 namespace occa {
   namespace py {
-    static PyObject *Error = NULL;
-
     static void raise(occa::exception e) {
-      if (occa::py::Error == NULL) {
+      static PyObject *Error = NULL;
+
+      if (!Error) {
         PyObject *module = PyImport_ImportModule("occa.c.exception");
-        occa::py::Error = PyObject_GetAttrString(module, "Error");
+        Error = PyObject_GetAttrString(module, "Error");
 
         PyObject *name = toPy("occa.c.Error");
         if (name) {
-          PyObject_SetAttrString(occa::py::Error, "__name__", name);
+          PyObject_SetAttrString(Error, "__name__", name);
         }
       }
 
       std::string message = e.message;
       message += '\n';
       message += e.location();
-      PyErr_SetString(occa::py::Error, message.c_str());
+      PyErr_SetString(Error, message.c_str());
     }
   }
 }

@@ -73,7 +73,7 @@
       return NULL;                                                  \
     }                                                               \
     PyObject *module = PyModule_Create(&occa_c_##MODULE##_module);  \
-    if (module == NULL) {                                           \
+    if (!module) {                                                  \
       return NULL;                                                  \
     }                                                               \
     MODULE##_init_module(module);                                   \
@@ -94,7 +94,7 @@
     PyObject *module = Py_InitModule3("occa.c." #MODULE,                \
                                       occa_c_##MODULE##_methods,        \
                                       "Wrappers for " #MODULE "methods"); \
-    if (module == NULL) {                                               \
+    if (!module) {                                                      \
       return NULL;                                                      \
     }                                                                   \
     MODULE##_init_module(module);                                       \

@@ -28,6 +28,11 @@
 
 namespace occa {
   namespace py {
+    static PyTypeObject *Device = NULL;
+    static PyTypeObject *Kernel = NULL;
+    static PyTypeObject *Memory = NULL;
+    static PyTypeObject *Stream = NULL;
+
     // Special
     static PyObject* none() {
       Py_RETURN_NONE;
@@ -36,6 +41,10 @@ namespace occa {
     template <class TM>
     static PyObject* toPy(const TM &value) {
       value.NOT_IMPLEMENTEED;
+    }
+
+    static PyObject* toPy(void *ptr) {
+      return PyCapsule_New(ptr, NULL, NULL);
     }
 
     // Bool
@@ -80,13 +89,48 @@ namespace occa {
     }
 
     // String
-    PyObject* toPy(const char *c) {
+    static PyObject* toPy(const char *c) {
       return PyUnicode_FromString(c);
     }
 
     template <>
     PyObject* toPy<std::string>(const std::string &s) {
       return PyUnicode_FromString(s.c_str());
+    }
+
+    // Core
+    static PyTypeObject* getTypeFromModule(const std::string &moduleName,
+                                           const std::string &className) {
+      PyObject *module = PyImport_ImportModule(moduleName.c_str());
+      PyTypeObject *type = (PyTypeObject*) PyObject_GetAttrString(module, className.c_str());
+      OCCA_ERROR("Unable to get " << className << " type",
+                 type != NULL);
+      return type;
+    }
+
+    static PyObject* newCoreType(PyTypeObject *Type,
+                                 void *ptr) {
+      PyObject *args = PyTuple_New(1);
+      PyTuple_SetItem(args, 0, toPy(ptr));
+      return Type->tp_new(Type, args, NULL);
+    }
+
+    template <>
+    PyObject* toPy<occa::device>(const occa::device &device) {
+      static PyTypeObject *Device = getTypeFromModule("occa.c.device", "Device");
+      return newCoreType(Device, (void*) &device);
+    }
+
+    template <>
+    PyObject* toPy<occa::kernel>(const occa::kernel &kernel) {
+      static PyTypeObject *Kernel = getTypeFromModule("occa.c.kernel", "Kernel");
+      return newCoreType(Kernel, (void*) &kernel);
+    }
+
+    template <>
+    PyObject* toPy<occa::memory>(const occa::memory &memory) {
+      static PyTypeObject *Memory = getTypeFromModule("occa.c.memory", "Memory");
+      return newCoreType(Memory, (void*) &memory);
     }
 
     // Props / JSON
