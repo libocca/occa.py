@@ -22,73 +22,73 @@
 #include "header.h"
 
 
-static PyObject* py_occaKernelIsInitialized(PyObject *self,
-                                            PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occaKernelGetProperties(PyObject *self,
-                                            PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occaKernelGetDevice(PyObject *self,
+static PyObject* py_occa_is_initialized(PyObject *self,
                                         PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaKernelName(PyObject *self,
-                                   PyObject *args) {
+static PyObject* py_occa_properties(PyObject *self,
+                                    PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaKernelSourceFilename(PyObject *self,
-                                             PyObject *args) {
+static PyObject* py_occa_device(PyObject *self,
+                                PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaKernelBinaryFilename(PyObject *self,
-                                             PyObject *args) {
+static PyObject* py_occa_name(PyObject *self,
+                              PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaKernelMaxDims(PyObject *self,
-                                      PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occaKernelMaxOuterDims(PyObject *self,
-                                           PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occaKernelMaxInnerDims(PyObject *self,
-                                           PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occaKernelSetRunDims(PyObject *self,
+static PyObject* py_occa_source_filename(PyObject *self,
                                          PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaKernelRunN(PyObject *self,
-                                   PyObject *args) {
+static PyObject* py_occa_binary_filename(PyObject *self,
+                                         PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_max_dims(PyObject *self,
+                                  PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_max_outer_dims(PyObject *self,
+                                        PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_max_inner_dims(PyObject *self,
+                                        PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_set_run_dims(PyObject *self,
+                                      PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_run_n(PyObject *self,
+                               PyObject *args) {
   Py_RETURN_NONE;
 }
 
 
 OCCA_PY_MODULE(
   kernel,
-  OCCA_PY_METHOD(occaKernelIsInitialized),
-  OCCA_PY_METHOD(occaKernelGetProperties),
-  OCCA_PY_METHOD(occaKernelGetDevice),
-  OCCA_PY_METHOD(occaKernelName),
-  OCCA_PY_METHOD(occaKernelSourceFilename),
-  OCCA_PY_METHOD(occaKernelBinaryFilename),
-  OCCA_PY_METHOD(occaKernelMaxDims),
-  OCCA_PY_METHOD(occaKernelMaxOuterDims),
-  OCCA_PY_METHOD(occaKernelMaxInnerDims),
-  OCCA_PY_METHOD(occaKernelSetRunDims),
-  OCCA_PY_METHOD(occaKernelRunN)
+  OCCA_PY_METHOD(is_initialized),
+  OCCA_PY_METHOD(properties),
+  OCCA_PY_METHOD(device),
+  OCCA_PY_METHOD(name),
+  OCCA_PY_METHOD(source_filename),
+  OCCA_PY_METHOD(binary_filename),
+  OCCA_PY_METHOD(max_dims),
+  OCCA_PY_METHOD(max_outer_dims),
+  OCCA_PY_METHOD(max_inner_dims),
+  OCCA_PY_METHOD(set_run_dims),
+  OCCA_PY_METHOD(run_n)
 );

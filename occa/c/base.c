@@ -23,112 +23,112 @@
 
 
 //---[ Globals & Flags ]----------------
-static PyObject* py_occaSettings(PyObject *self,
-                                 PyObject *args) {
+static PyObject* py_occa_settings(PyObject *self,
+                                  PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaPrintModeInfo(PyObject *self,
-                                      PyObject *args) {
+static PyObject* py_occa_print_mode_info(PyObject *self,
+                                         PyObject *args) {
   Py_RETURN_NONE;
 }
 //======================================
 
 
 //---[ Device ]-------------------------
-static PyObject* py_occaHost(PyObject *self,
-                             PyObject *args) {
+static PyObject* py_occa_host(PyObject *self,
+                              PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaGetDevice(PyObject *self,
-                                  PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occaSetDevice(PyObject *self,
-                                  PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occaSetDeviceFromString(PyObject *self,
-                                            PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occaDeviceProperties(PyObject *self,
-                                         PyObject *args) {
-  Py_RETURN_NONE;
-}
-
-static PyObject* py_occaLoadKernels(PyObject *self,
+static PyObject* py_occa_get_device(PyObject *self,
                                     PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaFinish(PyObject *self,
-                               PyObject *args) {
+static PyObject* py_occa_set_device(PyObject *self,
+                                    PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaCreateStream(PyObject *self,
-                                     PyObject *args) {
+static PyObject* py_occa_set_device_from_string(PyObject *self,
+                                                PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaGetStream(PyObject *self,
-                                  PyObject *args) {
+static PyObject* py_occa_device_properties(PyObject *self,
+                                           PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaSetStream(PyObject *self,
-                                  PyObject *args) {
+static PyObject* py_occa_load_kernels(PyObject *self,
+                                      PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaTagStream(PyObject *self,
-                                  PyObject *args) {
+static PyObject* py_occa_finish(PyObject *self,
+                                PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaWaitForTag(PyObject *self,
-                                   PyObject *args) {
+static PyObject* py_occa_create_stream(PyObject *self,
+                                       PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaTimeBetweenTags(PyObject *self,
-                                        PyObject *args) {
+static PyObject* py_occa_get_stream(PyObject *self,
+                                    PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_set_stream(PyObject *self,
+                                    PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_tag_stream(PyObject *self,
+                                    PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_wait_for_tag(PyObject *self,
+                                      PyObject *args) {
+  Py_RETURN_NONE;
+}
+
+static PyObject* py_occa_time_between_tags(PyObject *self,
+                                           PyObject *args) {
   Py_RETURN_NONE;
 }
 //======================================
 
 
 //---[ Kernel ]-------------------------
-static PyObject* py_occaBuildKernel(PyObject *self,
-                                    PyObject *args) {
+static PyObject* py_occa_build_kernel(PyObject *self,
+                                      PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaBuildKernelFromString(PyObject *self,
-                                              PyObject *args) {
+static PyObject* py_occa_build_kernel_from_string(PyObject *self,
+                                                  PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaBuildKernelFromBinary(PyObject *self,
-                                              PyObject *args) {
+static PyObject* py_occa_build_kernel_from_binary(PyObject *self,
+                                                  PyObject *args) {
   Py_RETURN_NONE;
 }
 //======================================
 
 
 //---[ Memory ]-------------------------
-static PyObject* py_occaMalloc(PyObject *self,
-                               PyObject *args) {
+static PyObject* py_occa_malloc(PyObject *self,
+                                PyObject *args) {
   Py_RETURN_NONE;
 }
 
-static PyObject* py_occaUMalloc(PyObject *self,
-                                PyObject *args) {
+static PyObject* py_occa_umalloc(PyObject *self,
+                                 PyObject *args) {
   Py_RETURN_NONE;
 }
 //======================================
@@ -136,24 +136,24 @@ static PyObject* py_occaUMalloc(PyObject *self,
 
 OCCA_PY_MODULE(
   base,
-  OCCA_PY_METHOD(occaSettings),
-  OCCA_PY_METHOD(occaPrintModeInfo),
-  OCCA_PY_METHOD(occaHost),
-  OCCA_PY_METHOD(occaGetDevice),
-  OCCA_PY_METHOD(occaSetDevice),
-  OCCA_PY_METHOD(occaSetDeviceFromString),
-  OCCA_PY_METHOD(occaDeviceProperties),
-  OCCA_PY_METHOD(occaLoadKernels),
-  OCCA_PY_METHOD(occaFinish),
-  OCCA_PY_METHOD(occaCreateStream),
-  OCCA_PY_METHOD(occaGetStream),
-  OCCA_PY_METHOD(occaSetStream),
-  OCCA_PY_METHOD(occaTagStream),
-  OCCA_PY_METHOD(occaWaitForTag),
-  OCCA_PY_METHOD(occaTimeBetweenTags),
-  OCCA_PY_METHOD(occaBuildKernel),
-  OCCA_PY_METHOD(occaBuildKernelFromString),
-  OCCA_PY_METHOD(occaBuildKernelFromBinary),
-  OCCA_PY_METHOD(occaMalloc),
-  OCCA_PY_METHOD(occaUMalloc)
+  OCCA_PY_METHOD(settings),
+  OCCA_PY_METHOD(print_mode_info),
+  OCCA_PY_METHOD(host),
+  OCCA_PY_METHOD(get_device),
+  OCCA_PY_METHOD(set_device),
+  OCCA_PY_METHOD(set_device_from_string),
+  OCCA_PY_METHOD(device_properties),
+  OCCA_PY_METHOD(load_kernels),
+  OCCA_PY_METHOD(finish),
+  OCCA_PY_METHOD(create_stream),
+  OCCA_PY_METHOD(get_stream),
+  OCCA_PY_METHOD(set_stream),
+  OCCA_PY_METHOD(tag_stream),
+  OCCA_PY_METHOD(wait_for_tag),
+  OCCA_PY_METHOD(time_between_tags),
+  OCCA_PY_METHOD(build_kernel),
+  OCCA_PY_METHOD(build_kernel_from_string),
+  OCCA_PY_METHOD(build_kernel_from_binary),
+  OCCA_PY_METHOD(malloc),
+  OCCA_PY_METHOD(umalloc)
 );

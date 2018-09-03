@@ -35,7 +35,7 @@
 #define OCCA_PY_METHOD(FUNC)                    \
   {                                             \
     #FUNC,                                      \
-    py_##FUNC,                                  \
+    py_occa_##FUNC,                             \
     METH_VARARGS,                               \
     NULL                                        \
   }
