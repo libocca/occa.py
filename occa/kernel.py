@@ -20,51 +20,74 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
+import json
+from . import c
+from .utils import defaults_to
+
+
 class Kernel:
-    def __init__(self):
-        pass
+    def __init__(self, handle=None):
+        self._handle = handle
 
+    @defaults_to(False)
+    def is_initialized(self):
+        return True
+
+    @defaults_to(None)
     def free(self):
-        pass
+        c.kernel.free(self._handle)
 
     @property
+    @defaults_to(None)
     def device(self):
-        pass
+        return c.kernel.device(self._handle)
 
     @property
+    @defaults_to('')
     def mode(self):
-        pass
+        return c.kernel.mode(self._handle)
 
     @property
+    @defaults_to({})
     def properties(self):
-        pass
+        return json.loads(c.kernel.properties(self._handle))
 
     @property
+    @defaults_to('')
     def name(self):
-        pass
+        return c.kernel.name(self._handle)
 
     @property
+    @defaults_to('')
     def source_filename(self):
-        pass
+        return c.kernel.source_filename(self._handle)
 
     @property
+    @defaults_to('')
     def binary_filename(self):
-        pass
+        return c.kernel.binary_filename(self._handle)
 
     @property
+    @defaults_to(0)
     def max_dims(self):
-        pass
+        return c.kernel.max_dims(self._handle)
 
     @property
+    @defaults_to([0, 0, 0])
     def max_outer_dims(self):
-        pass
+        return c.kernel.max_outer_dims(self._handle)
 
     @property
+    @defaults_to([0, 0, 0])
     def max_inner_dims(self):
-        pass
+        return c.kernel.max_inner_dims(self._handle)
 
+    @defaults_to(None)
     def set_run_dims(self, outer_dims, inner_dims):
-        pass
+        c.kernel.set_run_dims(self._handle,
+                              outer_dims,
+                              inner_dims)
 
+    @defaults_to(None)
     def __call__(self):
         pass

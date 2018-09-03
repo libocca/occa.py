@@ -20,34 +20,55 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
+import json
+from . import c
+from .utils import defaults_to
+
+
 class Memory:
-    def __init__(self):
-        pass
+    def __init__(self, handle=None):
+        self._handle = handle
 
+    @defaults_to(None)
     def free(self):
-        pass
+        c.memory.free(self._handle)
 
     @property
+    @defaults_to(None)
     def device(self):
-        pass
+        return c.memory.device(self._handle)
 
     @property
+    @defaults_to('')
     def mode(self):
-        pass
+        return c.memory.mode(self._handle)
 
     @property
+    @defaults_to(0)
     def size(self):
-        pass
+        return c.memory.size(self._handle)
 
     @property
+    @defaults_to({})
     def properties(self):
-        pass
+        return json.loads(c.memory.properties(self._handle))
 
+    @defaults_to(None)
     def copy_to(self, dest, bytes, offset, props):
-        pass
+        c.memory.copy_to(self._handle,
+                         dest._handle,
+                         bytes,
+                         offset,
+                         json.dumps(props))
 
-    def copy_from(self, dest, bytes, offset, props):
-        pass
+    @defaults_to(None)
+    def copy_from(self, src, bytes, offset, props):
+        c.memory.copy_from(self._handle,
+                         src._handle,
+                         bytes,
+                         offset,
+                         json.dumps(props))
 
+    @defaults_to(None)
     def clone(self):
-        pass
+        return c.memory.clone(self._handle)

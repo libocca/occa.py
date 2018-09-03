@@ -48,8 +48,8 @@
   }
 
 
+// Python 3.X
 #if PY_MAJOR_VERSION == 3
-
 #  define OCCA_PY_MODULE(MODULE, ...)                   \
   OCCA_PY_METHODS(MODULE, __VA_ARGS__);                 \
                                                         \
@@ -65,9 +65,8 @@
     import_array();                                     \
     return PyModule_Create(&occa_c_##MODULE##_module);  \
   }
-
+// Python 2.X
 #elif PY_MAJOR_VERSION == 2
-
 #  define OCCA_PY_MODULE(MODULE, ...)                         \
   OCCA_PY_METHODS(MODULE, __VA_ARGS__);                       \
                                                               \
@@ -75,7 +74,7 @@
     import_array();                                           \
     (void) Py_InitModule(#MODULE, occa_c_##MODULE##_methods); \
   }
-
+// Python ?.X
 #else
 #  error "Unsupported Python major version: " #PY_MAJOR_VERSION
 #endif
