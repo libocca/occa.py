@@ -25,4 +25,4 @@ from .exception import Error
 
 # base, kernel, memory, uva
 
-__all__ = ['device', 'exception']
+__all__ = ['Device', 'Error']

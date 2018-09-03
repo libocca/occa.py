@@ -31,7 +31,6 @@ typedef struct {
 static PyObject* Device_new(PyTypeObject *type,
                             PyObject *args,
                             PyObject *kwargs) {
-
   Device *self = (Device*) type->tp_alloc(type, 0);
   if (self != NULL) {
     self->device = NULL;
@@ -78,41 +77,65 @@ static PyObject* Device_is_initialized(Device *self,
 
 static PyObject* Device_mode(Device *self,
                              PyObject *args) {
-  Py_RETURN_NONE;
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
+  return occa::py::str(self->device->mode());
 }
 
 static PyObject* Device_properties(Device *self,
                                    PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_kernel_properties(Device *self,
                                           PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_memory_properties(Device *self,
                                           PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_memory_size(Device *self,
                                     PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_memory_allocated(Device *self,
                                          PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_finish(Device *self,
                                PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_has_separate_memory_space(Device *self,
                                                   PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
@@ -120,31 +143,49 @@ static PyObject* Device_has_separate_memory_space(Device *self,
 //  |---[ Stream ]----------------------
 static PyObject* Device_create_stream(Device *self,
                                       PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_get_stream(Device *self,
                                    PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_set_stream(Device *self,
                                    PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_tag_stream(Device *self,
                                    PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_wait_for_tag(Device *self,
                                      PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_time_between_tags(Device *self,
                                           PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 //  |===================================
@@ -153,16 +194,25 @@ static PyObject* Device_time_between_tags(Device *self,
 //  |---[ Kernel ]----------------------
 static PyObject* Device_build_kernel(Device *self,
                                      PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_build_kernel_from_string(Device *self,
                                                  PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_build_kernel_from_binary(Device *self,
                                                  PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 //  |===================================
@@ -171,11 +221,17 @@ static PyObject* Device_build_kernel_from_binary(Device *self,
 //  |---[ Memory ]----------------------
 static PyObject* Device_malloc(Device *self,
                                PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* Device_umalloc(Device *self,
                                 PyObject *args) {
+  if (self->device == NULL) {
+    Py_RETURN_NONE;
+  }
   Py_RETURN_NONE;
 }
 //  |===================================

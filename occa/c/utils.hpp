@@ -42,12 +42,20 @@ namespace occa {
   namespace py {
     static PyObject *Error = NULL;
 
+    static PyObject* str(const char *c) {
+      return PyUnicode_FromString(c);
+    }
+
+    static PyObject* str(const std::string &s) {
+      return PyUnicode_FromString(s.c_str());
+    }
+
     static void raise(occa::exception e) {
       if (occa::py::Error == NULL) {
         PyObject *module = PyImport_ImportModule("occa.c.exception");
         occa::py::Error = PyObject_GetAttrString(module, "Error");
 
-        PyObject *name = PyUnicode_FromString("occa.c.Error");
+        PyObject *name = str("occa.c.Error");
         if (name) {
           PyObject_SetAttrString(occa::py::Error, "__name__", name);
         }

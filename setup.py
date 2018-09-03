@@ -76,7 +76,8 @@ def get_ext_module(module):
         depends=['occa/c/libocca.so'],
         libraries=['occa'],
         library_dirs=['occa.git/lib'],
-        extra_link_args=['-Wl,-rpath,$ORIGIN']
+        extra_compile_args=['-Wno-unused-function'],
+        extra_link_args=['-Wl,-rpath,$ORIGIN'],
     )
 
 
