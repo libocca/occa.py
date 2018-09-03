@@ -28,6 +28,42 @@
 
 namespace occa {
   namespace py {
+    // Special
+    static PyObject* none() {
+      Py_RETURN_NONE;
+    }
+
+    // Bool
+    static PyObject* toPy(const bool b) {
+      if (b) {
+        Py_RETURN_TRUE;
+      }
+      Py_RETURN_FALSE;
+    }
+
+    // Integer Types
+    static PyObject* toPy(const int value) {
+      return PyLong_FromLong((long) value);
+    }
+
+    static PyObject* toPy(const long value) {
+      return PyLong_FromLong(value);
+    }
+
+    static PyObject* toPy(const size_t value) {
+      return PyLong_FromSize_t(value);
+    }
+
+    // Float / Double
+    static PyObject* toPy(const float value) {
+      return PyFloat_FromDouble((double) value);
+    }
+
+    static PyObject* toPy(const double value) {
+      return PyFloat_FromDouble(value);
+    }
+
+    // String
     static PyObject* toPy(const char *c) {
       return PyUnicode_FromString(c);
     }
@@ -36,8 +72,13 @@ namespace occa {
       return PyUnicode_FromString(s.c_str());
     }
 
+    // Props / JSON
     static PyObject* toPy(const occa::properties &props) {
       return toPy(props.dump(0));
+    }
+
+    static PyObject* toPy(const occa::json &j) {
+      return toPy(j.dump(0));
     }
   }
 }

@@ -78,7 +78,7 @@ static PyObject* Device_is_initialized(Device *self,
 static PyObject* Device_mode(Device *self,
                              PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
   return occa::py::toPy(self->device->mode());
 }
@@ -86,7 +86,7 @@ static PyObject* Device_mode(Device *self,
 static PyObject* Device_properties(Device *self,
                                    PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
   return occa::py::toPy(self->device->properties());
 }
@@ -94,7 +94,7 @@ static PyObject* Device_properties(Device *self,
 static PyObject* Device_kernel_properties(Device *self,
                                           PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
   return occa::py::toPy(self->device->kernelProperties());
 }
@@ -102,7 +102,7 @@ static PyObject* Device_kernel_properties(Device *self,
 static PyObject* Device_memory_properties(Device *self,
                                           PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
   return occa::py::toPy(self->device->memoryProperties());
 }
@@ -110,33 +110,33 @@ static PyObject* Device_memory_properties(Device *self,
 static PyObject* Device_memory_size(Device *self,
                                     PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_memory_allocated(Device *self,
                                          PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_finish(Device *self,
                                PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_has_separate_memory_space(Device *self,
                                                   PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 
@@ -144,49 +144,49 @@ static PyObject* Device_has_separate_memory_space(Device *self,
 static PyObject* Device_create_stream(Device *self,
                                       PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_get_stream(Device *self,
                                    PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_set_stream(Device *self,
                                    PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_tag_stream(Device *self,
                                    PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_wait_for_tag(Device *self,
                                      PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_time_between_tags(Device *self,
                                           PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 //  |===================================
 
@@ -195,25 +195,25 @@ static PyObject* Device_time_between_tags(Device *self,
 static PyObject* Device_build_kernel(Device *self,
                                      PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_build_kernel_from_string(Device *self,
                                                  PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_build_kernel_from_binary(Device *self,
                                                  PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 //  |===================================
 
@@ -222,17 +222,17 @@ static PyObject* Device_build_kernel_from_binary(Device *self,
 static PyObject* Device_malloc(Device *self,
                                PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 
 static PyObject* Device_umalloc(Device *self,
                                 PyObject *args) {
   if (self->device == NULL) {
-    Py_RETURN_NONE;
+    return occa::py::none();
   }
-  Py_RETURN_NONE;
+  return occa::py::none();
 }
 //  |===================================
 //======================================
