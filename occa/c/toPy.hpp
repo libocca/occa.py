@@ -20,11 +20,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
-#ifndef OCCA_PY_HEADER_HEADER
-#define OCCA_PY_HEADER_HEADER
+#ifndef OCCA_PY_TOPY_HEADER
+#define OCCA_PY_TOPY_HEADER
 
 #include "defines.hpp"
-#include "errors.hpp"
-#include "toPy.hpp"
+
+
+namespace occa {
+  namespace py {
+    static PyObject* toPy(const char *c) {
+      return PyUnicode_FromString(c);
+    }
+
+    static PyObject* toPy(const std::string &s) {
+      return PyUnicode_FromString(s.c_str());
+    }
+
+    static PyObject* toPy(const occa::properties &props) {
+      return toPy(props.dump(0));
+    }
+  }
+}
+
 
 #endif

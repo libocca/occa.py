@@ -20,10 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
-#ifndef OCCA_PY_UTILS_HEADER
-#define OCCA_PY_UTILS_HEADER
+#ifndef OCCA_PY_ERRORS_HEADER
+#define OCCA_PY_ERRORS_HEADER
 
 #include "defines.hpp"
+#include "toPy.hpp"
 
 
 #define OCCA_TRY_AND_RETURNS(RETURN, ...)       \
@@ -42,20 +43,12 @@ namespace occa {
   namespace py {
     static PyObject *Error = NULL;
 
-    static PyObject* str(const char *c) {
-      return PyUnicode_FromString(c);
-    }
-
-    static PyObject* str(const std::string &s) {
-      return PyUnicode_FromString(s.c_str());
-    }
-
     static void raise(occa::exception e) {
       if (occa::py::Error == NULL) {
         PyObject *module = PyImport_ImportModule("occa.c.exception");
         occa::py::Error = PyObject_GetAttrString(module, "Error");
 
-        PyObject *name = str("occa.c.Error");
+        PyObject *name = toPy("occa.c.Error");
         if (name) {
           PyObject_SetAttrString(occa::py::Error, "__name__", name);
         }

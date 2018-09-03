@@ -80,7 +80,7 @@ static PyObject* Device_mode(Device *self,
   if (self->device == NULL) {
     Py_RETURN_NONE;
   }
-  return occa::py::str(self->device->mode());
+  return occa::py::toPy(self->device->mode());
 }
 
 static PyObject* Device_properties(Device *self,
@@ -88,7 +88,7 @@ static PyObject* Device_properties(Device *self,
   if (self->device == NULL) {
     Py_RETURN_NONE;
   }
-  Py_RETURN_NONE;
+  return occa::py::toPy(self->device->properties());
 }
 
 static PyObject* Device_kernel_properties(Device *self,
@@ -96,7 +96,7 @@ static PyObject* Device_kernel_properties(Device *self,
   if (self->device == NULL) {
     Py_RETURN_NONE;
   }
-  Py_RETURN_NONE;
+  return occa::py::toPy(self->device->kernelProperties());
 }
 
 static PyObject* Device_memory_properties(Device *self,
@@ -104,7 +104,7 @@ static PyObject* Device_memory_properties(Device *self,
   if (self->device == NULL) {
     Py_RETURN_NONE;
   }
-  Py_RETURN_NONE;
+  return occa::py::toPy(self->device->memoryProperties());
 }
 
 static PyObject* Device_memory_size(Device *self,
