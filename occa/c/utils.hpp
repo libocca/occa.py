@@ -42,6 +42,11 @@ namespace occa {
       if (occa::py::Error == NULL) {
         PyObject *module = PyImport_ImportModule("occa.c.exception");
         occa::py::Error = PyObject_GetAttrString(module, "Error");
+
+        PyObject *name = PyUnicode_FromString("occa.c.Error");
+        if (name) {
+          PyObject_SetAttrString(occa::py::Error, "__name__", name);
+        }
       }
 
       std::string message = e.message;
