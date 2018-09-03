@@ -112,7 +112,7 @@ static PyObject* Device_memory_size(Device *self,
   if (self->device == NULL) {
     return occa::py::none();
   }
-  return occa::py::toPy(self->device->memorySize());
+  return occa::py::toPy<long long>(self->device->memorySize());
 }
 
 static PyObject* Device_memory_allocated(Device *self,
@@ -120,7 +120,7 @@ static PyObject* Device_memory_allocated(Device *self,
   if (self->device == NULL) {
     return occa::py::none();
   }
-  return occa::py::toPy(self->device->memoryAllocated());
+  return occa::py::toPy<long long>(self->device->memoryAllocated());
 }
 
 static PyObject* Device_finish(Device *self,

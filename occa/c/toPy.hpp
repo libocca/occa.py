@@ -33,8 +33,14 @@ namespace occa {
       Py_RETURN_NONE;
     }
 
+    template <class TM>
+    static PyObject* toPy(const TM &value) {
+      value.NOT_IMPLEMENTEED;
+    }
+
     // Bool
-    static PyObject* toPy(const bool b) {
+    template <>
+    PyObject* toPy<bool>(const bool &b) {
       if (b) {
         Py_RETURN_TRUE;
       }
@@ -42,42 +48,55 @@ namespace occa {
     }
 
     // Integer Types
-    static PyObject* toPy(const int value) {
+    template <>
+    PyObject* toPy<int>(const int &value) {
       return PyLong_FromLong((long) value);
     }
 
-    static PyObject* toPy(const long value) {
+    template <>
+    PyObject* toPy<long>(const long &value) {
       return PyLong_FromLong(value);
     }
 
-    static PyObject* toPy(const size_t value) {
+    template <>
+    PyObject* toPy<long long>(const long long &value) {
+      return PyLong_FromLong(value);
+    }
+
+    template <>
+    PyObject* toPy<size_t>(const size_t &value) {
       return PyLong_FromSize_t(value);
     }
 
     // Float / Double
-    static PyObject* toPy(const float value) {
+    template <>
+    PyObject* toPy<float>(const float &value) {
       return PyFloat_FromDouble((double) value);
     }
 
-    static PyObject* toPy(const double value) {
+    template <>
+    PyObject* toPy<double>(const double &value) {
       return PyFloat_FromDouble(value);
     }
 
     // String
-    static PyObject* toPy(const char *c) {
+    PyObject* toPy(const char *c) {
       return PyUnicode_FromString(c);
     }
 
-    static PyObject* toPy(const std::string &s) {
+    template <>
+    PyObject* toPy<std::string>(const std::string &s) {
       return PyUnicode_FromString(s.c_str());
     }
 
     // Props / JSON
-    static PyObject* toPy(const occa::properties &props) {
+    template <>
+    PyObject* toPy<occa::properties>(const occa::properties &props) {
       return toPy(props.dump(0));
     }
 
-    static PyObject* toPy(const occa::json &j) {
+    template <>
+    PyObject* toPy<occa::json>(const occa::json &j) {
       return toPy(j.dump(0));
     }
   }

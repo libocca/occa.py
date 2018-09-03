@@ -25,7 +25,6 @@
 from setuptools.command import build_ext
 from setuptools import setup, find_packages, Extension
 import os
-import sys
 import numpy as np
 
 
@@ -46,17 +45,6 @@ class OccaInstaller(build_ext.build_ext):
 
         # Copy libocca.so to build directory
         self.copy_file('occa.git/lib/libocca.so', occa_c_path)
-
-        if sys.platform == 'darwin':
-            for output in self.get_outputs():
-                self.sys_call('install_name_tool'
-                              ' -change'
-                              ' {libocca_so}'
-                              ' $ORIGIN/../libocca.so'
-                              ' {output}'.format(libocca_so=libocca_so,
-                                                 output=output))
-        else:
-            pass
 
     def run(self):
         self.pre_build()
