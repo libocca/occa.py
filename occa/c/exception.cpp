@@ -19,11 +19,21 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
+#include "header.hpp"
 
-#ifndef OCCA_PY_HEADER_HEADER
-#define OCCA_PY_HEADER_HEADER
 
-#include "defines.hpp"
-#include "utils.hpp"
+static PyObject *Error = NULL;
 
-#endif
+static bool exception_has_valid_module() {
+  Error = PyErr_NewException("occa.c.exception.Error", NULL, NULL);
+  return (Error != NULL);
+}
+
+static void exception_init_module(PyObject *module) {
+  Py_INCREF(Error);
+  PyModule_AddObject(module,
+                     "Error",
+                     Error);
+}
+
+OCCA_PY_MODULE(exception, OCCA_PY_NO_METHODS)

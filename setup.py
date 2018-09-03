@@ -38,12 +38,14 @@ class OccaInstaller(build_ext.build_ext):
     def pre_build(self):
         # Build occa and copy libocca.so to occa/c
         self.sys_call('make -C occa.git -j4')
-        self.sys_call('cp occa.git/lib/libocca.so occa/c')
 
     def post_build(self):
         # Change the rpath location for finding libocca.so
         occa_c_path = os.path.dirname(self.get_ext_fullpath('occa.c.device'))
         libocca_so = os.path.abspath('./occa.git/lib/libocca.so')
+
+        # Copy libocca.so to build directory
+        self.copy_file('occa.git/lib/libocca.so', occa_c_path)
 
         if sys.platform == 'darwin':
             for output in self.get_outputs():
@@ -71,14 +73,16 @@ def get_ext_module(module):
             'occa.git/include',
             np.get_include(),
         ],
+        depends=['occa/c/libocca.so'],
         libraries=['occa'],
         library_dirs=['occa.git/lib'],
+        extra_link_args=['-Wl,-rpath,$ORIGIN']
     )
 
 
 ext_modules = [
     get_ext_module(module)
-    for module in ['device'] #['base', 'device', 'kernel', 'memory', 'uva']
+    for module in ['device', 'exception'] # 'base', 'kernel', 'memory', 'uva'
 ]
 
 

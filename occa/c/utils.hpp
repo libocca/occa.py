@@ -20,10 +20,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
-#ifndef OCCA_PY_HEADER_HEADER
-#define OCCA_PY_HEADER_HEADER
+#ifndef OCCA_PY_UTILS_HEADER
+#define OCCA_PY_UTILS_HEADER
 
 #include "defines.hpp"
-#include "utils.hpp"
+
+
+#define OCCA_TRY(...)                           \
+  try {                                         \
+    __VA_ARGS__                                 \
+  } catch (occa::exception e) {                 \
+    occa::py::raise(e);                         \
+  }
+
+
+namespace occa {
+  namespace py {
+    static PyObject *Error = NULL;
+
+    static void raise(occa::exception e) {
+      if (occa::py::Error == NULL) {
+        PyObject *module = PyImport_ImportModule("occa.c.exception");
+        occa::py::Error = PyObject_GetAttrString(module, "Error");
+      }
+
+      std::string message = e.message;
+      message += '\n';
+      message += e.location();
+      PyErr_SetString(occa::py::Error, message.c_str());
+    }
+  }
+}
+
 
 #endif

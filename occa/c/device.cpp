@@ -19,11 +19,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
-#include <Python.h>
-#include "structmember.h"
-
-#include <occa.hpp>
-
 #include "header.hpp"
 
 
@@ -55,7 +50,12 @@ static int Device_init(Device *self,
   delete self->device;
   self->device = NULL;
   if (info) {
-    self->device = new occa::device(info);
+    OCCA_TRY(
+      self->device = new occa::device(info);
+    );
+    if (self->device == NULL) {
+      return -1;
+    }
   }
 
   return 0;

@@ -20,6 +20,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
-from . import device #base, device, kernel, memory, uva
+from .device import Device
+from .exception import Error
 
-__all__ = ['device'] #['base', 'device', 'kernel', 'memory', 'uva']
+# base, kernel, memory, uva
+
+__all__ = ['device', 'exception']
