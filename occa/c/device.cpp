@@ -112,7 +112,7 @@ static PyObject* Device_memory_size(Device *self,
   if (self->device == NULL) {
     return occa::py::none();
   }
-  return occa::py::none();
+  return occa::py::toPy(self->device->memorySize());
 }
 
 static PyObject* Device_memory_allocated(Device *self,
@@ -120,13 +120,13 @@ static PyObject* Device_memory_allocated(Device *self,
   if (self->device == NULL) {
     return occa::py::none();
   }
-  return occa::py::none();
+  return occa::py::toPy(self->device->memoryAllocated());
 }
 
 static PyObject* Device_finish(Device *self,
                                PyObject *args) {
-  if (self->device == NULL) {
-    return occa::py::none();
+  if (self->device != NULL) {
+    self->device->finish();
   }
   return occa::py::none();
 }
@@ -136,7 +136,7 @@ static PyObject* Device_has_separate_memory_space(Device *self,
   if (self->device == NULL) {
     return occa::py::none();
   }
-  return occa::py::none();
+  return occa::py::toPy(self->device->hasSeparateMemorySpace());
 }
 
 
