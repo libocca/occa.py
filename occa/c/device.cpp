@@ -28,34 +28,32 @@ typedef struct {
   occa::device *device;
 } Device;
 
-static PyObject* Device_new(PyTypeObject *type,
-                            PyObject *args,
-                            PyObject *kwargs) {
-  static const char *kwargNames[] = {"device", NULL};
-
-  Device *self = (Device*) type->tp_alloc(type, 0);
+static int Device_init(Device *self,
+                       PyObject *args,
+                       PyObject *kwargs) {
+  static const char *kwargNames[] = {"props", "device", NULL};
 
   self->device = NULL;
 
   char *info = NULL;
-  PyObject *devicePtr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|s$O", (char**) kwargNames,
-                                   &info, &devicePtr)) {
-    return NULL;
-  }
-  if (info) {
-    OCCA_TRY(
-      self->device = new occa::device(info);
-    );
-  } else if (devicePtr) {
-    OCCA_TRY(
-      self->device = new occa::device(
-        (occa::modeDevice_t*) occa::py::ptr(devicePtr)
-      );
-    );
+  PyObject *deviceObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sO", (char**) kwargNames,
+                                   &info, &deviceObj)) {
+    return -1;
   }
 
-  return (PyObject*) self;
+  OCCA_TRY_AND_RETURN(
+    -1,
+    if (info) {
+      self->device = new occa::device(info);
+    } else {
+      self->device = new occa::device(
+        (occa::modeDevice_t*) occa::py::ptr(deviceObj)
+      );
+    }
+  );
+
+  return 0;
 }
 
 static void Device_dealloc(Device *self) {
@@ -77,42 +75,54 @@ static PyObject* Device_mode(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->device->mode());
+  return occa::py::toPy(
+    self->device->mode()
+  );
 }
 
 static PyObject* Device_properties(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->device->properties());
+  return occa::py::toPy(
+    self->device->properties()
+  );
 }
 
 static PyObject* Device_kernel_properties(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->device->kernelProperties());
+  return occa::py::toPy(
+    self->device->kernelProperties()
+  );
 }
 
 static PyObject* Device_memory_properties(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->device->memoryProperties());
+  return occa::py::toPy(
+    self->device->memoryProperties()
+  );
 }
 
 static PyObject* Device_memory_size(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy((long long) self->device->memorySize());
+  return occa::py::toPy(
+    (long long) self->device->memorySize()
+  );
 }
 
 static PyObject* Device_memory_allocated(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy((long long) self->device->memoryAllocated());
+  return occa::py::toPy(
+    (long long) self->device->memoryAllocated()
+  );
 }
 
 static PyObject* Device_finish(Device *self) {
@@ -126,7 +136,9 @@ static PyObject* Device_has_separate_memory_space(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->device->hasSeparateMemorySpace());
+  return occa::py::toPy(
+    self->device->hasSeparateMemorySpace()
+  );
 }
 
 
@@ -148,6 +160,8 @@ static PyObject* Device_get_stream(Device *self) {
 static PyObject* Device_set_stream(Device *self,
                                    PyObject *args,
                                    PyObject *kwargs) {
+  static const char *kwargNames[] = {"stream", NULL};
+
   if (!self->device) {
     return occa::py::None();
   }
@@ -164,6 +178,8 @@ static PyObject* Device_tag_stream(Device *self) {
 static PyObject* Device_wait_for_tag(Device *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
+  static const char *kwargNames[] = {"tag", NULL};
+
   if (!self->device) {
     return occa::py::None();
   }
@@ -173,6 +189,8 @@ static PyObject* Device_wait_for_tag(Device *self,
 static PyObject* Device_time_between_tags(Device *self,
                                           PyObject *args,
                                           PyObject *kwargs) {
+  static const char *kwargNames[] = {"start", "end", NULL};
+
   if (!self->device) {
     return occa::py::None();
   }
@@ -185,6 +203,8 @@ static PyObject* Device_time_between_tags(Device *self,
 static PyObject* Device_build_kernel(Device *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
+  static const char *kwargNames[] = {"filename", "kernel", "props", NULL};
+
   if (!self->device) {
     return occa::py::None();
   }
@@ -194,6 +214,8 @@ static PyObject* Device_build_kernel(Device *self,
 static PyObject* Device_build_kernel_from_string(Device *self,
                                                  PyObject *args,
                                                  PyObject *kwargs) {
+  static const char *kwargNames[] = {"source", "kernel", "props", NULL};
+
   if (!self->device) {
     return occa::py::None();
   }
@@ -203,6 +225,8 @@ static PyObject* Device_build_kernel_from_string(Device *self,
 static PyObject* Device_build_kernel_from_binary(Device *self,
                                                  PyObject *args,
                                                  PyObject *kwargs) {
+  static const char *kwargNames[] = {"filename", "kernel", "props", NULL};
+
   if (!self->device) {
     return occa::py::None();
   }
@@ -215,15 +239,32 @@ static PyObject* Device_build_kernel_from_binary(Device *self,
 static PyObject* Device_malloc(Device *self,
                                PyObject *args,
                                PyObject *kwargs) {
+  static const char *kwargNames[] = {"bytes", "src", "props", NULL};
+
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::None();
+
+  // TODO: Swap src with numpy arrays or memory objects
+
+  long long bytes = -1;
+  PyObject *src = NULL;
+  char *props = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "L|Os", (char**) kwargNames,
+                                   &bytes, &src, &props)) {
+    return NULL;
+  }
+
+  return occa::py::toPy(
+    self->device->malloc(bytes, NULL, props)
+  );
 }
 
 static PyObject* Device_umalloc(Device *self,
                                 PyObject *args,
                                 PyObject *kwargs) {
+  static const char *kwargNames[] = {"bytes", "src", "props", NULL};
+
   if (!self->device) {
     return occa::py::None();
   }
@@ -300,12 +341,13 @@ static PyTypeObject DeviceType = {
   0,                           // tp_descr_get
   0,                           // tp_descr_set
   0,                           // tp_dictoffset
-  0,                           // tp_init
+  (initproc) Device_init,      // tp_init
   0,                           // tp_alloc
-  Device_new,                  // tp_new
+  0                            // tp_new
 };
 
 static bool device_has_valid_module() {
+  DeviceType.tp_new = PyType_GenericNew;
   return PyType_Ready(&DeviceType) >= 0;
 }
 

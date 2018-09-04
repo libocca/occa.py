@@ -20,14 +20,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
-#ifndef OCCA_PY_HEADER_HEADER
-#define OCCA_PY_HEADER_HEADER
+#ifndef OCCA_PY_FROMPY_HEADER
+#define OCCA_PY_FROMPY_HEADER
 
 #include "defines.hpp"
-#include "errors.hpp"
 #include "types.hpp"
 
-#include "fromPy.hpp"
-#include "toPy.hpp"
+
+namespace occa {
+  namespace py {
+    static bool isString(PyObject *obj) {
+#if OCCA_PY3
+      return PyUnicode_Check(obj);
+#elif OCCA_PY2
+      return PyObject_TypeCheck(obj, &PyBaseString_Type);
+#endif
+    }
+
+    static const char* str(PyObject *obj) {
+#if OCCA_PY3
+      return PyUnicode_AS_DATA(obj);
+#elif OCCA_PY2
+      return PyString_AsString(obj);
+#endif
+    }
+
+    static void* ptr(PyObject *capsule) {
+      return PyCapsule_GetPointer(capsule, NULL);
+    }
+  }
+}
 
 #endif

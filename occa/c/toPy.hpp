@@ -24,15 +24,11 @@
 #define OCCA_PY_TOPY_HEADER
 
 #include "defines.hpp"
+#include "types.hpp"
 
 
 namespace occa {
   namespace py {
-    static PyTypeObject *Device = NULL;
-    static PyTypeObject *Kernel = NULL;
-    static PyTypeObject *Memory = NULL;
-    static PyTypeObject *Stream = NULL;
-
     // Special
     static PyObject* None() {
       Py_RETURN_NONE;
@@ -46,28 +42,8 @@ namespace occa {
       Py_RETURN_FALSE;
     }
 
-    static bool isString(PyObject *obj) {
-#if OCCA_PY3
-      return PyUnicode_Check(obj);
-#elif OCCA_PY2
-      return PyObject_TypeCheck(obj, &PyBaseString_Type);
-#endif
-    }
-
-    static const char* str(PyObject *obj) {
-#if OCCA_PY3
-      return PyUnicode_AS_DATA(obj);
-#elif OCCA_PY2
-      return PyString_AsString(obj);
-#endif
-    }
-
-    static void* ptr(PyObject *capsule) {
-      return PyCapsule_GetPointer(capsule, NULL);
-    }
-
-    static PyObject* toPy(const void *ptr) {
-      return PyCapsule_New(const_cast<void*>(ptr), NULL, NULL);
+    static PyObject* toPy(void *ptr) {
+      return PyCapsule_New(ptr, NULL, NULL);
     }
 
     // Bool
@@ -114,32 +90,40 @@ namespace occa {
     }
 
     // Core
-    static PyTypeObject* getTypeFromModule(const std::string &moduleName,
-                                           const std::string &className) {
-      PyObject *module = PyImport_ImportModule(moduleName.c_str());
-      return (PyTypeObject*) PyObject_GetAttrString(module, className.c_str());
-    }
-
     static PyObject* newCoreType(PyTypeObject *Type,
-                                 void *ptr) {
-      PyObject *args = PyTuple_New(1);
-      PyTuple_SetItem(args, 0, toPy(ptr));
-      return Type->tp_new(Type, args, NULL);
+                                 void *ptr,
+                                 const std::string &name) {
+
+      PyObject *typeObj = occa::py::toPy(ptr);
+      PyObject *typeArgs = Py_BuildValue("()");
+      PyObject *typeKwargs = Py_BuildValue("{s:O}",
+                                           name.c_str(), typeObj);
+
+      PyObject *pyType = PyObject_Call((PyObject*) Type, typeArgs, typeKwargs);
+
+      Py_DECREF(typeObj);
+      Py_DECREF(typeArgs);
+      Py_DECREF(typeKwargs);
+
+      return pyType;
     }
 
     PyObject* toPy(const occa::device &device) {
-      static PyTypeObject *Device = getTypeFromModule("occa.c.device", "Device");
-      return newCoreType(Device, (void*) device.getModeDevice());
+      return newCoreType(occa::py::DeviceType(),
+                         (void*) device.getModeDevice(),
+                         "device");
     }
 
     PyObject* toPy(const occa::kernel &kernel) {
-      static PyTypeObject *Kernel = getTypeFromModule("occa.c.kernel", "Kernel");
-      return newCoreType(Kernel, (void*) kernel.getModeKernel());
+      return newCoreType(occa::py::KernelType(),
+                         (void*) kernel.getModeKernel(),
+                         "kernel");
     }
 
     PyObject* toPy(const occa::memory &memory) {
-      static PyTypeObject *Memory = getTypeFromModule("occa.c.memory", "Memory");
-      return newCoreType(Memory, (void*) memory.getModeMemory());
+      return newCoreType(occa::py::MemoryType(),
+                         (void*) memory.getModeMemory(),
+                         "memory");
     }
 
     // Props / JSON

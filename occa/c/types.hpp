@@ -20,14 +20,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  */
 
-#ifndef OCCA_PY_HEADER_HEADER
-#define OCCA_PY_HEADER_HEADER
+#ifndef OCCA_PY_TYPES_HEADER
+#define OCCA_PY_TYPES_HEADER
 
 #include "defines.hpp"
-#include "errors.hpp"
-#include "types.hpp"
 
-#include "fromPy.hpp"
-#include "toPy.hpp"
+
+namespace occa {
+  namespace py {
+    static PyTypeObject* getTypeFromModule(const std::string &moduleName,
+                                           const std::string &className) {
+      PyObject *module = PyImport_ImportModule(moduleName.c_str());
+      return (PyTypeObject*) PyObject_GetAttrString(module, className.c_str());
+    }
+
+    PyTypeObject* DeviceType() {
+      static PyTypeObject *Device = getTypeFromModule("occa.c.device", "Device");
+      return Device;
+    }
+
+    PyTypeObject* KernelType() {
+      static PyTypeObject *Kernel = getTypeFromModule("occa.c.kernel", "Kernel");
+      return Kernel;
+    }
+
+    PyTypeObject* MemoryType() {
+      static PyTypeObject *Memory = getTypeFromModule("occa.c.memory", "Memory");
+      return Memory;
+    }
+
+    PyTypeObject* StreamType() {
+      static PyTypeObject *Stream = getTypeFromModule("occa.c.stream", "Stream");
+      return Stream;
+    }
+
+    PyTypeObject* TagType() {
+      static PyTypeObject *Tag = getTypeFromModule("occa.c.tag", "Tag");
+      return Tag;
+    }
+  }
+}
 
 #endif

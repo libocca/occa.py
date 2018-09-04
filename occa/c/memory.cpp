@@ -28,26 +28,29 @@ typedef struct {
   occa::memory *memory;
 } Memory;
 
-static PyObject* Memory_new(PyTypeObject *type,
-                            PyObject *args,
-                            PyObject *kwargs) {
-  Memory *self = (Memory*) type->tp_alloc(type, 0);
+static int Memory_init(Memory *self,
+                       PyObject *args,
+                       PyObject *kwargs) {
+  static const char *kwargNames[] = {"memory", NULL};
 
   self->memory = NULL;
 
-  PyObject *memoryPtr = NULL;
-  if (!PyArg_ParseTuple(args, "|O", &memoryPtr)) {
-    return NULL;
+  PyObject *memoryObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
+                                   &memoryObj)) {
+    return -1;
   }
-  if (memoryPtr) {
-    OCCA_TRY(
+
+  if (memoryObj) {
+    OCCA_TRY_AND_RETURN(
+      -1,
       self->memory = new occa::memory(
-        (occa::modeMemory_t*) occa::py::ptr(memoryPtr)
+        (occa::modeMemory_t*) occa::py::ptr(memoryObj)
       );
     );
   }
 
-  return (PyObject*) self;
+  return 0;
 }
 
 static void Memory_dealloc(Memory *self) {
@@ -69,21 +72,28 @@ static PyObject* Memory_get_device(Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->memory->getDevice());
+  return occa::py::toPy(
+    self->memory->getDevice()
+  );
 }
 
 static PyObject* Memory_properties(Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->memory->properties());
+  return occa::py::toPy(
+    self->memory->properties()
+  );
 }
 
 static PyObject* Memory_size(Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
-  return occa::py::toPy((long long) self->memory->size());
+
+  return occa::py::toPy(
+    (long long) self->memory->size()
+  );
 }
 
 static PyObject* Memory_slice(Memory *self,
@@ -96,12 +106,14 @@ static PyObject* Memory_slice(Memory *self,
 
   long long offset = -1;
   long long bytes = -1;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|$ii", (char**) kwargNames,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i|i", (char**) kwargNames,
                                    &offset, &bytes)) {
     return NULL;
   }
 
-  return occa::py::toPy(self->memory->slice(offset, bytes));
+  return occa::py::toPy(
+    self->memory->slice(offset, bytes)
+  );
 }
 
 //---[ UVA ]----------------------------
@@ -148,7 +160,7 @@ static PyObject* Memory_sync_to_device(Memory *self,
   if (self->memory) {
     long long bytes = -1;
     long long offset = -1;
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|$ii", (char**) kwargNames,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ii", (char**) kwargNames,
                                      &bytes, &offset)) {
       return NULL;
     }
@@ -166,7 +178,7 @@ static PyObject* Memory_sync_to_host(Memory *self,
   if (self->memory) {
     long long bytes = -1;
     long long offset = -1;
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|$ii", (char**) kwargNames,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ii", (char**) kwargNames,
                                      &bytes, &offset)) {
       return NULL;
     }
@@ -205,7 +217,9 @@ static PyObject* Memory_clone(Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->memory->clone());
+  return occa::py::toPy(
+    self->memory->clone()
+  );
 }
 //======================================
 
@@ -274,12 +288,13 @@ static PyTypeObject MemoryType = {
   0,                           // tp_descr_get
   0,                           // tp_descr_set
   0,                           // tp_dictoffset
-  0,                           // tp_init
+  (initproc) Memory_init,      // tp_init
   0,                           // tp_alloc
-  Memory_new,                  // tp_new
+  0                            // tp_new
 };
 
 static bool memory_has_valid_module() {
+  MemoryType.tp_new = PyType_GenericNew;
   return PyType_Ready(&MemoryType) >= 0;
 }
 

@@ -47,6 +47,7 @@ class OccaInstaller(build_ext.build_ext):
         # Copy libocca.so to build directory
         self.copy_file('occa.git/lib/libocca.so', occa_c_path)
 
+        # Manually set relative rpath in OSX
         if sys.platform == 'darwin':
             for output in self.get_outputs():
                 self.sys_call('install_name_tool'

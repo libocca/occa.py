@@ -27,7 +27,7 @@
 #include "toPy.hpp"
 
 
-#define OCCA_TRY_AND_RETURNS(RETURN, ...)       \
+#define OCCA_TRY_AND_RETURN(RETURN, ...)        \
   try {                                         \
     __VA_ARGS__                                 \
   } catch (occa::exception e) {                 \
@@ -36,7 +36,7 @@
   }
 
 #define OCCA_TRY(...)                           \
-  OCCA_TRY_AND_RETURNS(NULL, __VA_ARGS__)
+  OCCA_TRY_AND_RETURN(NULL, __VA_ARGS__)
 
 
 namespace occa {

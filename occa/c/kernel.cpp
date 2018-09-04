@@ -28,26 +28,29 @@ typedef struct {
   occa::kernel *kernel;
 } Kernel;
 
-static PyObject* Kernel_new(PyTypeObject *type,
-                            PyObject *args,
-                            PyObject *kwargs) {
-  Kernel *self = (Kernel*) type->tp_alloc(type, 0);
+static int Kernel_init(Kernel *self,
+                       PyObject *args,
+                       PyObject *kwargs) {
+  static const char *kwargNames[] = {"kernel", NULL};
 
   self->kernel = NULL;
 
-  PyObject *kernelPtr = NULL;
-  if (!PyArg_ParseTuple(args, "|O", &kernelPtr)) {
-    return NULL;
+  PyObject *kernelObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
+                                   &kernelObj)) {
+    return -1;
   }
-  if (kernelPtr) {
-    OCCA_TRY(
+
+  if (kernelObj) {
+    OCCA_TRY_AND_RETURN(
+      -1,
       self->kernel = new occa::kernel(
-        (occa::modeKernel_t*) occa::py::ptr(kernelPtr)
+        (occa::modeKernel_t*) occa::py::ptr(kernelObj)
       );
     );
   }
 
-  return (PyObject*) self;
+  return 0;
 }
 
 static void Kernel_dealloc(Kernel *self) {
@@ -69,35 +72,45 @@ static PyObject* Kernel_properties(Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->kernel->properties());
+  return occa::py::toPy(
+    self->kernel->properties()
+  );
 }
 
 static PyObject* Kernel_get_device(Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->kernel->getDevice());
+  return occa::py::toPy(
+    self->kernel->getDevice()
+  );
 }
 
 static PyObject* Kernel_name(Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->kernel->name());
+  return occa::py::toPy(
+    self->kernel->name()
+  );
 }
 
 static PyObject* Kernel_source_filename(Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->kernel->sourceFilename());
+  return occa::py::toPy(
+    self->kernel->sourceFilename()
+  );
 }
 
 static PyObject* Kernel_binary_filename(Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(self->kernel->binaryFilename());
+  return occa::py::toPy(
+    self->kernel->binaryFilename()
+  );
 }
 
 static PyObject* Kernel_max_dims(Kernel *self) {
@@ -115,12 +128,13 @@ static PyObject* Kernel_max_inner_dims(Kernel *self) {
 static PyObject* Kernel_set_run_dims(Kernel *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
+  static const char *kwargNames[] = {"outer", "inner", NULL};
+
   return occa::py::None();
 }
 
 static PyObject* Kernel_run(Kernel *self,
-                            PyObject *args,
-                            PyObject *kwargs) {
+                            PyObject *args) {
   return occa::py::None();
 }
 //======================================
@@ -129,6 +143,9 @@ static PyObject* Kernel_run(Kernel *self,
 //---[ Module ]-------------------------
 #define KERNEL_METHOD_NO_ARGS(FUNC)             \
   OCCA_PY_METHOD_NO_ARGS(#FUNC, Kernel_##FUNC)
+
+#define KERNEL_METHOD_WITH_ARGS(FUNC)             \
+  OCCA_PY_METHOD_WITH_ARGS(#FUNC, Kernel_##FUNC)
 
 #define KERNEL_METHOD_WITH_KWARGS(FUNC)             \
   OCCA_PY_METHOD_WITH_KWARGS(#FUNC, Kernel_##FUNC)
@@ -145,7 +162,7 @@ OCCA_PY_METHODS(
     KERNEL_METHOD_NO_ARGS(max_outer_dims),
     KERNEL_METHOD_NO_ARGS(max_inner_dims),
     KERNEL_METHOD_WITH_KWARGS(set_run_dims),
-    KERNEL_METHOD_WITH_KWARGS(run)
+    KERNEL_METHOD_WITH_ARGS(run)
 );
 
 static PyTypeObject KernelType = {
@@ -184,12 +201,13 @@ static PyTypeObject KernelType = {
   0,                           // tp_descr_get
   0,                           // tp_descr_set
   0,                           // tp_dictoffset
-  0,                           // tp_init
+  (initproc) Kernel_init,      // tp_init
   0,                           // tp_alloc
-  Kernel_new,                  // tp_new
+  0                            // tp_new
 };
 
 static bool kernel_has_valid_module() {
+  KernelType.tp_new = PyType_GenericNew;
   return PyType_Ready(&KernelType) >= 0;
 }
 
