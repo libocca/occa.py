@@ -25,6 +25,7 @@
 from setuptools.command import build_ext
 from setuptools import setup, find_packages, Extension
 import os
+import sys
 import numpy as np
 
 
@@ -45,6 +46,15 @@ class OccaInstaller(build_ext.build_ext):
 
         # Copy libocca.so to build directory
         self.copy_file('occa.git/lib/libocca.so', occa_c_path)
+
+        if sys.platform == 'darwin':
+            for output in self.get_outputs():
+                self.sys_call('install_name_tool'
+                              ' -change'
+                              ' {libocca_so}'
+                              ' @loader_path/libocca.so'
+                              ' {output}'.format(libocca_so=libocca_so,
+                                                 output=output))
 
     def run(self):
         self.pre_build()
@@ -71,7 +81,7 @@ def get_ext_module(module):
 
 ext_modules = [
     get_ext_module(module)
-    for module in ['device', 'exception'] # 'base', 'kernel', 'memory', 'uva'
+    for module in ['device', 'exception', 'kernel', 'memory']
 ]
 
 

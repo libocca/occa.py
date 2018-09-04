@@ -21,8 +21,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
 from .device import Device
+from .kernel import Kernel
+from .memory import Memory
+
 from .exception import Error
 
-# base, kernel, memory, uva
+# base, uva
 
-__all__ = ['Device', 'Error']
+__all__ = ['Device', 'Kernel', 'Memory', 'Error']

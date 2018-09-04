@@ -32,13 +32,23 @@
 #include <occa.hpp>
 
 
-#define OCCA_PY_METHOD(NAME, FUNC)              \
-  {                                             \
-    NAME,                                       \
-    (PyCFunction) FUNC,                         \
-    METH_VARARGS,                               \
-    NULL                                        \
-  }
+#if PY_MAJOR_VERSION == 3
+#  define OCCA_PY3 1
+#  define OCCA_PY2 0
+#elif PY_MAJOR_VERSION == 2
+#  define OCCA_PY3 0
+#  define OCCA_PY2 1
+#endif
+
+
+#define OCCA_PY_METHOD(NAME, FUNC, TYPE)        \
+  { NAME, (PyCFunction) FUNC, TYPE, NULL }
+
+#define OCCA_PY_METHOD_NO_ARGS(NAME, FUNC)      \
+  OCCA_PY_METHOD(NAME, FUNC, METH_NOARGS)
+
+#define OCCA_PY_METHOD_WITH_KWARGS(NAME, FUNC)              \
+  OCCA_PY_METHOD(NAME, FUNC, METH_VARARGS | METH_KEYWORDS)
 
 
 #define OCCA_PY_NO_METHODS                      \
@@ -53,7 +63,7 @@
 
 
 // Python 3.X
-#if PY_MAJOR_VERSION == 3
+#if OCCA_PY3
 #  define OCCA_PY_MODULE(MODULE, ...)                               \
   OCCA_PY_METHODS(occa_c_##MODULE##_methods,                        \
                   __VA_ARGS__);                                     \
@@ -81,7 +91,7 @@
   }                                                                 \
   OCCA_END_EXTERN_C
 // Python 2.X
-#elif PY_MAJOR_VERSION == 2
+#elif OCCA_PY2
 #  define OCCA_PY_MODULE(MODULE, ...)                                   \
   OCCA_PY_METHODS(MODULE, __VA_ARGS__);                                 \
                                                                         \

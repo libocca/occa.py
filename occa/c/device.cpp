@@ -31,30 +31,31 @@ typedef struct {
 static PyObject* Device_new(PyTypeObject *type,
                             PyObject *args,
                             PyObject *kwargs) {
+  static const char *kwargNames[] = {"device", NULL};
+
   Device *self = (Device*) type->tp_alloc(type, 0);
 
   self->device = NULL;
-  PyArg_ParseTuple(args, "|O", &(self->device));
 
-  return (PyObject*) self;
-}
-
-static int Device_init(Device *self,
-                       PyObject *args,
-                       PyObject *kwargs) {
-  const char *info = NULL;
-  if (!PyArg_ParseTuple(args, "|s", &info)) {
-    return -1;
+  char *info = NULL;
+  PyObject *devicePtr = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|s$O", (char**) kwargNames,
+                                   &info, &devicePtr)) {
+    return NULL;
   }
-
   if (info) {
-    OCCA_TRY_AND_RETURNS(
-      -1,
+    OCCA_TRY(
       self->device = new occa::device(info);
+    );
+  } else if (devicePtr) {
+    OCCA_TRY(
+      self->device = new occa::device(
+        (occa::modeDevice_t*) occa::py::ptr(devicePtr)
+      );
     );
   }
 
-  return 0;
+  return (PyObject*) self;
 }
 
 static void Device_dealloc(Device *self) {
@@ -65,203 +66,202 @@ static void Device_dealloc(Device *self) {
 
 
 //---[ Class Methods ]------------------
-static PyObject* Device_is_initialized(Device *self,
-                                       PyObject *args) {
-  if (self->device &&
-      self->device->isInitialized()) {
-    Py_RETURN_TRUE;
-  }
-  Py_RETURN_FALSE;
+static PyObject* Device_is_initialized(Device *self) {
+  return occa::py::toPy(
+    (bool) (self->device &&
+            self->device->isInitialized())
+  );
 }
 
-static PyObject* Device_mode(Device *self,
-                             PyObject *args) {
+static PyObject* Device_mode(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
   return occa::py::toPy(self->device->mode());
 }
 
-static PyObject* Device_properties(Device *self,
-                                   PyObject *args) {
+static PyObject* Device_properties(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
   return occa::py::toPy(self->device->properties());
 }
 
-static PyObject* Device_kernel_properties(Device *self,
-                                          PyObject *args) {
+static PyObject* Device_kernel_properties(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
   return occa::py::toPy(self->device->kernelProperties());
 }
 
-static PyObject* Device_memory_properties(Device *self,
-                                          PyObject *args) {
+static PyObject* Device_memory_properties(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
   return occa::py::toPy(self->device->memoryProperties());
 }
 
-static PyObject* Device_memory_size(Device *self,
-                                    PyObject *args) {
+static PyObject* Device_memory_size(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::toPy<long long>(self->device->memorySize());
+  return occa::py::toPy((long long) self->device->memorySize());
 }
 
-static PyObject* Device_memory_allocated(Device *self,
-                                         PyObject *args) {
+static PyObject* Device_memory_allocated(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::toPy<long long>(self->device->memoryAllocated());
+  return occa::py::toPy((long long) self->device->memoryAllocated());
 }
 
-static PyObject* Device_finish(Device *self,
-                               PyObject *args) {
+static PyObject* Device_finish(Device *self) {
   if (self->device != NULL) {
     self->device->finish();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 
-static PyObject* Device_has_separate_memory_space(Device *self,
-                                                  PyObject *args) {
+static PyObject* Device_has_separate_memory_space(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
   return occa::py::toPy(self->device->hasSeparateMemorySpace());
 }
 
 
 //  |---[ Stream ]----------------------
-static PyObject* Device_create_stream(Device *self,
-                                      PyObject *args) {
+static PyObject* Device_create_stream(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 
-static PyObject* Device_get_stream(Device *self,
-                                   PyObject *args) {
+static PyObject* Device_get_stream(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 
 static PyObject* Device_set_stream(Device *self,
-                                   PyObject *args) {
+                                   PyObject *args,
+                                   PyObject *kwargs) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 
-static PyObject* Device_tag_stream(Device *self,
-                                   PyObject *args) {
+static PyObject* Device_tag_stream(Device *self) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 
 static PyObject* Device_wait_for_tag(Device *self,
-                                     PyObject *args) {
+                                     PyObject *args,
+                                     PyObject *kwargs) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 
 static PyObject* Device_time_between_tags(Device *self,
-                                          PyObject *args) {
+                                          PyObject *args,
+                                          PyObject *kwargs) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 //  |===================================
 
 
 //  |---[ Kernel ]----------------------
 static PyObject* Device_build_kernel(Device *self,
-                                     PyObject *args) {
+                                     PyObject *args,
+                                     PyObject *kwargs) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 
 static PyObject* Device_build_kernel_from_string(Device *self,
-                                                 PyObject *args) {
+                                                 PyObject *args,
+                                                 PyObject *kwargs) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 
 static PyObject* Device_build_kernel_from_binary(Device *self,
-                                                 PyObject *args) {
+                                                 PyObject *args,
+                                                 PyObject *kwargs) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 //  |===================================
 
 
 //  |---[ Memory ]----------------------
 static PyObject* Device_malloc(Device *self,
-                               PyObject *args) {
+                               PyObject *args,
+                               PyObject *kwargs) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 
 static PyObject* Device_umalloc(Device *self,
-                                PyObject *args) {
+                                PyObject *args,
+                                PyObject *kwargs) {
   if (!self->device) {
-    return occa::py::none();
+    return occa::py::None();
   }
-  return occa::py::none();
+  return occa::py::None();
 }
 //  |===================================
 //======================================
 
 
 //---[ Module ]-------------------------
-#define DEVICE_METHOD(FUNC) OCCA_PY_METHOD(#FUNC, Device_##FUNC)
+#define DEVICE_METHOD_NO_ARGS(FUNC)             \
+  OCCA_PY_METHOD_NO_ARGS(#FUNC, Device_##FUNC)
+
+#define DEVICE_METHOD_WITH_KWARGS(FUNC)             \
+  OCCA_PY_METHOD_WITH_KWARGS(#FUNC, Device_##FUNC)
 
 OCCA_PY_METHODS(
   Device_methods,
-  DEVICE_METHOD(is_initialized),
-  DEVICE_METHOD(mode),
-  DEVICE_METHOD(properties),
-  DEVICE_METHOD(kernel_properties),
-  DEVICE_METHOD(memory_properties),
-  DEVICE_METHOD(memory_size),
-  DEVICE_METHOD(memory_allocated),
-  DEVICE_METHOD(finish),
-  DEVICE_METHOD(has_separate_memory_space),
-  DEVICE_METHOD(create_stream),
-  DEVICE_METHOD(get_stream),
-  DEVICE_METHOD(set_stream),
-  DEVICE_METHOD(tag_stream),
-  DEVICE_METHOD(wait_for_tag),
-  DEVICE_METHOD(time_between_tags),
-  DEVICE_METHOD(build_kernel),
-  DEVICE_METHOD(build_kernel_from_string),
-  DEVICE_METHOD(build_kernel_from_binary),
-  DEVICE_METHOD(malloc),
-  DEVICE_METHOD(umalloc)
+  DEVICE_METHOD_NO_ARGS(is_initialized),
+  DEVICE_METHOD_NO_ARGS(mode),
+  DEVICE_METHOD_NO_ARGS(properties),
+  DEVICE_METHOD_NO_ARGS(kernel_properties),
+  DEVICE_METHOD_NO_ARGS(memory_properties),
+  DEVICE_METHOD_NO_ARGS(memory_size),
+  DEVICE_METHOD_NO_ARGS(memory_allocated),
+  DEVICE_METHOD_NO_ARGS(finish),
+  DEVICE_METHOD_NO_ARGS(has_separate_memory_space),
+  DEVICE_METHOD_NO_ARGS(create_stream),
+  DEVICE_METHOD_NO_ARGS(get_stream),
+  DEVICE_METHOD_WITH_KWARGS(set_stream),
+  DEVICE_METHOD_NO_ARGS(tag_stream),
+  DEVICE_METHOD_WITH_KWARGS(wait_for_tag),
+  DEVICE_METHOD_WITH_KWARGS(time_between_tags),
+  DEVICE_METHOD_WITH_KWARGS(build_kernel),
+  DEVICE_METHOD_WITH_KWARGS(build_kernel_from_string),
+  DEVICE_METHOD_WITH_KWARGS(build_kernel_from_binary),
+  DEVICE_METHOD_WITH_KWARGS(malloc),
+  DEVICE_METHOD_WITH_KWARGS(umalloc)
 );
 
 static PyTypeObject DeviceType = {
@@ -300,7 +300,7 @@ static PyTypeObject DeviceType = {
   0,                           // tp_descr_get
   0,                           // tp_descr_set
   0,                           // tp_dictoffset
-  (initproc) Device_init,      // tp_init
+  0,                           // tp_init
   0,                           // tp_alloc
   Device_new,                  // tp_new
 };
