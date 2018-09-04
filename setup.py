@@ -32,30 +32,36 @@ import numpy as np
 class OccaInstaller(build_ext.build_ext):
     '''Compile occa.git'''
 
+    @property
+    def occa_c_path(self):
+        return os.path.abspath('./occa/c/')
+
+    @property
+    def libocca_so(self):
+        return os.path.abspath('./occa.git/lib/libocca.so')
+
     def sys_call(self, command):
         self.spawn(command.split(' '))
 
     def pre_build(self):
         # Build occa and copy libocca.so to occa/c
         self.sys_call('make -C occa.git -j4')
+        # Copy libocca.so to build directory
+        self.copy_file(self.libocca_so, self.occa_c_path)
+
 
     def post_build(self):
-        # Change the rpath location for finding libocca.so
-        occa_c_path = os.path.dirname(self.get_ext_fullpath('occa.c.device'))
-        libocca_so = os.path.abspath('./occa.git/lib/libocca.so')
-
-        # Copy libocca.so to build directory
-        self.copy_file('occa.git/lib/libocca.so', occa_c_path)
+        if sys.platform != 'darwin':
+            return
 
         # Manually set relative rpath in OSX
-        if sys.platform == 'darwin':
-            for output in self.get_outputs():
-                self.sys_call('install_name_tool'
-                              ' -change'
-                              ' {libocca_so}'
-                              ' @loader_path/libocca.so'
-                              ' {output}'.format(libocca_so=libocca_so,
-                                                 output=output))
+        for output in self.get_outputs():
+            self.sys_call('install_name_tool'
+                          ' -change'
+                          ' {libocca_so}'
+                          ' @loader_path/libocca.so'
+                          ' {output}'.format(libocca_so=self.libocca_so,
+                                             output=output))
 
     def run(self):
         self.pre_build()
@@ -72,9 +78,9 @@ def get_ext_module(module):
             'occa.git/include',
             np.get_include(),
         ],
-        depends=['occa/c/libocca.so'],
+        depends=['./occa/c/libocca.so'],
         libraries=['occa'],
-        library_dirs=['occa.git/lib'],
+        library_dirs=['./occa/c/'],
         extra_compile_args=['-Wno-unused-function'],
         extra_link_args=['-Wl,-rpath,$ORIGIN'],
     )
