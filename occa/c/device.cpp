@@ -208,7 +208,25 @@ static PyObject* Device_build_kernel(Device *self,
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::None();
+
+  char *filename = NULL;
+  char *kernel = NULL;
+  char *propsStr = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", (char**) kwargNames,
+                                   &filename, &kernel, &propsStr)) {
+    return NULL;
+  }
+
+  occa::properties props;
+  if (propsStr) {
+    props = occa::properties(propsStr);
+  }
+
+  return occa::py::toPy(
+    self->device->buildKernel(filename,
+                              kernel,
+                              props)
+  );
 }
 
 static PyObject* Device_build_kernel_from_string(Device *self,
@@ -219,7 +237,25 @@ static PyObject* Device_build_kernel_from_string(Device *self,
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::None();
+
+  char *source = NULL;
+  char *kernel = NULL;
+  char *propsStr = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", (char**) kwargNames,
+                                   &source, &kernel, &propsStr)) {
+    return NULL;
+  }
+
+  occa::properties props;
+  if (propsStr) {
+    props = occa::properties(propsStr);
+  }
+
+  return occa::py::toPy(
+    self->device->buildKernelFromString(source,
+                                        kernel,
+                                        props)
+  );
 }
 
 static PyObject* Device_build_kernel_from_binary(Device *self,
@@ -230,7 +266,25 @@ static PyObject* Device_build_kernel_from_binary(Device *self,
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::None();
+
+  char *filename = NULL;
+  char *kernel = NULL;
+  char *propsStr = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", (char**) kwargNames,
+                                   &filename, &kernel, &propsStr)) {
+    return NULL;
+  }
+
+  occa::properties props;
+  if (propsStr) {
+    props = occa::properties(propsStr);
+  }
+
+  return occa::py::toPy(
+    self->device->buildKernelFromBinary(filename,
+                                        kernel,
+                                        props)
+  );
 }
 //  |===================================
 
@@ -249,10 +303,15 @@ static PyObject* Device_malloc(Device *self,
 
   long long bytes = -1;
   PyObject *src = NULL;
-  char *props = NULL;
+  char *propsStr = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "L|Os", (char**) kwargNames,
-                                   &bytes, &src, &props)) {
+                                   &bytes, &src, &propsStr)) {
     return NULL;
+  }
+
+  occa::properties props;
+  if (propsStr) {
+    props = occa::properties(propsStr);
   }
 
   return occa::py::toPy(
@@ -260,15 +319,44 @@ static PyObject* Device_malloc(Device *self,
   );
 }
 
-static PyObject* Device_umalloc(Device *self,
-                                PyObject *args,
-                                PyObject *kwargs) {
-  static const char *kwargNames[] = {"bytes", "src", "props", NULL};
+static PyObject* Device_array(Device *self,
+                              PyObject *args,
+                              PyObject *kwargs) {
+  static const char *kwargNames[] = {"dims", "dtype_num", "dtype_itemsize", "src", "props", NULL};
 
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::None();
+
+  // TODO: Swap src with numpy arrays or memory objects
+
+  PyObject *dimsTuple;
+  int dtype_num;
+  int dtype_itemsize;
+  PyObject *src = NULL;
+  char *propsStr = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oii|Os", (char**) kwargNames,
+                                   &dimsTuple, &dtype_num, &dtype_itemsize, &src, &propsStr)) {
+    return NULL;
+  }
+
+  occa::properties props;
+  if (propsStr) {
+    props = occa::properties(propsStr);
+  }
+
+  occa::py::npIntVector dims;
+  if (!occa::py::tupleToNpIntVector(dimsTuple, dims)) {
+    return NULL;
+  }
+
+  const size_t bytes = 8 * dtype_itemsize * occa::py::dimsEntries(dims);
+
+  return occa::py::npArray(
+    self->device->umalloc(bytes, NULL, props),
+    dims,
+    dtype_num
+  );
 }
 //  |===================================
 //======================================
@@ -302,7 +390,7 @@ OCCA_PY_METHODS(
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_string),
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_binary),
   DEVICE_METHOD_WITH_KWARGS(malloc),
-  DEVICE_METHOD_WITH_KWARGS(umalloc)
+  DEVICE_METHOD_WITH_KWARGS(array)
 );
 
 static PyTypeObject DeviceType = {

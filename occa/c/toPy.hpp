@@ -25,10 +25,13 @@
 
 #include "defines.hpp"
 #include "types.hpp"
+#include "errors.hpp"
 
 
 namespace occa {
   namespace py {
+    typedef std::vector<npy_intp> npIntVector;
+
     // Special
     static PyObject* None() {
       Py_RETURN_NONE;
@@ -47,7 +50,7 @@ namespace occa {
     }
 
     // Bool
-    PyObject* toPy(const bool b) {
+    static PyObject* toPy(const bool b) {
       if (b) {
         Py_RETURN_TRUE;
       }
@@ -55,28 +58,28 @@ namespace occa {
     }
 
     // Integer Types
-    PyObject* toPy(const int value) {
+    static PyObject* toPy(const int value) {
       return PyLong_FromLong((long) value);
     }
 
-    PyObject* toPy(const long value) {
+    static PyObject* toPy(const long value) {
       return PyLong_FromLong(value);
     }
 
-    PyObject* toPy(const long long value) {
+    static PyObject* toPy(const long long value) {
       return PyLong_FromLong(value);
     }
 
-    PyObject* toPy(const size_t value) {
+    static PyObject* toPy(const size_t value) {
       return PyLong_FromSize_t(value);
     }
 
     // Float / Double
-    PyObject* toPy(const float value) {
+    static PyObject* toPy(const float value) {
       return PyFloat_FromDouble((double) value);
     }
 
-    PyObject* toPy(const double value) {
+    static PyObject* toPy(const double value) {
       return PyFloat_FromDouble(value);
     }
 
@@ -85,8 +88,14 @@ namespace occa {
       return PyUnicode_FromString(c);
     }
 
-    PyObject* toPy(const std::string s) {
+    static PyObject* toPy(const std::string s) {
       return PyUnicode_FromString(s.c_str());
+    }
+
+    // Dim
+    static PyObject* toPy(const occa::dim d) {
+      return Py_BuildValue("[iii]",
+                           (int) d.x, (int) d.y, (int) d.z);
     }
 
     // Core
@@ -108,31 +117,78 @@ namespace occa {
       return pyType;
     }
 
-    PyObject* toPy(const occa::device &device) {
+    static PyObject* toPy(const occa::device &device) {
       return newCoreType(occa::py::DeviceType(),
                          (void*) device.getModeDevice(),
                          "device");
     }
 
-    PyObject* toPy(const occa::kernel &kernel) {
+    static PyObject* toPy(const occa::kernel &kernel) {
       return newCoreType(occa::py::KernelType(),
                          (void*) kernel.getModeKernel(),
                          "kernel");
     }
 
-    PyObject* toPy(const occa::memory &memory) {
+    static PyObject* toPy(const occa::memory &memory) {
       return newCoreType(occa::py::MemoryType(),
                          (void*) memory.getModeMemory(),
                          "memory");
     }
 
     // Props / JSON
-    PyObject* toPy(const occa::properties &props) {
+    static PyObject* toPy(const occa::properties &props) {
       return toPy(props.dump(0));
     }
 
-    PyObject* toPy(const occa::json &j) {
+    static PyObject* toPy(const occa::json &j) {
       return toPy(j.dump(0));
+    }
+
+    static bool tupleToNpIntVector(PyObject *dimsTuple,
+                                   npIntVector &dims) {
+      if (!PyTuple_Check(dimsTuple)) {
+        py::raise("Expected a tuple of longs for dims");
+        return false;
+      }
+
+      const int dimCount = (int) PyTuple_Size(dimsTuple);
+      dims.clear();
+      dims.resize(dimCount);
+
+      for (int i = 0; i < dimCount; ++i) {
+        PyObject *value = PyTuple_GetItem(dimsTuple, i);
+        if (!PyLong_Check(value)) {
+          py::raise("Expected a tuple of longs for dims");
+          return false;
+        }
+        dims[i] = (npy_intp) PyLong_AsLong(value);
+      }
+
+      return true;
+    }
+
+    static size_t dimsEntries(npIntVector &dims) {
+      size_t count = 1;
+
+      const int dimCount = (int) dims.size();
+      for (int i = 0; i < dimCount; ++i) {
+        count *= dims[i];
+      }
+
+      return count;
+    }
+
+    // Numpy
+    static PyObject* npArray(void *ptr,
+                             npIntVector &dims,
+                             int dtype_num) {
+
+      return PyArray_SimpleNewFromData(
+        (int) dims.size(),
+        &(dims[0]),
+        dtype_num,
+        ptr
+      );
     }
   }
 }

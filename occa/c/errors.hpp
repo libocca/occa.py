@@ -24,7 +24,7 @@
 #define OCCA_PY_ERRORS_HEADER
 
 #include "defines.hpp"
-#include "toPy.hpp"
+#include "types.hpp"
 
 
 #define OCCA_TRY_AND_RETURN(RETURN, ...)        \
@@ -42,22 +42,16 @@
 namespace occa {
   namespace py {
     static void raise(occa::exception e) {
-      static PyObject *Error = NULL;
-
-      if (!Error) {
-        PyObject *module = PyImport_ImportModule("occa.c.exception");
-        Error = PyObject_GetAttrString(module, "Error");
-
-        PyObject *name = toPy("occa.c.Error");
-        if (name) {
-          PyObject_SetAttrString(Error, "__name__", name);
-        }
-      }
-
       std::string message = e.message;
       message += '\n';
       message += e.location();
-      PyErr_SetString(Error, message.c_str());
+      PyErr_SetString((PyObject*) ErrorType(),
+                      message.c_str());
+    }
+
+    static void raise(const std::string &message) {
+      PyErr_SetString((PyObject*) ErrorType(),
+                      message.c_str());
     }
   }
 }

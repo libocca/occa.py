@@ -34,6 +34,21 @@ namespace occa {
       return (PyTypeObject*) PyObject_GetAttrString(module, className.c_str());
     }
 
+    PyTypeObject* ErrorType() {
+      static PyTypeObject *Error = NULL;
+
+      if (!Error) {
+        Error = getTypeFromModule("occa.c.exception", "Error");
+
+        PyObject *name = PyUnicode_FromString("occa.c.Error");
+        if (name) {
+          PyObject_SetAttrString((PyObject*) Error, "__name__", name);
+        }
+      }
+
+      return Error;
+    }
+
     PyTypeObject* DeviceType() {
       static PyTypeObject *Device = getTypeFromModule("occa.c.device", "Device");
       return Device;

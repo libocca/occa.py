@@ -114,15 +114,30 @@ static PyObject* Kernel_binary_filename(Kernel *self) {
 }
 
 static PyObject* Kernel_max_dims(Kernel *self) {
-  return occa::py::None();
+  if (!self->kernel) {
+    return occa::py::None();
+  }
+  return occa::py::toPy(
+    self->kernel->maxDims()
+  );
 }
 
 static PyObject* Kernel_max_outer_dims(Kernel *self) {
-  return occa::py::None();
+  if (!self->kernel) {
+    return occa::py::None();
+  }
+  return occa::py::toPy(
+    self->kernel->maxOuterDims()
+  );
 }
 
 static PyObject* Kernel_max_inner_dims(Kernel *self) {
-  return occa::py::None();
+  if (!self->kernel) {
+    return occa::py::None();
+  }
+  return occa::py::toPy(
+    self->kernel->maxInnerDims()
+  );
 }
 
 static PyObject* Kernel_set_run_dims(Kernel *self,
@@ -130,11 +145,43 @@ static PyObject* Kernel_set_run_dims(Kernel *self,
                                      PyObject *kwargs) {
   static const char *kwargNames[] = {"outer", "inner", NULL};
 
+  if (!self->kernel) {
+    return occa::py::None();
+  }
+
+  PyObject *outerTuple = NULL;
+  PyObject *innerTuple = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", (char**) kwargNames,
+                                   &outerTuple, &innerTuple)) {
+    return NULL;
+  }
+
+  occa::py::npIntVector outerVec, innerVec;
+  if (!occa::py::tupleToNpIntVector(outerTuple, outerVec)) {
+    return NULL;
+  }
+  if (!occa::py::tupleToNpIntVector(innerTuple, innerVec)) {
+    return NULL;
+  }
+
+  occa::dim outer, inner;
+  for (int i = 0; i < (int) outerVec.size(); ++i) {
+    outer[i] = (occa::udim_t) outerVec[i];
+  }
+  for (int i = 0; i < (int) innerVec.size(); ++i) {
+    inner[i] = (occa::udim_t) innerVec[i];
+  }
+
+  self->kernel->setRunDims(outer, inner);
+
   return occa::py::None();
 }
 
 static PyObject* Kernel_run(Kernel *self,
                             PyObject *args) {
+  if (!self->kernel) {
+    return occa::py::None();
+  }
   return occa::py::None();
 }
 //======================================
