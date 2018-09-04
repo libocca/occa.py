@@ -349,7 +349,7 @@ OCCA_PY_METHODS(
   DEVICE_METHOD_WITH_KWARGS(build_kernel),
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_string),
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_binary),
-  DEVICE_METHOD_WITH_KWARGS(malloc),
+  DEVICE_METHOD_WITH_KWARGS(malloc)
 );
 
 static PyTypeObject DeviceType = {

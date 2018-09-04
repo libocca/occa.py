@@ -106,11 +106,13 @@ In a nutshell, OCCA (like oca-rina) is an open-source library which aims to:
 
 setup(
     name='occa',
-    version='0.2.0',
+    version='0.1.0',
     description='Portable Approach for Parallel Architectures',
     long_description=long_description,
     url='https://libocca.org',
     author='David Medina',
+    license='MIT License',
+    py_modules=['occa'],
     cmdclass={
         'build_ext': OccaInstaller,
     },
