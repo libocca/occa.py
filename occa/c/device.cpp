@@ -318,46 +318,6 @@ static PyObject* Device_malloc(Device *self,
     self->device->malloc(bytes, NULL, props)
   );
 }
-
-static PyObject* Device_array(Device *self,
-                              PyObject *args,
-                              PyObject *kwargs) {
-  static const char *kwargNames[] = {"dims", "dtype_num", "dtype_itemsize", "src", "props", NULL};
-
-  if (!self->device) {
-    return occa::py::None();
-  }
-
-  // TODO: Swap src with numpy arrays or memory objects
-
-  PyObject *dimsTuple;
-  int dtype_num;
-  int dtype_itemsize;
-  PyObject *src = NULL;
-  char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Oii|Os", (char**) kwargNames,
-                                   &dimsTuple, &dtype_num, &dtype_itemsize, &src, &propsStr)) {
-    return NULL;
-  }
-
-  occa::properties props;
-  if (propsStr) {
-    props = occa::properties(propsStr);
-  }
-
-  occa::py::npIntVector dims;
-  if (!occa::py::tupleToNpIntVector(dimsTuple, dims)) {
-    return NULL;
-  }
-
-  const size_t bytes = 8 * dtype_itemsize * occa::py::dimsEntries(dims);
-
-  return occa::py::npArray(
-    self->device->umalloc(bytes, NULL, props),
-    dims,
-    dtype_num
-  );
-}
 //  |===================================
 //======================================
 
@@ -390,7 +350,6 @@ OCCA_PY_METHODS(
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_string),
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_binary),
   DEVICE_METHOD_WITH_KWARGS(malloc),
-  DEVICE_METHOD_WITH_KWARGS(array)
 );
 
 static PyTypeObject DeviceType = {
