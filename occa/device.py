@@ -23,33 +23,18 @@
 import functools
 import json
 
-from . import c
+from . import c, utils
 from .exceptions import UninitializedError
 
 
 class Device(c.Device):
     def __init__(self, props=None, **kwargs):
-        if not (props is None or
-                isinstance(prop, str) or
-                isinstance(props, dict)):
-            raise ValueError('Expected a str, dict, or properties through **kwargs')
-
-        if isinstance(props, str):
-            props = json.loads(props)
-
-        # Override props if kwargs are defined
-        if len(kwargs):
-            if props is None:
-                props = kwargs
-            else:
-                props = {
-                    **props,
-                    **kwargs,
-                }
+        utils.assert_properties(props, **kwargs)
+        props = utils.properties(props, **kwargs)
 
         if props is None:
             return super().__init__()
-        return super().__init__(props=json.dumps(props))
+        return super().__init__(props=props)
 
     @property
     def _c(self):
@@ -59,6 +44,7 @@ class Device(c.Device):
         if not self.is_initialized():
             raise UninitializedError('occa.Device is not initialized')
 
+    @property
     def is_initialized(self):
         '''Return if the device has been initialized'''
         return self._c.is_initialized()
@@ -87,10 +73,12 @@ class Device(c.Device):
         self._assert_initialized()
         return json.loads(self._c.memory_properties())
 
+    @property
     def memory_size(self):
         self._assert_initialized()
         return self._c.memory_size()
 
+    @property
     def memory_allocated(self):
         self._assert_initialized()
         return self._c.memory_allocated()
