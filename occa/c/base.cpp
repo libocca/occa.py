@@ -52,7 +52,9 @@ static PyObject* py_occa_get_device(PyObject *self) {
 static PyObject* py_occa_set_device(PyObject *self,
                                     PyObject *args,
                                     PyObject *kwargs) {
-  static const char *kwargNames[] = {"props", "device", NULL};
+  static const char *kwargNames[] = {
+    "props", "device", NULL
+  };
 
   char *info = NULL;
   PyObject *deviceObj = NULL;
@@ -102,7 +104,9 @@ static PyObject* py_occa_get_stream(PyObject *self) {
 static PyObject* py_occa_set_stream(PyObject *self,
                                     PyObject *args,
                                     PyObject *kwargs) {
-  static const char *kwargNames[] = {"stream", NULL};
+  static const char *kwargNames[] = {
+    "stream", NULL
+  };
 
   PyObject *streamObj = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
@@ -126,7 +130,9 @@ static PyObject* py_occa_tag_stream(PyObject *self) {
 static PyObject* py_occa_wait_for(PyObject *self,
                                   PyObject *args,
                                   PyObject *kwargs) {
-  static const char *kwargNames[] = {"tag", NULL};
+  static const char *kwargNames[] = {
+    "tag", NULL
+  };
 
   PyObject *tagObj = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
@@ -143,7 +149,9 @@ static PyObject* py_occa_wait_for(PyObject *self,
 static PyObject* py_occa_time_between(PyObject *self,
                                       PyObject *args,
                                       PyObject *kwargs) {
-  static const char *kwargNames[] = {"start", "end", NULL};
+  static const char *kwargNames[] = {
+    "start", "end", NULL
+  };
 
   PyObject *startObj = NULL;
   PyObject *endObj = NULL;
@@ -166,75 +174,66 @@ static PyObject* py_occa_time_between(PyObject *self,
 static PyObject* py_occa_build_kernel(PyObject *self,
                                       PyObject *args,
                                       PyObject *kwargs) {
-  static const char *kwargNames[] = {"filename", "kernel", "props", NULL};
+  static const char *kwargNames[] = {
+    "filename", "kernel", "props", NULL
+  };
 
   char *filename = NULL;
   char *kernel = NULL;
   char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", (char**) kwargNames,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss", (char**) kwargNames,
                                    &filename, &kernel, &propsStr)) {
     return NULL;
-  }
-
-  occa::properties props;
-  if (propsStr) {
-    props = occa::properties(propsStr);
   }
 
   return occa::py::toPy(
     occa::buildKernel(filename,
                       kernel,
-                      props)
+                      occa::properties(propsStr))
   );
 }
 
 static PyObject* py_occa_build_kernel_from_string(PyObject *self,
                                                   PyObject *args,
                                                   PyObject *kwargs) {
-  static const char *kwargNames[] = {"source", "kernel", "props", NULL};
+  static const char *kwargNames[] = {
+    "source", "kernel", "props", NULL
+  };
 
   char *source = NULL;
   char *kernel = NULL;
   char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", (char**) kwargNames,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss", (char**) kwargNames,
                                    &source, &kernel, &propsStr)) {
     return NULL;
-  }
-
-  occa::properties props;
-  if (propsStr) {
-    props = occa::properties(propsStr);
   }
 
   return occa::py::toPy(
     occa::buildKernelFromString(source,
                                 kernel,
-                                props)
+                                occa::properties(propsStr))
   );
 }
 
 static PyObject* py_occa_build_kernel_from_binary(PyObject *self,
                                                   PyObject *args,
                                                   PyObject *kwargs) {
-  static const char *kwargNames[] = {"filename", "kernel", "props", NULL};
+  static const char *kwargNames[] = {
+    "filename", "kernel", "props", NULL
+  };
 
   char *filename = NULL;
   char *kernel = NULL;
   char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", (char**) kwargNames,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss", (char**) kwargNames,
                                    &filename, &kernel, &propsStr)) {
     return NULL;
-  }
-
-  occa::properties props;
-  if (propsStr) {
-    props = occa::properties(propsStr);
   }
 
   return occa::py::toPy(
     occa::buildKernelFromBinary(filename,
                                 kernel,
-                                props)
+                                occa::properties(propsStr))
   );
 }
 //======================================
@@ -244,7 +243,9 @@ static PyObject* py_occa_build_kernel_from_binary(PyObject *self,
 static PyObject* py_occa_malloc(PyObject *self,
                                 PyObject *args,
                                 PyObject *kwargs) {
-  static const char *kwargNames[] = {"bytes", "src", "props", NULL};
+  static const char *kwargNames[] = {
+    "bytes", "src", "props", NULL
+  };
 
   // TODO: Swap src with numpy arrays or memory objects
 
@@ -264,6 +265,79 @@ static PyObject* py_occa_malloc(PyObject *self,
   return occa::py::toPy(
     occa::malloc(bytes, NULL, props)
   );
+}
+
+static PyObject* py_occa_copy_mem_to_mem(PyObject *self,
+                                         PyObject *args,
+                                         PyObject *kwargs) {
+  static const char *kwargNames[] = {
+    "dest", "src",
+    "bytes", "destOffset", "srcOffset",
+    "props", NULL
+  };
+
+  PyObject *destObj = NULL;
+  PyObject *srcObj = NULL;
+  long long bytes = -1;
+  long long destOffset = -1;
+  long long srcOffset = -1;
+  PyObject *propsObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOLLLO", (char**) kwargNames,
+                                   &destObj, &srcObj, &bytes, &destOffset, &srcOffset, &propsObj)) {
+    return NULL;
+  }
+
+  return occa::py::None();
+}
+
+static PyObject* py_occa_copy_ptr_to_mem(PyObject *self,
+                                         PyObject *args,
+                                         PyObject *kwargs) {
+  static const char *kwargNames[] = {
+    "dest", "src",
+    "bytes", "destOffset", "srcOffset",
+    "props", NULL
+  };
+
+  // TODO: Swap src with numpy arrays
+
+  PyObject *dest = NULL;
+  PyObject *src = NULL;
+  long long bytes = -1;
+  long long destOffset = -1;
+  long long srcOffset = -1;
+  PyObject *props = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOLLLO", (char**) kwargNames,
+                                   &dest, &src, &bytes, &destOffset, &srcOffset, &props)) {
+    return NULL;
+  }
+
+  return occa::py::None();
+}
+
+static PyObject* py_occa_copy_mem_to_ptr(PyObject *self,
+                                         PyObject *args,
+                                         PyObject *kwargs) {
+  static const char *kwargNames[] = {
+    "dest", "src",
+    "bytes", "destOffset", "srcOffset",
+    "props", NULL
+  };
+
+  // TODO: Swap dest with numpy arrays
+
+  PyObject *dest = NULL;
+  PyObject *src = NULL;
+  long long bytes = -1;
+  long long destOffset = -1;
+  long long srcOffset = -1;
+  PyObject *props = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOLLLO", (char**) kwargNames,
+                                   &dest, &src, &bytes, &destOffset, &srcOffset, &props)) {
+    return NULL;
+  }
+
+  return occa::py::None();
 }
 //======================================
 #define BASE_METHOD_NO_ARGS(FUNC)               \
@@ -297,5 +371,8 @@ OCCA_PY_MODULE(
   BASE_METHOD_WITH_KWARGS(build_kernel),
   BASE_METHOD_WITH_KWARGS(build_kernel_from_string),
   BASE_METHOD_WITH_KWARGS(build_kernel_from_binary),
-  BASE_METHOD_WITH_KWARGS(malloc)
+  BASE_METHOD_WITH_KWARGS(malloc),
+  BASE_METHOD_WITH_KWARGS(copy_mem_to_mem),
+  BASE_METHOD_WITH_KWARGS(copy_ptr_to_mem),
+  BASE_METHOD_WITH_KWARGS(copy_mem_to_ptr)
 );

@@ -31,7 +31,9 @@ typedef struct {
 static int Kernel_init(Kernel *self,
                        PyObject *args,
                        PyObject *kwargs) {
-  static const char *kwargNames[] = {"kernel", NULL};
+  static const char *kwargNames[] = {
+    "kernel", NULL
+  };
 
   self->kernel = NULL;
 
@@ -152,7 +154,9 @@ static PyObject* Kernel_max_inner_dims(Kernel *self) {
 static PyObject* Kernel_set_run_dims(Kernel *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
-  static const char *kwargNames[] = {"outer", "inner", NULL};
+  static const char *kwargNames[] = {
+    "outer", "inner", NULL
+  };
 
   if (!self->kernel) {
     return occa::py::None();

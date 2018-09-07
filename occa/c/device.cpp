@@ -31,7 +31,9 @@ typedef struct {
 static int Device_init(Device *self,
                        PyObject *args,
                        PyObject *kwargs) {
-  static const char *kwargNames[] = {"props", "device", NULL};
+  static const char *kwargNames[] = {
+    "props", "device", NULL
+  };
 
   self->device = NULL;
 
@@ -164,7 +166,9 @@ static PyObject* Device_get_stream(Device *self) {
 static PyObject* Device_set_stream(Device *self,
                                    PyObject *args,
                                    PyObject *kwargs) {
-  static const char *kwargNames[] = {"stream", NULL};
+  static const char *kwargNames[] = {
+    "stream", NULL
+  };
 
   if (!self->device) {
     return occa::py::None();
@@ -195,7 +199,9 @@ static PyObject* Device_tag_stream(Device *self) {
 static PyObject* Device_wait_for(Device *self,
                                  PyObject *args,
                                  PyObject *kwargs) {
-  static const char *kwargNames[] = {"tag", NULL};
+  static const char *kwargNames[] = {
+    "tag", NULL
+  };
 
   if (!self->device) {
     return occa::py::None();
@@ -216,7 +222,9 @@ static PyObject* Device_wait_for(Device *self,
 static PyObject* Device_time_between(Device *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
-  static const char *kwargNames[] = {"start", "end", NULL};
+  static const char *kwargNames[] = {
+    "start", "end", NULL
+  };
 
   if (!self->device) {
     return occa::py::None();
@@ -243,7 +251,9 @@ static PyObject* Device_time_between(Device *self,
 static PyObject* Device_build_kernel(Device *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
-  static const char *kwargNames[] = {"filename", "kernel", "props", NULL};
+  static const char *kwargNames[] = {
+    "filename", "kernel", "props", NULL
+  };
 
   if (!self->device) {
     return occa::py::None();
@@ -252,27 +262,24 @@ static PyObject* Device_build_kernel(Device *self,
   char *filename = NULL;
   char *kernel = NULL;
   char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", (char**) kwargNames,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss", (char**) kwargNames,
                                    &filename, &kernel, &propsStr)) {
     return NULL;
-  }
-
-  occa::properties props;
-  if (propsStr) {
-    props = occa::properties(propsStr);
   }
 
   return occa::py::toPy(
     self->device->buildKernel(filename,
                               kernel,
-                              props)
+                              occa::properties(propsStr))
   );
 }
 
 static PyObject* Device_build_kernel_from_string(Device *self,
                                                  PyObject *args,
                                                  PyObject *kwargs) {
-  static const char *kwargNames[] = {"source", "kernel", "props", NULL};
+  static const char *kwargNames[] = {
+    "source", "kernel", "props", NULL
+  };
 
   if (!self->device) {
     return occa::py::None();
@@ -281,27 +288,24 @@ static PyObject* Device_build_kernel_from_string(Device *self,
   char *source = NULL;
   char *kernel = NULL;
   char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", (char**) kwargNames,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss", (char**) kwargNames,
                                    &source, &kernel, &propsStr)) {
     return NULL;
-  }
-
-  occa::properties props;
-  if (propsStr) {
-    props = occa::properties(propsStr);
   }
 
   return occa::py::toPy(
     self->device->buildKernelFromString(source,
                                         kernel,
-                                        props)
+                                        occa::properties(propsStr))
   );
 }
 
 static PyObject* Device_build_kernel_from_binary(Device *self,
                                                  PyObject *args,
                                                  PyObject *kwargs) {
-  static const char *kwargNames[] = {"filename", "kernel", "props", NULL};
+  static const char *kwargNames[] = {
+    "filename", "kernel", "props", NULL
+  };
 
   if (!self->device) {
     return occa::py::None();
@@ -310,20 +314,15 @@ static PyObject* Device_build_kernel_from_binary(Device *self,
   char *filename = NULL;
   char *kernel = NULL;
   char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ss|s", (char**) kwargNames,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss", (char**) kwargNames,
                                    &filename, &kernel, &propsStr)) {
     return NULL;
-  }
-
-  occa::properties props;
-  if (propsStr) {
-    props = occa::properties(propsStr);
   }
 
   return occa::py::toPy(
     self->device->buildKernelFromBinary(filename,
                                         kernel,
-                                        props)
+                                        occa::properties(propsStr))
   );
 }
 //  |===================================
@@ -333,7 +332,9 @@ static PyObject* Device_build_kernel_from_binary(Device *self,
 static PyObject* Device_malloc(Device *self,
                                PyObject *args,
                                PyObject *kwargs) {
-  static const char *kwargNames[] = {"bytes", "src", "props", NULL};
+  static const char *kwargNames[] = {
+    "bytes", "src", "props", NULL
+  };
 
   if (!self->device) {
     return occa::py::None();

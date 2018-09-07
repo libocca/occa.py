@@ -31,7 +31,9 @@ typedef struct {
 static int Memory_init(Memory *self,
                        PyObject *args,
                        PyObject *kwargs) {
-  static const char *kwargNames[] = {"memory", NULL};
+  static const char *kwargNames[] = {
+    "memory", NULL
+  };
 
   self->memory = NULL;
 
@@ -108,14 +110,16 @@ static PyObject* Memory_size(Memory *self) {
 static PyObject* Memory_slice(Memory *self,
                               PyObject *args,
                               PyObject *kwargs) {
-  static const char *kwargNames[] = {"offset", "bytes", NULL};
+  static const char *kwargNames[] = {
+    "offset", "bytes", NULL
+  };
   if (!self->memory) {
     return occa::py::None();
   }
 
   long long offset = -1;
   long long bytes = -1;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i|i", (char**) kwargNames,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii", (char**) kwargNames,
                                    &offset, &bytes)) {
     return NULL;
   }
@@ -164,17 +168,21 @@ static PyObject* Memory_stop_managing(Memory *self) {
 static PyObject* Memory_sync_to_device(Memory *self,
                                        PyObject *args,
                                        PyObject *kwargs) {
-  static const char *kwargNames[] = {"bytes", "offset", NULL};
+  static const char *kwargNames[] = {
+    "bytes", "offset", NULL
+  };
 
-  if (self->memory) {
-    long long bytes = -1;
-    long long offset = -1;
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ii", (char**) kwargNames,
-                                     &bytes, &offset)) {
-      return NULL;
-    }
-    self->memory->syncToDevice(bytes, offset);
+  if (!self->memory) {
+    return occa::py::None();
   }
+
+  long long bytes = -1;
+  long long offset = -1;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii", (char**) kwargNames,
+                                   &bytes, &offset)) {
+    return NULL;
+  }
+  self->memory->syncToDevice(bytes, offset);
 
   return occa::py::None();
 }
@@ -182,45 +190,25 @@ static PyObject* Memory_sync_to_device(Memory *self,
 static PyObject* Memory_sync_to_host(Memory *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
-  static const char *kwargNames[] = {"bytes", "offset", NULL};
+  static const char *kwargNames[] = {
+    "bytes", "offset", NULL
+  };
 
-  if (self->memory) {
-    long long bytes = -1;
-    long long offset = -1;
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ii", (char**) kwargNames,
-                                     &bytes, &offset)) {
-      return NULL;
-    }
-    self->memory->syncToHost(bytes, offset);
+  if (!self->memory) {
+    return occa::py::None();
   }
+
+  long long bytes = -1;
+  long long offset = -1;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii", (char**) kwargNames,
+                                   &bytes, &offset)) {
+    return NULL;
+  }
+  self->memory->syncToHost(bytes, offset);
 
   return occa::py::None();
 }
 //======================================
-
-static PyObject* Memory_memcpy(Memory *self,
-                               PyObject *args,
-                               PyObject *kwargs) {
-  return occa::py::None();
-}
-
-static PyObject* Memory_copy_mem_to_mem(Memory *self,
-                                        PyObject *args,
-                                        PyObject *kwargs) {
-  return occa::py::None();
-}
-
-static PyObject* Memory_copy_ptr_to_mem(Memory *self,
-                                        PyObject *args,
-                                        PyObject *kwargs) {
-  return occa::py::None();
-}
-
-static PyObject* Memory_copy_mem_to_ptr(Memory *self,
-                                        PyObject *args,
-                                        PyObject *kwargs) {
-  return occa::py::None();
-}
 
 static PyObject* Memory_clone(Memory *self) {
   if (!self->memory) {
@@ -255,10 +243,6 @@ OCCA_PY_METHODS(
   MEMORY_METHOD_NO_ARGS(stop_managing),
   MEMORY_METHOD_WITH_KWARGS(sync_to_device),
   MEMORY_METHOD_WITH_KWARGS(sync_to_host),
-  MEMORY_METHOD_WITH_KWARGS(memcpy),
-  MEMORY_METHOD_WITH_KWARGS(copy_mem_to_mem),
-  MEMORY_METHOD_WITH_KWARGS(copy_ptr_to_mem),
-  MEMORY_METHOD_WITH_KWARGS(copy_mem_to_ptr),
   MEMORY_METHOD_NO_ARGS(clone)
 );
 

@@ -31,7 +31,9 @@ typedef struct {
 static int Stream_init(Stream *self,
                        PyObject *args,
                        PyObject *kwargs) {
-  static const char *kwargNames[] = {"stream", NULL};
+  static const char *kwargNames[] = {
+    "stream", NULL
+  };
 
   self->stream = NULL;
 

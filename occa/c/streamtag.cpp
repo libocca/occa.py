@@ -31,7 +31,9 @@ typedef struct {
 static int StreamTag_init(StreamTag *self,
                        PyObject *args,
                        PyObject *kwargs) {
-  static const char *kwargNames[] = {"streamTag", NULL};
+  static const char *kwargNames[] = {
+    "streamTag", NULL
+  };
 
   self->streamTag = NULL;
 
