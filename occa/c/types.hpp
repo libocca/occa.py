@@ -69,9 +69,9 @@ namespace occa {
       return Stream;
     }
 
-    PyTypeObject* TagType() {
-      static PyTypeObject *Tag = getTypeFromModule("occa.c.tag", "Tag");
-      return Tag;
+    PyTypeObject* StreamTagType() {
+      static PyTypeObject *StreamTag = getTypeFromModule("occa.c.streamtag", "StreamTag");
+      return StreamTag;
     }
   }
 }

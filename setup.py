@@ -46,6 +46,7 @@ class OccaInstaller(build_ext.build_ext):
     def pre_build(self):
         # Build occa and copy libocca.so to occa/c
         self.sys_call('make -C occa.git -j4')
+
         # Copy libocca.so to build directory
         self.copy_file(self.libocca_so, self.occa_c_path)
 
@@ -88,7 +89,10 @@ def get_ext_module(module):
 
 ext_modules = [
     get_ext_module(module)
-    for module in ['device', 'exception', 'kernel', 'memory']
+    for module in ['base',
+                   'device', 'kernel', 'memory',
+                   'stream', 'streamtag',
+                   'exception']
 ]
 
 

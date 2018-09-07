@@ -135,6 +135,18 @@ namespace occa {
                          "memory");
     }
 
+    static PyObject* toPy(const occa::stream &stream) {
+      return newCoreType(occa::py::StreamType(),
+                         (void*) stream.getModeStream(),
+                         "stream");
+    }
+
+    static PyObject* toPy(const occa::streamTag &streamTag) {
+      return newCoreType(occa::py::StreamTagType(),
+                         (void*) streamTag.getModeStreamTag(),
+                         "streamTag");
+    }
+
     // Props / JSON
     static PyObject* toPy(const occa::properties &props) {
       return toPy(props.dump(0));

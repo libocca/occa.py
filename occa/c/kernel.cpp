@@ -68,6 +68,15 @@ static PyObject* Kernel_is_initialized(Kernel *self) {
   );
 }
 
+static PyObject* Kernel_mode(Kernel *self) {
+  if (!self->kernel) {
+    return occa::py::None();
+  }
+  return occa::py::toPy(
+    self->kernel->mode()
+  );
+}
+
 static PyObject* Kernel_properties(Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
@@ -199,17 +208,18 @@ static PyObject* Kernel_run(Kernel *self,
 
 OCCA_PY_METHODS(
   Kernel_methods,
-    KERNEL_METHOD_NO_ARGS(is_initialized),
-    KERNEL_METHOD_NO_ARGS(properties),
-    KERNEL_METHOD_NO_ARGS(get_device),
-    KERNEL_METHOD_NO_ARGS(name),
-    KERNEL_METHOD_NO_ARGS(source_filename),
-    KERNEL_METHOD_NO_ARGS(binary_filename),
-    KERNEL_METHOD_NO_ARGS(max_dims),
-    KERNEL_METHOD_NO_ARGS(max_outer_dims),
-    KERNEL_METHOD_NO_ARGS(max_inner_dims),
-    KERNEL_METHOD_WITH_KWARGS(set_run_dims),
-    KERNEL_METHOD_WITH_ARGS(run)
+  KERNEL_METHOD_NO_ARGS(is_initialized),
+  KERNEL_METHOD_NO_ARGS(mode),
+  KERNEL_METHOD_NO_ARGS(properties),
+  KERNEL_METHOD_NO_ARGS(get_device),
+  KERNEL_METHOD_NO_ARGS(name),
+  KERNEL_METHOD_NO_ARGS(source_filename),
+  KERNEL_METHOD_NO_ARGS(binary_filename),
+  KERNEL_METHOD_NO_ARGS(max_dims),
+  KERNEL_METHOD_NO_ARGS(max_outer_dims),
+  KERNEL_METHOD_NO_ARGS(max_inner_dims),
+  KERNEL_METHOD_WITH_KWARGS(set_run_dims),
+  KERNEL_METHOD_WITH_ARGS(run)
 );
 
 static PyTypeObject KernelType = {

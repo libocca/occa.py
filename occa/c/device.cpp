@@ -172,7 +172,9 @@ static PyObject* Device_tag_stream(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::None();
+  return occa::py::toPy(
+    self->device->tagStream()
+  );
 }
 
 static PyObject* Device_wait_for_tag(Device *self,
