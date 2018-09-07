@@ -31,7 +31,5 @@ class CError(Error):
 
 
 class UninitializedError(Error):
-    def __init__(self, classname):
-        super().__init__(
-            '{} is not initialized'.format(classname)
-        )
+    def __init__(self, message):
+        super().__init__(message)

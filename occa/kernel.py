@@ -36,7 +36,7 @@ class Kernel(c.Kernel):
 
     def _assert_initialized(self):
         if not self.is_initialized():
-            raise UninitializedError('occa.Kernel')
+            raise UninitializedError('occa.Kernel is not initialized')
 
     def is_initialized(self):
         '''Return if the kernel has been initialized'''

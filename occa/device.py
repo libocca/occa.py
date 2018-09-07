@@ -49,7 +49,7 @@ class Device(c.Device):
 
         if props is None:
             return super().__init__()
-        return super().__init__(props=props)
+        return super().__init__(props=json.dumps(props))
 
     @property
     def _c(self):
@@ -57,7 +57,7 @@ class Device(c.Device):
 
     def _assert_initialized(self):
         if not self.is_initialized():
-            raise UninitializedError('occa.Device')
+            raise UninitializedError('occa.Device is not initialized')
 
     def is_initialized(self):
         '''Return if the device has been initialized'''
@@ -65,79 +65,76 @@ class Device(c.Device):
 
     def free(self):
         self._assert_initialized()
-        c.device.free(self._handle)
+        self._c.free()
 
     @property
     def mode(self):
         self._assert_initialized()
-        return c.device.mode(self._handle)
+        return self._c.mode()
 
     @property
     def properties(self):
         self._assert_initialized()
-        return json.loads(c.device.properties(self._handle))
+        return json.loads(self._c.properties())
 
     @property
     def kernel_properties(self):
         self._assert_initialized()
-        return json.loads(c.device.kernel_properties(self._handle))
+        return json.loads(self._c.kernel_properties())
 
     @property
     def memory_properties(self):
         self._assert_initialized()
-        return json.loads(c.device.memory_properties(self._handle))
+        return json.loads(self._c.memory_properties())
 
     def memory_size(self):
         self._assert_initialized()
-        return c.device.memory_size(self._handle)
+        return self._c.memory_size()
 
     def memory_allocated(self):
         self._assert_initialized()
-        return c.device.memory_allocated(self._handle)
+        return self._c.memory_allocated()
 
     def finish(self):
         self._assert_initialized()
-        c.device.finish(self._handle)
+        self._c.finish()
 
     @property
     def has_separate_memory_space(self):
         self._assert_initialized()
-        return c.device.has_separate_memory_space(self._handle)
+        return self._c.has_separate_memory_space()
 
     #---[ Stream ]----------------------
     def create_stream(self):
         self._assert_initialized()
-        return c.device.create_stream(self._handle)
+        return self._c.create_stream()
 
     @property
     def stream(self):
         self._assert_initialized()
-        return c.device.stream(self._handle)
+        return self._c.stream()
 
     def set_stream(self, stream):
         self._assert_initialized()
         if not isinstance(stream, Stream):
             raise ValueError('Expected occa.Stream')
-        return c.device.set_stream(self._handle,
-                                   stream._stream)
+        return self._c.set_stream(stream._stream)
 
     def free_stream(self, stream):
         self._assert_initialized()
         if not isinstance(stream, Stream):
             raise ValueError('Expected occa.Stream')
-        c.device.free_stream(self._handle,
-                             stream._stream)
+        self._c.free_stream(stream._stream)
 
     def tag_stream(self):
         self._assert_initialized()
-        return c.device.tag_stream(self._handle)
+        return self._c.tag_stream()
 
     def wait_for_tag(self, tag):
         self._assert_initialized()
         if not isinstance(tag, Tag):
             raise ValueError('Expected occa.Tag')
-        c.device.wait_for_tag(self._handle,
-                              tag._tag)
+        self._c.wait_for_tag(tag._tag)
 
     def time_between_tags(self, start_tag, end_tag):
         self._assert_initialized()
@@ -145,32 +142,28 @@ class Device(c.Device):
             not isinstance(end_tag, Tag)):
             raise ValueError('Expected occa.Tag')
 
-        return c.device.time_between_tags(self._handle,
-                                          start_tag._tag,
-                                          end_tag._tag)
+        return self._c.time_between_tags(start_tag._tag,
+                                         end_tag._tag)
     #===================================
 
     #---[ Kernel ]----------------------
     def build_kernel(self, filename, kernel_name, props):
         self._assert_initialized()
-        return c.device.build_kernel(self._handle,
-                                     filename,
-                                     kernel_name,
-                                     json.dumps(props))
+        return self._c.build_kernel(filename,
+                                    kernel_name,
+                                    json.dumps(props))
 
     def build_kernel_from_string(self, source, kernel_name, props):
         self._assert_initialized()
-        return c.device.build_kernel_from_string(self._handle,
-                                                 source,
-                                                 kernel_name,
-                                                 json.dumps(props))
+        return self._c.build_kernel_from_string(source,
+                                                kernel_name,
+                                                json.dumps(props))
     #===================================
 
     #---[ Memory ]----------------------
     def malloc(self, bytes, src, props):
         self._assert_initialized()
-        return c.malloc(self._handle,
-                        bytes,
+        return c.malloc(bytes,
                         src,
                         props)
     #===================================

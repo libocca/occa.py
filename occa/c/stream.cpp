@@ -70,6 +70,13 @@ static PyObject* Stream_is_initialized(Stream *self) {
   );
 }
 
+static PyObject* Stream_free(Stream *self) {
+  if (self->stream) {
+    self->stream->free();
+  }
+  return occa::py::None();
+}
+
 static PyObject* Stream_mode(Stream *self) {
   if (!self->stream) {
     return occa::py::None();
@@ -106,6 +113,7 @@ static PyObject* Stream_get_device(Stream *self) {
 OCCA_PY_METHODS(
   Stream_methods,
   STREAM_METHOD_NO_ARGS(is_initialized),
+  STREAM_METHOD_NO_ARGS(free),
   STREAM_METHOD_NO_ARGS(mode),
   STREAM_METHOD_NO_ARGS(properties),
   STREAM_METHOD_NO_ARGS(get_device)

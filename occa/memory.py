@@ -36,7 +36,7 @@ class Memory(c.Memory):
 
     def _assert_initialized(self):
         if not self.is_initialized():
-            raise UninitializedError('occa.Memory')
+            raise UninitializedError('occa.Memory is not initialized')
 
     def is_initialized(self):
         '''Return if the memory has been initialized'''

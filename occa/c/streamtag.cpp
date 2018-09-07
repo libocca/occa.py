@@ -70,6 +70,13 @@ static PyObject* StreamTag_is_initialized(StreamTag *self) {
   );
 }
 
+static PyObject* StreamTag_free(StreamTag *self) {
+  if (self->streamTag) {
+    self->streamTag->free();
+  }
+  return occa::py::None();
+}
+
 static PyObject* StreamTag_get_device(StreamTag *self) {
   if (!self->streamTag) {
     return occa::py::None();
@@ -95,6 +102,7 @@ static PyObject* StreamTag_wait(StreamTag *self) {
 OCCA_PY_METHODS(
   StreamTag_methods,
   STREAMTAG_METHOD_NO_ARGS(is_initialized),
+  STREAMTAG_METHOD_NO_ARGS(free),
   STREAMTAG_METHOD_NO_ARGS(get_device),
   STREAMTAG_METHOD_NO_ARGS(wait)
 );
