@@ -103,6 +103,17 @@ static PyObject* py_occa_set_stream(PyObject *self,
                                     PyObject *args,
                                     PyObject *kwargs) {
   static const char *kwargNames[] = {"stream", NULL};
+
+  PyObject *streamObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
+                                   &streamObj)) {
+    return NULL;
+  }
+
+  occa::setStream(
+    (occa::modeStream_t*) occa::py::ptr(streamObj)
+  );
+
   return occa::py::None();
 }
 
@@ -112,18 +123,41 @@ static PyObject* py_occa_tag_stream(PyObject *self) {
   );
 }
 
-static PyObject* py_occa_wait_for_tag(PyObject *self,
-                                      PyObject *args,
-                                      PyObject *kwargs) {
+static PyObject* py_occa_wait_for(PyObject *self,
+                                  PyObject *args,
+                                  PyObject *kwargs) {
   static const char *kwargNames[] = {"tag", NULL};
+
+  PyObject *tagObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
+                                   &tagObj)) {
+    return NULL;
+  }
+
+  occa::waitFor(
+    (occa::modeStreamTag_t*) occa::py::ptr(tagObj)
+  );
   return occa::py::None();
 }
 
-static PyObject* py_occa_time_between_tags(PyObject *self,
-                                           PyObject *args,
-                                           PyObject *kwargs) {
+static PyObject* py_occa_time_between(PyObject *self,
+                                      PyObject *args,
+                                      PyObject *kwargs) {
   static const char *kwargNames[] = {"start", "end", NULL};
-  return occa::py::None();
+
+  PyObject *startObj = NULL;
+  PyObject *endObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", (char**) kwargNames,
+                                   &startObj, &endObj)) {
+    return NULL;
+  }
+
+  return occa::py::toPy(
+    occa::timeBetween(
+      (occa::modeStreamTag_t*) occa::py::ptr(startObj),
+      (occa::modeStreamTag_t*) occa::py::ptr(endObj)
+    )
+  );
 }
 //======================================
 
@@ -258,8 +292,8 @@ OCCA_PY_MODULE(
   BASE_METHOD_NO_ARGS(get_stream),
   BASE_METHOD_WITH_KWARGS(set_stream),
   BASE_METHOD_NO_ARGS(tag_stream),
-  BASE_METHOD_WITH_KWARGS(wait_for_tag),
-  BASE_METHOD_WITH_KWARGS(time_between_tags),
+  BASE_METHOD_WITH_KWARGS(wait_for),
+  BASE_METHOD_WITH_KWARGS(time_between),
   BASE_METHOD_WITH_KWARGS(build_kernel),
   BASE_METHOD_WITH_KWARGS(build_kernel_from_string),
   BASE_METHOD_WITH_KWARGS(build_kernel_from_binary),

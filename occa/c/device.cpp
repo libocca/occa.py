@@ -126,7 +126,7 @@ static PyObject* Device_memory_allocated(Device *self) {
 }
 
 static PyObject* Device_finish(Device *self) {
-  if (self->device != NULL) {
+  if (self->device) {
     self->device->finish();
   }
   return occa::py::None();
@@ -147,14 +147,18 @@ static PyObject* Device_create_stream(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::None();
+  return occa::py::toPy(
+    self->device->createStream()
+  );
 }
 
 static PyObject* Device_get_stream(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::None();
+  return occa::py::toPy(
+    self->device->getStream()
+  );
 }
 
 static PyObject* Device_set_stream(Device *self,
@@ -165,6 +169,17 @@ static PyObject* Device_set_stream(Device *self,
   if (!self->device) {
     return occa::py::None();
   }
+
+  PyObject *streamObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
+                                   &streamObj)) {
+    return NULL;
+  }
+
+  self->device->setStream(
+    (occa::modeStream_t*) occa::py::ptr(streamObj)
+  );
+
   return occa::py::None();
 }
 
@@ -177,26 +192,49 @@ static PyObject* Device_tag_stream(Device *self) {
   );
 }
 
-static PyObject* Device_wait_for_tag(Device *self,
-                                     PyObject *args,
-                                     PyObject *kwargs) {
+static PyObject* Device_wait_for(Device *self,
+                                 PyObject *args,
+                                 PyObject *kwargs) {
   static const char *kwargNames[] = {"tag", NULL};
 
   if (!self->device) {
     return occa::py::None();
   }
+
+  PyObject *tagObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
+                                   &tagObj)) {
+    return NULL;
+  }
+
+  self->device->waitFor(
+    (occa::modeStreamTag_t*) occa::py::ptr(tagObj)
+  );
   return occa::py::None();
 }
 
-static PyObject* Device_time_between_tags(Device *self,
-                                          PyObject *args,
-                                          PyObject *kwargs) {
+static PyObject* Device_time_between(Device *self,
+                                     PyObject *args,
+                                     PyObject *kwargs) {
   static const char *kwargNames[] = {"start", "end", NULL};
 
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::None();
+
+  PyObject *startObj = NULL;
+  PyObject *endObj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", (char**) kwargNames,
+                                   &startObj, &endObj)) {
+    return NULL;
+  }
+
+  return occa::py::toPy(
+    self->device->timeBetween(
+      (occa::modeStreamTag_t*) occa::py::ptr(startObj),
+      (occa::modeStreamTag_t*) occa::py::ptr(endObj)
+    )
+  );
 }
 //  |===================================
 
@@ -346,8 +384,8 @@ OCCA_PY_METHODS(
   DEVICE_METHOD_NO_ARGS(get_stream),
   DEVICE_METHOD_WITH_KWARGS(set_stream),
   DEVICE_METHOD_NO_ARGS(tag_stream),
-  DEVICE_METHOD_WITH_KWARGS(wait_for_tag),
-  DEVICE_METHOD_WITH_KWARGS(time_between_tags),
+  DEVICE_METHOD_WITH_KWARGS(wait_for),
+  DEVICE_METHOD_WITH_KWARGS(time_between),
   DEVICE_METHOD_WITH_KWARGS(build_kernel),
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_string),
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_binary),
