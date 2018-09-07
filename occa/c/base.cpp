@@ -281,11 +281,22 @@ static PyObject* py_occa_copy_mem_to_mem(PyObject *self,
   long long bytes = -1;
   long long destOffset = -1;
   long long srcOffset = -1;
-  PyObject *propsObj = NULL;
+  char *propsStr = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOLLLO", (char**) kwargNames,
-                                   &destObj, &srcObj, &bytes, &destOffset, &srcOffset, &propsObj)) {
+                                   &destObj, &srcObj,
+                                   &bytes, &destOffset, &srcOffset,
+                                   &propsStr)) {
     return NULL;
   }
+
+  occa::memcpy(
+    occa::memory((occa::modeMemory_t*) occa::py::ptr(destObj)),
+    occa::memory((occa::modeMemory_t*) occa::py::ptr(srcObj)),
+    bytes,
+    destOffset,
+    srcOffset,
+    occa::properties(propsStr)
+  );
 
   return occa::py::None();
 }
@@ -295,22 +306,29 @@ static PyObject* py_occa_copy_ptr_to_mem(PyObject *self,
                                          PyObject *kwargs) {
   static const char *kwargNames[] = {
     "dest", "src",
-    "bytes", "destOffset", "srcOffset",
+    "bytes", "offset",
     "props", NULL
   };
 
-  // TODO: Swap src with numpy arrays
-
-  PyObject *dest = NULL;
-  PyObject *src = NULL;
+  PyObject *destObj = NULL;
+  PyObject *srcObj = NULL;
   long long bytes = -1;
-  long long destOffset = -1;
-  long long srcOffset = -1;
-  PyObject *props = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOLLLO", (char**) kwargNames,
-                                   &dest, &src, &bytes, &destOffset, &srcOffset, &props)) {
+  long long offset = -1;
+  char *propsStr = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOLLO", (char**) kwargNames,
+                                   &destObj, &srcObj,
+                                   &bytes, &offset,
+                                   &propsStr)) {
     return NULL;
   }
+
+  occa::memcpy(
+    occa::memory((occa::modeMemory_t*) occa::py::ptr(destObj)),
+    occa::py::ptr(srcObj),
+    bytes,
+    offset,
+    occa::properties(propsStr)
+  );
 
   return occa::py::None();
 }
@@ -320,22 +338,29 @@ static PyObject* py_occa_copy_mem_to_ptr(PyObject *self,
                                          PyObject *kwargs) {
   static const char *kwargNames[] = {
     "dest", "src",
-    "bytes", "destOffset", "srcOffset",
+    "bytes", "offset",
     "props", NULL
   };
 
-  // TODO: Swap dest with numpy arrays
-
-  PyObject *dest = NULL;
-  PyObject *src = NULL;
+  PyObject *destObj = NULL;
+  PyObject *srcObj = NULL;
   long long bytes = -1;
-  long long destOffset = -1;
-  long long srcOffset = -1;
-  PyObject *props = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOLLLO", (char**) kwargNames,
-                                   &dest, &src, &bytes, &destOffset, &srcOffset, &props)) {
+  long long offset = -1;
+  char *propsStr = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOLLO", (char**) kwargNames,
+                                   &destObj, &srcObj,
+                                   &bytes, &offset,
+                                   &propsStr)) {
     return NULL;
   }
+
+  occa::memcpy(
+    occa::py::ptr(destObj),
+    occa::memory((occa::modeMemory_t*) occa::py::ptr(srcObj)),
+    bytes,
+    offset,
+    occa::properties(propsStr)
+  );
 
   return occa::py::None();
 }
