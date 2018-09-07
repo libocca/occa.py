@@ -35,17 +35,7 @@ namespace occa {
     }
 
     PyTypeObject* ErrorType() {
-      static PyTypeObject *Error = NULL;
-
-      if (!Error) {
-        Error = getTypeFromModule("occa.c.exception", "Error");
-
-        PyObject *name = PyUnicode_FromString("occa.c.Error");
-        if (name) {
-          PyObject_SetAttrString((PyObject*) Error, "__name__", name);
-        }
-      }
-
+      static PyTypeObject *Error = getTypeFromModule("occa.exceptions", "CError");
       return Error;
     }
 

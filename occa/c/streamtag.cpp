@@ -140,17 +140,17 @@ static PyTypeObject StreamTagType = {
   0                                         // tp_new
 };
 
-static bool streamTag_has_valid_module() {
+static bool streamtag_has_valid_module() {
   StreamTagType.tp_new = PyType_GenericNew;
   return PyType_Ready(&StreamTagType) >= 0;
 }
 
-static void streamTag_init_module(PyObject *module) {
+static void streamtag_init_module(PyObject *module) {
   Py_INCREF(&StreamTagType);
   PyModule_AddObject(module,
                      "StreamTag",
                      (PyObject*) &StreamTagType);
 }
 
-OCCA_PY_MODULE(streamTag, OCCA_PY_NO_METHODS)
+OCCA_PY_MODULE(streamtag, OCCA_PY_NO_METHODS)
 //======================================

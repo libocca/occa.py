@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
 from .base import *
-from .uva import *
 from .device import Device
 from .memory import Memory
 from .kernel import Kernel

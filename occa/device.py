@@ -20,111 +20,127 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
+import functools
 import json
+
 from . import c
-from .stream import Stream
-from .tag import Tag
-from .utils import defaults_to
+from .exceptions import UninitializedError
 
 
-class Device:
+class Device(c.Device):
     def __init__(self, props=None, **kwargs):
-        self._handle = None
-
-        if props is None:
-            props = kwargs
-        if isinstance(props, dict):
-            props = json.dumps(props)
-        if props is None:
-            return
+        if not (props is None or
+                isinstance(prop, str) or
+                isinstance(props, dict)):
+            raise ValueError('Expected a str, dict, or properties through **kwargs')
 
         if isinstance(props, str):
-            self._handle = c.device.create(props)
-        else:
-            raise ValueError('Expected a str, dict, or **kwargs')
+            props = json.loads(props)
 
-    @defaults_to(False)
+        # Override props if kwargs are defined
+        if len(kwargs):
+            if props is None:
+                props = kwargs
+            else:
+                props = {
+                    **props,
+                    **kwargs,
+                }
+
+        if props is None:
+            return super().__init__()
+        return super().__init__(props=props)
+
+    @property
+    def _c(self):
+        return super(Device, self)
+
+    def _assert_initialized(self):
+        if not self.is_initialized():
+            raise UninitializedError('occa.Device')
+
     def is_initialized(self):
-        return True
+        '''Return if the device has been initialized'''
+        return self._c.is_initialized()
 
-    @defaults_to(None)
     def free(self):
+        self._assert_initialized()
         c.device.free(self._handle)
 
     @property
-    @defaults_to('')
     def mode(self):
+        self._assert_initialized()
         return c.device.mode(self._handle)
 
     @property
-    @defaults_to({})
     def properties(self):
+        self._assert_initialized()
         return json.loads(c.device.properties(self._handle))
 
     @property
-    @defaults_to({})
     def kernel_properties(self):
+        self._assert_initialized()
         return json.loads(c.device.kernel_properties(self._handle))
 
     @property
-    @defaults_to({})
     def memory_properties(self):
+        self._assert_initialized()
         return json.loads(c.device.memory_properties(self._handle))
 
-    @defaults_to(0)
     def memory_size(self):
+        self._assert_initialized()
         return c.device.memory_size(self._handle)
 
-    @defaults_to(0)
     def memory_allocated(self):
+        self._assert_initialized()
         return c.device.memory_allocated(self._handle)
 
-    @defaults_to(None)
     def finish(self):
+        self._assert_initialized()
         c.device.finish(self._handle)
 
     @property
-    @defaults_to(False)
     def has_separate_memory_space(self):
+        self._assert_initialized()
         return c.device.has_separate_memory_space(self._handle)
 
     #---[ Stream ]----------------------
-    @defaults_to(None)
     def create_stream(self):
+        self._assert_initialized()
         return c.device.create_stream(self._handle)
 
     @property
-    @defaults_to(None)
     def stream(self):
+        self._assert_initialized()
         return c.device.stream(self._handle)
 
-    @defaults_to(None)
     def set_stream(self, stream):
+        self._assert_initialized()
         if not isinstance(stream, Stream):
             raise ValueError('Expected occa.Stream')
         return c.device.set_stream(self._handle,
                                    stream._stream)
 
-    @defaults_to(None)
     def free_stream(self, stream):
+        self._assert_initialized()
         if not isinstance(stream, Stream):
             raise ValueError('Expected occa.Stream')
         c.device.free_stream(self._handle,
                              stream._stream)
 
-    @defaults_to(None)
     def tag_stream(self):
+        self._assert_initialized()
         return c.device.tag_stream(self._handle)
 
-    @defaults_to(None)
     def wait_for_tag(self, tag):
+        self._assert_initialized()
         if not isinstance(tag, Tag):
             raise ValueError('Expected occa.Tag')
         c.device.wait_for_tag(self._handle,
                               tag._tag)
 
-    @defaults_to(0)
     def time_between_tags(self, start_tag, end_tag):
+        self._assert_initialized()
         if (not isinstance(start_tag, Tag) or
             not isinstance(end_tag, Tag)):
             raise ValueError('Expected occa.Tag')
@@ -135,15 +151,15 @@ class Device:
     #===================================
 
     #---[ Kernel ]----------------------
-    @defaults_to(None)
     def build_kernel(self, filename, kernel_name, props):
+        self._assert_initialized()
         return c.device.build_kernel(self._handle,
                                      filename,
                                      kernel_name,
                                      json.dumps(props))
 
-    @defaults_to(None)
     def build_kernel_from_string(self, source, kernel_name, props):
+        self._assert_initialized()
         return c.device.build_kernel_from_string(self._handle,
                                                  source,
                                                  kernel_name,
@@ -151,17 +167,10 @@ class Device:
     #===================================
 
     #---[ Memory ]----------------------
-    @defaults_to(None)
     def malloc(self, bytes, src, props):
+        self._assert_initialized()
         return c.malloc(self._handle,
                         bytes,
                         src,
                         props)
-
-    @defaults_to(None)
-    def umalloc(self, bytes, src, props):
-        return c.umalloc(self._handle,
-                         bytes,
-                         src,
-                         props)
     #===================================

@@ -21,54 +21,67 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
 import json
+
 from . import c
-from .utils import defaults_to
+from .exceptions import UninitializedError
 
 
-class Memory:
-    def __init__(self, handle=None):
-        self._handle = handle
+class Memory(c.Memory):
+    def __init__(self):
+        pass
 
-    @defaults_to(None)
+    @property
+    def _c(self):
+        return super(Memory, self)
+
+    def _assert_initialized(self):
+        if not self.is_initialized():
+            raise UninitializedError('occa.Memory')
+
+    def is_initialized(self):
+        '''Return if the memory has been initialized'''
+        return self._c.is_initialized()
+
     def free(self):
+        self._assert_initialized()
         c.memory.free(self._handle)
 
     @property
-    @defaults_to(None)
     def device(self):
+        self._assert_initialized()
         return c.memory.device(self._handle)
 
     @property
-    @defaults_to('')
     def mode(self):
+        self._assert_initialized()
         return c.memory.mode(self._handle)
 
     @property
-    @defaults_to(0)
     def size(self):
+        self._assert_initialized()
         return c.memory.size(self._handle)
 
     @property
-    @defaults_to({})
     def properties(self):
+        self._assert_initialized()
         return json.loads(c.memory.properties(self._handle))
 
-    @defaults_to(None)
     def copy_to(self, dest, bytes, offset, props):
+        self._assert_initialized()
         c.memory.copy_to(self._handle,
                          dest._handle,
                          bytes,
                          offset,
                          json.dumps(props))
 
-    @defaults_to(None)
     def copy_from(self, src, bytes, offset, props):
+        self._assert_initialized()
         c.memory.copy_from(self._handle,
                          src._handle,
                          bytes,
                          offset,
                          json.dumps(props))
 
-    @defaults_to(None)
     def clone(self):
+        self._assert_initialized()
         return c.memory.clone(self._handle)

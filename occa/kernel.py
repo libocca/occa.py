@@ -21,73 +21,82 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
 import json
+
 from . import c
-from .utils import defaults_to
+from .exceptions import UninitializedError
 
 
-class Kernel:
-    def __init__(self, handle=None):
-        self._handle = handle
+class Kernel(c.Kernel):
+    def __init__(self):
+        pass
 
-    @defaults_to(False)
+    @property
+    def _c(self):
+        return super(Kernel, self)
+
+    def _assert_initialized(self):
+        if not self.is_initialized():
+            raise UninitializedError('occa.Kernel')
+
     def is_initialized(self):
-        return True
+        '''Return if the kernel has been initialized'''
+        return self._c.is_initialized()
 
-    @defaults_to(None)
     def free(self):
+        self._assert_initialized()
         c.kernel.free(self._handle)
 
     @property
-    @defaults_to(None)
     def device(self):
+        self._assert_initialized()
         return c.kernel.device(self._handle)
 
     @property
-    @defaults_to('')
     def mode(self):
+        self._assert_initialized()
         return c.kernel.mode(self._handle)
 
     @property
-    @defaults_to({})
     def properties(self):
+        self._assert_initialized()
         return json.loads(c.kernel.properties(self._handle))
 
     @property
-    @defaults_to('')
     def name(self):
+        self._assert_initialized()
         return c.kernel.name(self._handle)
 
     @property
-    @defaults_to('')
     def source_filename(self):
+        self._assert_initialized()
         return c.kernel.source_filename(self._handle)
 
     @property
-    @defaults_to('')
     def binary_filename(self):
+        self._assert_initialized()
         return c.kernel.binary_filename(self._handle)
 
     @property
-    @defaults_to(0)
     def max_dims(self):
+        self._assert_initialized()
         return c.kernel.max_dims(self._handle)
 
     @property
-    @defaults_to([0, 0, 0])
     def max_outer_dims(self):
+        self._assert_initialized()
         return c.kernel.max_outer_dims(self._handle)
 
     @property
-    @defaults_to([0, 0, 0])
     def max_inner_dims(self):
+        self._assert_initialized()
         return c.kernel.max_inner_dims(self._handle)
 
-    @defaults_to(None)
     def set_run_dims(self, outer_dims, inner_dims):
+        self._assert_initialized()
         c.kernel.set_run_dims(self._handle,
                               outer_dims,
                               inner_dims)
 
-    @defaults_to(None)
     def __call__(self):
+        self._assert_initialized()
         pass

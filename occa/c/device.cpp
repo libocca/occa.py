@@ -48,7 +48,7 @@ static int Device_init(Device *self,
     -1,
     if (info) {
       self->device = new occa::device(info);
-    } else {
+    } else if (deviceObj) {
       self->device = new occa::device(
         (occa::modeDevice_t*) occa::py::ptr(deviceObj)
       );

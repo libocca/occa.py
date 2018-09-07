@@ -52,6 +52,12 @@ class OccaInstaller(build_ext.build_ext):
 
 
     def post_build(self):
+        # Not sure why setup.py doesn't copy it over the first time...
+        build_path = os.path.abspath(os.path.dirname(
+            self.get_outputs()[0]
+        ))
+        self.copy_file(self.libocca_so, build_path)
+
         if sys.platform != 'darwin':
             return
 
@@ -91,8 +97,7 @@ ext_modules = [
     get_ext_module(module)
     for module in ['base',
                    'device', 'kernel', 'memory',
-                   'stream', 'streamtag',
-                   'exception']
+                   'stream', 'streamtag']
 ]
 
 

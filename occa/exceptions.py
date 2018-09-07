@@ -20,30 +20,18 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
+class Error(Exception):
+    def __init__(self, message):
+        super().__init__(message)
 
-def is_managed(ptr):
-    pass
 
-def start_managing(ptr):
-    pass
+class CError(Error):
+    def __init__(self, message):
+        super().__init__(message)
 
-def stop_managing(ptr):
-    pass
 
-def sync_to_device(ptr):
-    pass
-
-def sync_to_host(ptr):
-    pass
-
-def needs_sync(ptr):
-    pass
-
-def sync(ptr):
-    pass
-
-def dont_sync(ptr):
-    pass
-
-def free_uva_ptr(ptr):
-    pass
+class UninitializedError(Error):
+    def __init__(self, classname):
+        super().__init__(
+            '{} is not initialized'.format(classname)
+        )
