@@ -70,12 +70,12 @@ class Kernel:
     @property
     def source_filename(self):
         self._assert_initialized()
-        return self._c.name()
+        return self._c.source_filename()
 
     @property
     def binary_filename(self):
         self._assert_initialized()
-        return self._c.binary_name()
+        return self._c.binary_filename()
 
     @property
     def max_dims(self):
