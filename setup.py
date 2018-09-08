@@ -119,14 +119,40 @@ In a nutshell, OCCA (like oca-rina) is an open-source library which aims to:
 ''')
 
 
+keywords = ', '.join([
+    'occa', 'hpc', 'gpu', 'jit',
+    'openmp', 'opencl', 'cuda'
+])
+
+
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: MacOS',
+    'Operating System :: POSIX',
+    'Operating System :: Linux',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Topic :: Scientific/Engineering',
+    'Topic :: Software Development',
+]
+
+
 setup(
     name='occa',
     version='0.1.0',
     description='Portable Approach for Parallel Architectures',
     long_description=long_description,
+    keywords=keywords,
+    classifiers=classifiers,
     url='https://libocca.org',
     author='David Medina',
-    license='MIT License',
+    license='MIT',
     py_modules=['occa'],
     cmdclass={
         'build_ext': OccaInstaller,
