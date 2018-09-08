@@ -65,6 +65,15 @@ static PyObject* StreamTag_is_initialized(StreamTag *self) {
   );
 }
 
+static PyObject* StreamTag__get_mode_stream_tag(StreamTag *self) {
+  if (!self->streamTag) {
+    return occa::py::None();
+  }
+  return occa::py::toPy(
+    (void*) self->streamTag->getModeStreamTag()
+  );
+}
+
 static PyObject* StreamTag_free(StreamTag *self) {
   if (self->streamTag) {
     self->streamTag->free();
@@ -97,6 +106,7 @@ static PyObject* StreamTag_wait(StreamTag *self) {
 OCCA_PY_METHODS(
   StreamTag_methods,
   STREAMTAG_METHOD_NO_ARGS(is_initialized),
+  STREAMTAG_METHOD_NO_ARGS(_get_mode_stream_tag),
   STREAMTAG_METHOD_NO_ARGS(free),
   STREAMTAG_METHOD_NO_ARGS(get_device),
   STREAMTAG_METHOD_NO_ARGS(wait)
