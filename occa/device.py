@@ -23,7 +23,7 @@
 import functools
 import json
 
-from . import c, utils, memory, kernel, stream, streamtag
+from . import c, utils, memory, kernel as K, stream, streamtag
 from .exceptions import UninitializedError
 
 
@@ -133,7 +133,7 @@ class Device:
         self._assert_initialized()
         props = utils.properties(props) or ''
 
-        return kernel.Kernel(
+        return K.Kernel(
             self._c.build_kernel(filename=filename,
                                  kernel=kernel,
                                  props=props)
@@ -143,7 +143,7 @@ class Device:
         self._assert_initialized()
         props = utils.properties(props) or ''
 
-        return kernel.Kernel(
+        return K.Kernel(
             self._c.build_kernel_from_string(source=source,
                                              kernel=kernel,
                                              props=props)
