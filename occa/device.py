@@ -131,6 +131,8 @@ class Device:
     #---[ Kernel ]----------------------
     def build_kernel(self, filename, kernel, props=None):
         self._assert_initialized()
+        utils.assert_str(filename)
+        utils.assert_str(kernel)
         props = utils.properties(props) or ''
 
         return K.Kernel(
@@ -141,6 +143,8 @@ class Device:
 
     def build_kernel_from_string(self, source, kernel, props=None):
         self._assert_initialized()
+        utils.assert_str(source)
+        utils.assert_str(kernel)
         props = utils.properties(props) or ''
 
         return K.Kernel(
@@ -153,6 +157,7 @@ class Device:
     #---[ Memory ]----------------------
     def malloc(self, bytes, src=None, props=None):
         self._assert_initialized()
+        utils.assert_int(bytes)
         props = utils.properties(props) or ''
 
         raise NotImplementedError

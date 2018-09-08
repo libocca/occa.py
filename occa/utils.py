@@ -53,6 +53,16 @@ def assert_c_streamTag(d):
 #=======================================
 
 #---[ Assert Py ]-----------------------
+def assert_str(d):
+    if not isinstance(d, str):
+        raise ValueError('Expected an str')
+
+
+def assert_int(d):
+    if not isinstance(d, int):
+        raise ValueError('Expected an int')
+
+
 def assert_device(d):
     if not isinstance(d, Device):
         raise ValueError('Expected an occa.Device')
