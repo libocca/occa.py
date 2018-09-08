@@ -20,6 +20,49 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
-class Stream():
-    def __init__(self):
-        self._stream = None
+import json
+
+from . import c, utils, device
+from .exceptions import UninitializedError
+
+
+class Stream:
+    def __init__(self, c_stream=None):
+        if c_stream:
+            utils.assert_c_stream(c_stream)
+            self._c = c_stream
+        else:
+            self._c = None
+
+    def _assert_initialized(self):
+        if not self.is_initialized:
+            raise UninitializedError('occa.Stream is not initialized')
+
+    @property
+    def _mode_handle(self):
+        self._assert_initialized()
+        return self._c._get_mode_handle()
+
+    @property
+    def is_initialized(self):
+        '''Return if the stream has been initialized'''
+        return self._c.is_initialized()
+
+    def free(self):
+        self._assert_initialized()
+        self._c.free()
+
+    @property
+    def device(self):
+        self._assert_initialized()
+        return device.Device(self._c.get_device())
+
+    @property
+    def mode(self):
+        self._assert_initialized()
+        return self._c.mode()
+
+    @property
+    def properties(self):
+        self._assert_initialized()
+        return json.loads(self._c.properties())

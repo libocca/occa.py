@@ -65,7 +65,7 @@ static PyObject* Kernel_is_initialized(Kernel *self) {
   );
 }
 
-static PyObject* Kernel__get_mode_kernel(Kernel *self) {
+static PyObject* Kernel__get_mode_handle(Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -208,7 +208,7 @@ static PyObject* Kernel_run(Kernel *self,
 OCCA_PY_METHODS(
   Kernel_methods,
   KERNEL_METHOD_NO_ARGS(is_initialized),
-  KERNEL_METHOD_NO_ARGS(_get_mode_kernel),
+  KERNEL_METHOD_NO_ARGS(_get_mode_handle),
   KERNEL_METHOD_NO_ARGS(free),
   KERNEL_METHOD_NO_ARGS(mode),
   KERNEL_METHOD_NO_ARGS(properties),

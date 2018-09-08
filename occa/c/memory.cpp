@@ -65,7 +65,7 @@ static PyObject* Memory_is_initialized(Memory *self) {
   );
 }
 
-static PyObject* Memory__get_mode_memory(Memory *self) {
+static PyObject* Memory__get_mode_handle(Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
@@ -248,7 +248,7 @@ static PyObject* Memory_clone(Memory *self) {
 OCCA_PY_METHODS(
   Memory_methods,
   MEMORY_METHOD_NO_ARGS(is_initialized),
-  MEMORY_METHOD_NO_ARGS(_get_mode_memory),
+  MEMORY_METHOD_NO_ARGS(_get_mode_handle),
   MEMORY_METHOD_NO_ARGS(free),
   MEMORY_METHOD_NO_ARGS(mode),
   MEMORY_METHOD_NO_ARGS(get_device),

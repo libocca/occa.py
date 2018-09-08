@@ -65,7 +65,7 @@ static PyObject* Stream_is_initialized(Stream *self) {
   );
 }
 
-static PyObject* Stream__get_mode_stream(Stream *self) {
+static PyObject* Stream__get_mode_handle(Stream *self) {
   if (!self->stream) {
     return occa::py::None();
   }
@@ -117,7 +117,7 @@ static PyObject* Stream_get_device(Stream *self) {
 OCCA_PY_METHODS(
   Stream_methods,
   STREAM_METHOD_NO_ARGS(is_initialized),
-  STREAM_METHOD_NO_ARGS(_get_mode_stream),
+  STREAM_METHOD_NO_ARGS(_get_mode_handle),
   STREAM_METHOD_NO_ARGS(free),
   STREAM_METHOD_NO_ARGS(mode),
   STREAM_METHOD_NO_ARGS(properties),

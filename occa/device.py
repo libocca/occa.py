@@ -23,31 +23,37 @@
 import functools
 import json
 
-from . import c, utils
+from . import c, utils, memory, kernel, stream, streamtag
 from .exceptions import UninitializedError
 
 
-class Device(c.Device):
+class Device:
     def __init__(self, props=None, **kwargs):
+        if isisntance(props, c.Device):
+            self._c = props
+            return
+
         utils.assert_properties(props, **kwargs)
         props = utils.properties(props, **kwargs)
 
-        if props is None:
-            return super().__init__()
-        return super().__init__(props=props)
-
-    @property
-    def _c(self):
-        return super(Device, self)
+        if props:
+            self._c = c.Device(props=props)
+        else:
+            self._c = None
 
     def _assert_initialized(self):
-        if not self.is_initialized():
+        if not self.is_initialized:
             raise UninitializedError('occa.Device is not initialized')
+
+    @property
+    def _mode_handle(self):
+        self._assert_initialized()
+        return self._c._get_mode_handle()
 
     @property
     def is_initialized(self):
         '''Return if the device has been initialized'''
-        return self._c.is_initialized()
+        return self._c and self._c.is_initialized()
 
     def free(self):
         self._assert_initialized()
@@ -95,58 +101,70 @@ class Device(c.Device):
     #---[ Stream ]----------------------
     def create_stream(self):
         self._assert_initialized()
-        return self._c.create_stream()
+        return stream.Stream(self._c.create_stream())
 
     @property
     def stream(self):
         self._assert_initialized()
-        return self._c.stream()
+        return stream.Stream(self._c.get_stream())
 
     def set_stream(self, stream):
         self._assert_initialized()
         utils.assert_stream(stream)
 
-        self._c.set_stream(stream.mode_handle)
+        self._c.set_stream(stream._c)
 
     def tag_stream(self):
         self._assert_initialized()
-        tag = self._c.tag_stream()
 
-        return StreamTag(tag.mode_handle)
+        return streamtag.StreamTag(self._c.tag_stream())
 
-    def wait_for_tag(self, tag):
+    def wait_for(self, tag):
         self._assert_initialized()
-        utils.assert_streamtag(streamtag)
+        utils.assert_streamtag(tag)
 
-        self._c.wait_for(tag.mode_handle)
+        self._c.wait_for(tag._c)
 
-    def time_between_tags(self, start_tag, end_tag):
+    def time_between(self, start, end):
         self._assert_initialized()
-        utils.assert_streamtag(start_tag)
-        utils.assert_streamtag(end_tag)
+        utils.assert_streamtag(start)
+        utils.assert_streamtag(end)
 
-        return self._c.time_between_tags(start_tag.mode_handle,
-                                         end_tag.mode_handle)
+        return self._c.time_between(start._c, end._c)
     #===================================
 
     #---[ Kernel ]----------------------
-    def build_kernel(self, filename, kernel, props):
+    def build_kernel(self, filename, kernel, props=None):
         self._assert_initialized()
-        return self._c.build_kernel(filename=filename,
-                                    kernel=kernel,
-                                    props=utils.properties(props) or '')
+        props = utils.properties(props) or ''
 
-    def build_kernel_from_string(self, source, kernel, props):
+        return kernel.Kernel(
+            self._c.build_kernel(filename=filename,
+                                 kernel=kernel,
+                                 props=props)
+        )
+
+    def build_kernel_from_string(self, source, kernel, props=None):
         self._assert_initialized()
-        return self._c.build_kernel_from_string(source=source,
-                                                kernel=kernel,
-                                                props=utils.properties(props) or '')
+        props = utils.properties(props) or ''
+
+        return kernel.Kernel(
+            self._c.build_kernel_from_string(source=source,
+                                             kernel=kernel,
+                                             props=props)
+        )
     #===================================
 
     #---[ Memory ]----------------------
-    def malloc(self, bytes, src, props):
+    def malloc(self, bytes, src=None, props=None):
         self._assert_initialized()
-        return c.malloc(bytes=bytes,
-                        src=src,
-                        props=utils.properties(props) or '')
+        props = utils.properties(props) or ''
+
+        raise NotImplementedError
+
+        return memory.Memory(
+            self._c.malloc(bytes=bytes,
+                           src=src,
+                           props=props)
+        )
     #===================================

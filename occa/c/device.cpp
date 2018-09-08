@@ -73,7 +73,7 @@ static PyObject* Device_is_initialized(Device *self) {
   );
 }
 
-static PyObject* Device__get_mode_device(Device *self) {
+static PyObject* Device__get_mode_handle(Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
@@ -374,7 +374,7 @@ static PyObject* Device_malloc(Device *self,
 OCCA_PY_METHODS(
   Device_methods,
   DEVICE_METHOD_NO_ARGS(is_initialized),
-  DEVICE_METHOD_NO_ARGS(_get_mode_device),
+  DEVICE_METHOD_NO_ARGS(_get_mode_handle),
   DEVICE_METHOD_NO_ARGS(free),
   DEVICE_METHOD_NO_ARGS(mode),
   DEVICE_METHOD_NO_ARGS(properties),

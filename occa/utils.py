@@ -20,39 +20,67 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
+import collections
 import json
 
-from . import device, memory, kernel, stream, streamtag
+from . import c, device, memory, kernel, stream, streamtag
 
 
+#---[ Assert C ]------------------------
+def assert_c_device(d):
+    if not isinstance(d, c.Device):
+        raise ValueError('Expected an occa.c.Device')
+
+
+def assert_c_memory(d):
+    if not isinstance(d, c.Memory):
+        raise ValueError('Expected an occa.c.Memory')
+
+
+def assert_c_kernel(d):
+    if not isinstance(d, c.Kernel):
+        raise ValueError('Expected an occa.c.Kernel')
+
+
+def assert_c_stream(d):
+    if not isinstance(d, c.Stream):
+        raise ValueError('Expected an occa.c.Stream')
+
+
+def assert_c_streamTag(d):
+    if not isinstance(d, c.StreamTag):
+        raise ValueError('Expected an occa.c.StreamTag')
+#=======================================
+
+#---[ Assert Py ]-----------------------
 def assert_device(d):
-    if not isinstance(d, device.Device):
+    if not isinstance(d, Device):
         raise ValueError('Expected an occa.Device')
 
 
 def assert_memory(d):
-    if not isinstance(d, memory.Memory):
+    if not isinstance(d, Memory):
         raise ValueError('Expected an occa.Memory')
 
 
 def assert_kernel(d):
-    if not isinstance(d, kernel.Kernel):
+    if not isinstance(d, Kernel):
         raise ValueError('Expected an occa.Kernel')
 
 
 def assert_stream(d):
-    if not isinstance(d, stream.Stream):
+    if not isinstance(d, Stream):
         raise ValueError('Expected an occa.Stream')
 
 
 def assert_streamTag(d):
-    if not isinstance(d, streamTag.StreamTag):
+    if not isinstance(d, StreamTag):
         raise ValueError('Expected an occa.StreamTag')
 
 
 def assert_properties(props, **kwargs):
     if not (props is None or
-            isinstance(prop, str) or
+            isinstance(props, str) or
             isinstance(props, dict)):
         raise ValueError('Props is expected to be None, str, or dict')
 
@@ -65,9 +93,16 @@ def assert_properties(props, **kwargs):
             )
 
 
+def assert_dim(d):
+    if (not isinstance(d, collections.Iterable) or
+        len(list(d)) != 3):
+        raise ValueError('Expected an iterable of size 3')
+#=======================================
+
+
 def properties(props, **kwargs):
     if not (props is None or
-            isinstance(prop, str) or
+            isinstance(props, str) or
             isinstance(props, dict)):
         raise ValueError('Props is expected to be None, str, or dict')
 

@@ -22,81 +22,84 @@
 #
 import json
 
-from . import c
+from . import c, utils, device, memory
 from .exceptions import UninitializedError
 
 
-class Kernel(c.Kernel):
-    def __init__(self):
-        pass
-
-    @property
-    def _c(self):
-        return super(Kernel, self)
+class Kernel:
+    def __init__(self, c_kernel=None):
+        if c_kernel:
+            utils.assert_c_kernel(c_kernel)
+            self._c = c_kernel
+        else:
+            self._c = None
 
     def _assert_initialized(self):
-        if not self.is_initialized():
+        if not self.is_initialized:
             raise UninitializedError('occa.Kernel is not initialized')
 
+    @property
     def is_initialized(self):
         '''Return if the kernel has been initialized'''
         return self._c.is_initialized()
 
     def free(self):
         self._assert_initialized()
-        c.kernel.free(self._handle)
+        self._c.free()
 
     @property
     def device(self):
         self._assert_initialized()
-        return c.kernel.device(self._handle)
+        return device.Device(self._c.get_device())
 
     @property
     def mode(self):
         self._assert_initialized()
-        return c.kernel.mode(self._handle)
+        return self._c.mode()
 
     @property
     def properties(self):
         self._assert_initialized()
-        return json.loads(c.kernel.properties(self._handle))
+        return json.loads(self._c.properties())
 
     @property
     def name(self):
         self._assert_initialized()
-        return c.kernel.name(self._handle)
+        return self._c.name()
 
     @property
     def source_filename(self):
         self._assert_initialized()
-        return c.kernel.source_filename(self._handle)
+        return self._c.name()
 
     @property
     def binary_filename(self):
         self._assert_initialized()
-        return c.kernel.binary_filename(self._handle)
+        return self._c.binary_name()
 
     @property
     def max_dims(self):
         self._assert_initialized()
-        return c.kernel.max_dims(self._handle)
+        return self._c.max_dims()
 
     @property
     def max_outer_dims(self):
         self._assert_initialized()
-        return c.kernel.max_outer_dims(self._handle)
+        return self._c.max_outer_dims()
 
     @property
     def max_inner_dims(self):
         self._assert_initialized()
-        return c.kernel.max_inner_dims(self._handle)
+        return self._c.max_inner_dims()
 
-    def set_run_dims(self, outer_dims, inner_dims):
+    def set_run_dims(self, outer, inner):
         self._assert_initialized()
-        c.kernel.set_run_dims(self._handle,
-                              outer_dims,
-                              inner_dims)
+        utils.assert_dim(outer)
+        utils.assert_dim(inner)
+
+        self._c.set_run_dims(outer=list(outer),
+                             inner=list(inner))
 
     def __call__(self):
         self._assert_initialized()
-        pass
+        raise NotImplementedError

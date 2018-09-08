@@ -22,66 +22,64 @@
 #
 import json
 
-from . import c
+from . import c, utils, device
 from .exceptions import UninitializedError
 
 
-class Memory(c.Memory):
-    def __init__(self):
-        pass
-
-    @property
-    def _c(self):
-        return super(Memory, self)
+class Memory:
+    def __init__(self, c_memory=None):
+        if c_memory:
+            utils.assert_c_memory(c_memory)
+            self._c = c_memory
+        else:
+            self._c = None
 
     def _assert_initialized(self):
-        if not self.is_initialized():
+        if not self.is_initialized:
             raise UninitializedError('occa.Memory is not initialized')
 
+    @property
+    def _mode_handle(self):
+        self._assert_initialized()
+        return self._c._get_mode_handle()
+
+    @property
     def is_initialized(self):
         '''Return if the memory has been initialized'''
         return self._c.is_initialized()
 
     def free(self):
         self._assert_initialized()
-        c.memory.free(self._handle)
+        self._c.free()
 
     @property
     def device(self):
         self._assert_initialized()
-        return c.memory.device(self._handle)
+        return device.Device(self._c.get_device())
 
     @property
     def mode(self):
         self._assert_initialized()
-        return c.memory.mode(self._handle)
+        return self._c.mode()
 
     @property
     def size(self):
         self._assert_initialized()
-        return c.memory.size(self._handle)
+        return self._c.size()
 
     @property
     def properties(self):
         self._assert_initialized()
-        return json.loads(c.memory.properties(self._handle))
+        return json.loads(self._c.properties())
 
-    def copy_to(self, dest, bytes, offset, props):
+    def copy_to(self, dest, *, bytes=-1, offset=0, props=None):
         self._assert_initialized()
-        c.memory.copy_to(self._handle,
-                         dest._handle,
-                         bytes,
-                         offset,
-                         json.dumps(props))
+        raise NotImplementedError
 
-    def copy_from(self, src, bytes, offset, props):
+    def copy_from(self, src,*,  bytes=-1, offset=0, props=None):
         self._assert_initialized()
-        c.memory.copy_from(self._handle,
-                         src._handle,
-                         bytes,
-                         offset,
-                         json.dumps(props))
+        raise NotImplementedError
 
     def clone(self):
         self._assert_initialized()
-        return c.memory.clone(self._handle)
+        return Memory(self._c.clone())
