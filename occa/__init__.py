@@ -20,6 +20,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
+
+
 from .base import *
 from .device import Device
 from .memory import Memory
