@@ -104,54 +104,49 @@ class Device(c.Device):
 
     def set_stream(self, stream):
         self._assert_initialized()
-        if not isinstance(stream, Stream):
-            raise ValueError('Expected occa.Stream')
-        return self._c.set_stream(stream._stream)
+        utils.assert_stream(stream)
 
-    def free_stream(self, stream):
-        self._assert_initialized()
-        if not isinstance(stream, Stream):
-            raise ValueError('Expected occa.Stream')
-        self._c.free_stream(stream._stream)
+        self._c.set_stream(stream.mode_handle)
 
     def tag_stream(self):
         self._assert_initialized()
-        return self._c.tag_stream()
+        tag = self._c.tag_stream()
+
+        return StreamTag(tag.mode_handle)
 
     def wait_for_tag(self, tag):
         self._assert_initialized()
-        if not isinstance(tag, Tag):
-            raise ValueError('Expected occa.Tag')
-        self._c.wait_for_tag(tag._tag)
+        utils.assert_streamtag(streamtag)
+
+        self._c.wait_for(tag.mode_handle)
 
     def time_between_tags(self, start_tag, end_tag):
         self._assert_initialized()
-        if (not isinstance(start_tag, Tag) or
-            not isinstance(end_tag, Tag)):
-            raise ValueError('Expected occa.Tag')
+        utils.assert_streamtag(start_tag)
+        utils.assert_streamtag(end_tag)
 
-        return self._c.time_between_tags(start_tag._tag,
-                                         end_tag._tag)
+        return self._c.time_between_tags(start_tag.mode_handle,
+                                         end_tag.mode_handle)
     #===================================
 
     #---[ Kernel ]----------------------
-    def build_kernel(self, filename, kernel_name, props):
+    def build_kernel(self, filename, kernel, props):
         self._assert_initialized()
-        return self._c.build_kernel(filename,
-                                    kernel_name,
-                                    json.dumps(props))
+        return self._c.build_kernel(filename=filename,
+                                    kernel=kernel,
+                                    props=utils.properties(props) or '')
 
-    def build_kernel_from_string(self, source, kernel_name, props):
+    def build_kernel_from_string(self, source, kernel, props):
         self._assert_initialized()
-        return self._c.build_kernel_from_string(source,
-                                                kernel_name,
-                                                json.dumps(props))
+        return self._c.build_kernel_from_string(source=source,
+                                                kernel=kernel,
+                                                props=utils.properties(props) or '')
     #===================================
 
     #---[ Memory ]----------------------
     def malloc(self, bytes, src, props):
         self._assert_initialized()
-        return c.malloc(bytes,
-                        src,
-                        props)
+        return c.malloc(bytes=bytes,
+                        src=src,
+                        props=utils.properties(props) or '')
     #===================================

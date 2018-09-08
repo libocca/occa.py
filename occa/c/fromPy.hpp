@@ -45,6 +45,10 @@ namespace occa {
 #endif
     }
 
+    static long long longlong(PyObject *obj) {
+      return PyLong_AsLongLong(obj);
+    }
+
     static void* ptr(PyObject *capsule) {
       return PyCapsule_GetPointer(capsule, NULL);
     }

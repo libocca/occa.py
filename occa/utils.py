@@ -22,6 +22,33 @@
 #
 import json
 
+from . import device, memory, kernel, stream, streamtag
+
+
+def assert_device(d):
+    if not isinstance(d, device.Device):
+        raise ValueError('Expected an occa.Device')
+
+
+def assert_memory(d):
+    if not isinstance(d, memory.Memory):
+        raise ValueError('Expected an occa.Memory')
+
+
+def assert_kernel(d):
+    if not isinstance(d, kernel.Kernel):
+        raise ValueError('Expected an occa.Kernel')
+
+
+def assert_stream(d):
+    if not isinstance(d, stream.Stream):
+        raise ValueError('Expected an occa.Stream')
+
+
+def assert_streamTag(d):
+    if not isinstance(d, streamTag.StreamTag):
+        raise ValueError('Expected an occa.StreamTag')
+
 
 def assert_properties(props, **kwargs):
     if not (props is None or

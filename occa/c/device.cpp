@@ -31,29 +31,29 @@ typedef struct {
 static int Device_init(Device *self,
                        PyObject *args,
                        PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "props", "device", NULL
-  };
-
   self->device = NULL;
 
-  char *info = NULL;
-  PyObject *deviceObj = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sO", (char**) kwargNames,
-                                   &info, &deviceObj)) {
+  occa::device device;
+  occa::properties props;
+
+  occa::py::kwargParser parser;
+  parser
+    .startOptionalKwargs()
+    .add("device", device)
+    .add("props", props);
+
+  if (!parser.parse(args, kwargs)) {
     return -1;
   }
 
-  OCCA_TRY_AND_RETURN(
-    -1,
-    if (info) {
-      self->device = new occa::device(info);
-    } else if (deviceObj) {
-      self->device = new occa::device(
-        (occa::modeDevice_t*) occa::py::ptr(deviceObj)
-      );
-    }
-  );
+  if (device.isInitialized()) {
+    self->device = new occa::device(device);
+  } else if (props.isInitialized()) {
+    OCCA_TRY_AND_RETURN(
+      -1,
+      self->device = new occa::device(props);
+    );
+  }
 
   return 0;
 }
@@ -173,23 +173,21 @@ static PyObject* Device_get_stream(Device *self) {
 static PyObject* Device_set_stream(Device *self,
                                    PyObject *args,
                                    PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "stream", NULL
-  };
-
   if (!self->device) {
     return occa::py::None();
   }
 
-  PyObject *streamObj = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
-                                   &streamObj)) {
+  occa::stream stream;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("stream", stream);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
-  self->device->setStream(
-    (occa::modeStream_t*) occa::py::ptr(streamObj)
-  );
+  self->device->setStream(stream);
 
   return occa::py::None();
 }
@@ -206,49 +204,44 @@ static PyObject* Device_tag_stream(Device *self) {
 static PyObject* Device_wait_for(Device *self,
                                  PyObject *args,
                                  PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "tag", NULL
-  };
-
   if (!self->device) {
     return occa::py::None();
   }
 
-  PyObject *tagObj = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
-                                   &tagObj)) {
+  occa::streamTag tag;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("tag", tag);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
-  self->device->waitFor(
-    (occa::modeStreamTag_t*) occa::py::ptr(tagObj)
-  );
+  self->device->waitFor(tag);
   return occa::py::None();
 }
 
 static PyObject* Device_time_between(Device *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "start", "end", NULL
-  };
-
   if (!self->device) {
     return occa::py::None();
   }
 
-  PyObject *startObj = NULL;
-  PyObject *endObj = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", (char**) kwargNames,
-                                   &startObj, &endObj)) {
+  occa::streamTag start, end;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("start", start)
+    .add("end", end);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
   return occa::py::toPy(
-    self->device->timeBetween(
-      (occa::modeStreamTag_t*) occa::py::ptr(startObj),
-      (occa::modeStreamTag_t*) occa::py::ptr(endObj)
-    )
+    self->device->timeBetween(start, end)
   );
 }
 //  |===================================
@@ -258,78 +251,75 @@ static PyObject* Device_time_between(Device *self,
 static PyObject* Device_build_kernel(Device *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "filename", "kernel", "props", NULL
-  };
-
   if (!self->device) {
     return occa::py::None();
   }
 
-  char *filename = NULL;
-  char *kernel = NULL;
-  char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss", (char**) kwargNames,
-                                   &filename, &kernel, &propsStr)) {
+  std::string filename, kernel;
+  occa::properties props;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("filename", filename)
+    .add("kernel", kernel)
+    .add("props", props);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
   return occa::py::toPy(
-    self->device->buildKernel(filename,
-                              kernel,
-                              occa::properties(propsStr))
+    self->device->buildKernel(filename, kernel, props)
   );
 }
 
 static PyObject* Device_build_kernel_from_string(Device *self,
                                                  PyObject *args,
                                                  PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "source", "kernel", "props", NULL
-  };
-
   if (!self->device) {
     return occa::py::None();
   }
 
-  char *source = NULL;
-  char *kernel = NULL;
-  char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss", (char**) kwargNames,
-                                   &source, &kernel, &propsStr)) {
+  std::string source, kernel;
+  occa::properties props;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("source", source)
+    .add("kernel", kernel)
+    .add("props", props);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
   return occa::py::toPy(
-    self->device->buildKernelFromString(source,
-                                        kernel,
-                                        occa::properties(propsStr))
+    self->device->buildKernelFromString(source, kernel, props)
   );
 }
 
 static PyObject* Device_build_kernel_from_binary(Device *self,
                                                  PyObject *args,
                                                  PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "filename", "kernel", "props", NULL
-  };
-
   if (!self->device) {
     return occa::py::None();
   }
 
-  char *filename = NULL;
-  char *kernel = NULL;
-  char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sss", (char**) kwargNames,
-                                   &filename, &kernel, &propsStr)) {
+  std::string filename, kernel;
+  occa::properties props;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("filename", filename)
+    .add("kernel", kernel)
+    .add("props", props);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
   return occa::py::toPy(
-    self->device->buildKernelFromBinary(filename,
-                                        kernel,
-                                        occa::properties(propsStr))
+    self->device->buildKernelFromBinary(filename, kernel, props)
   );
 }
 //  |===================================
@@ -339,31 +329,26 @@ static PyObject* Device_build_kernel_from_binary(Device *self,
 static PyObject* Device_malloc(Device *self,
                                PyObject *args,
                                PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "bytes", "src", "props", NULL
-  };
-
   if (!self->device) {
     return occa::py::None();
   }
 
-  // TODO: Swap src with numpy arrays or memory objects
-
   long long bytes = -1;
-  PyObject *src = NULL;
-  char *propsStr = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "L|Os", (char**) kwargNames,
-                                   &bytes, &src, &propsStr)) {
+  void *src = NULL;
+  occa::properties props;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("bytes", bytes)
+    .add("src", src)
+    .add("props", props);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
-  occa::properties props;
-  if (propsStr) {
-    props = occa::properties(propsStr);
-  }
-
   return occa::py::toPy(
-    self->device->malloc(bytes, NULL, props)
+    self->device->malloc(bytes, src, props)
   );
 }
 //  |===================================

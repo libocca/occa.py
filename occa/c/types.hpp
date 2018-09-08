@@ -28,6 +28,24 @@
 
 namespace occa {
   namespace py {
+    class tuple {
+    public:
+      PyObject *obj;
+
+      inline tuple(PyObject *obj_) :
+        obj(obj_) {
+        Py_INCREF(obj);
+      }
+
+      inline ~tuple() {
+        Py_DECREF(obj);
+      }
+
+      inline PyObject* operator [] (const int index) {
+        return PyTuple_GetItem(obj, 0);
+      }
+    };
+
     static PyTypeObject* getTypeFromModule(const std::string &moduleName,
                                            const std::string &className) {
       PyObject *module = PyImport_ImportModule(moduleName.c_str());

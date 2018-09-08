@@ -31,25 +31,20 @@ typedef struct {
 static int StreamTag_init(StreamTag *self,
                        PyObject *args,
                        PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "streamTag", NULL
-  };
-
   self->streamTag = NULL;
 
-  PyObject *streamTagObj = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
-                                   &streamTagObj)) {
+  occa::streamTag streamtag;
+  occa::py::kwargParser parser;
+  parser
+    .startOptionalKwargs()
+    .add("stream_tag", streamtag);
+
+  if (!parser.parse(args, kwargs)) {
     return -1;
   }
 
-  if (streamTagObj) {
-    OCCA_TRY_AND_RETURN(
-      -1,
-      self->streamTag = new occa::streamTag(
-        (occa::modeStreamTag_t*) occa::py::ptr(streamTagObj)
-      );
-    );
+  if (streamtag.isInitialized()) {
+    self->streamTag = new occa::streamTag(streamtag);
   }
 
   return 0;

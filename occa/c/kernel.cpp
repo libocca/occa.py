@@ -31,25 +31,20 @@ typedef struct {
 static int Kernel_init(Kernel *self,
                        PyObject *args,
                        PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "kernel", NULL
-  };
-
   self->kernel = NULL;
 
-  PyObject *kernelObj = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
-                                   &kernelObj)) {
+  occa::kernel kernel;
+  occa::py::kwargParser parser;
+  parser
+    .startOptionalKwargs()
+    .add("kernel", kernel);
+
+  if (!parser.parse(args, kwargs)) {
     return -1;
   }
 
-  if (kernelObj) {
-    OCCA_TRY_AND_RETURN(
-      -1,
-      self->kernel = new occa::kernel(
-        (occa::modeKernel_t*) occa::py::ptr(kernelObj)
-      );
-    );
+  if (kernel.isInitialized()) {
+    self->kernel = new occa::kernel(kernel);
   }
 
   return 0;
@@ -161,35 +156,19 @@ static PyObject* Kernel_max_inner_dims(Kernel *self) {
 static PyObject* Kernel_set_run_dims(Kernel *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "outer", "inner", NULL
-  };
-
   if (!self->kernel) {
     return occa::py::None();
   }
 
-  PyObject *outerTuple = NULL;
-  PyObject *innerTuple = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", (char**) kwargNames,
-                                   &outerTuple, &innerTuple)) {
-    return NULL;
-  }
-
-  occa::py::npIntVector outerVec, innerVec;
-  if (!occa::py::tupleToNpIntVector(outerTuple, outerVec)) {
-    return NULL;
-  }
-  if (!occa::py::tupleToNpIntVector(innerTuple, innerVec)) {
-    return NULL;
-  }
-
   occa::dim outer, inner;
-  for (int i = 0; i < (int) outerVec.size(); ++i) {
-    outer[i] = (occa::udim_t) outerVec[i];
-  }
-  for (int i = 0; i < (int) innerVec.size(); ++i) {
-    inner[i] = (occa::udim_t) innerVec[i];
+
+  occa::py::kwargParser parser;
+  parser
+    .add("outer", outer)
+    .add("inner", inner);
+
+  if (!parser.parse(args, kwargs)) {
+    return NULL;
   }
 
   self->kernel->setRunDims(outer, inner);

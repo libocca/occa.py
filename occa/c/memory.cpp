@@ -31,25 +31,20 @@ typedef struct {
 static int Memory_init(Memory *self,
                        PyObject *args,
                        PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "memory", NULL
-  };
-
   self->memory = NULL;
 
-  PyObject *memoryObj = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", (char**) kwargNames,
-                                   &memoryObj)) {
+  occa::memory memory;
+  occa::py::kwargParser parser;
+  parser
+    .startOptionalKwargs()
+    .add("memory", memory);
+
+  if (!parser.parse(args, kwargs)) {
     return -1;
   }
 
-  if (memoryObj) {
-    OCCA_TRY_AND_RETURN(
-      -1,
-      self->memory = new occa::memory(
-        (occa::modeMemory_t*) occa::py::ptr(memoryObj)
-      );
-    );
+  if (memory.isInitialized()) {
+    self->memory = new occa::memory(memory);
   }
 
   return 0;
@@ -117,17 +112,19 @@ static PyObject* Memory_size(Memory *self) {
 static PyObject* Memory_slice(Memory *self,
                               PyObject *args,
                               PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "offset", "bytes", NULL
-  };
   if (!self->memory) {
     return occa::py::None();
   }
 
-  long long offset = -1;
+  long long offset = 0;
   long long bytes = -1;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii", (char**) kwargNames,
-                                   &offset, &bytes)) {
+
+  occa::py::kwargParser parser;
+  parser
+    .add("offset", offset)
+    .add("bytes", bytes);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
@@ -175,20 +172,22 @@ static PyObject* Memory_stop_managing(Memory *self) {
 static PyObject* Memory_sync_to_device(Memory *self,
                                        PyObject *args,
                                        PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "bytes", "offset", NULL
-  };
-
   if (!self->memory) {
     return occa::py::None();
   }
 
   long long bytes = -1;
-  long long offset = -1;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii", (char**) kwargNames,
-                                   &bytes, &offset)) {
+  long long offset = 0;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("bytes", bytes)
+    .add("offset", offset);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
+
   self->memory->syncToDevice(bytes, offset);
 
   return occa::py::None();
@@ -197,20 +196,22 @@ static PyObject* Memory_sync_to_device(Memory *self,
 static PyObject* Memory_sync_to_host(Memory *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
-  static const char *kwargNames[] = {
-    "bytes", "offset", NULL
-  };
-
   if (!self->memory) {
     return occa::py::None();
   }
 
   long long bytes = -1;
-  long long offset = -1;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ii", (char**) kwargNames,
-                                   &bytes, &offset)) {
+  long long offset = 0;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("bytes", bytes)
+    .add("offset", offset);
+
+  if (!parser.parse(args, kwargs)) {
     return NULL;
   }
+
   self->memory->syncToHost(bytes, offset);
 
   return occa::py::None();

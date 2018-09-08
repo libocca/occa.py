@@ -30,4 +30,6 @@
 #include "fromPy.hpp"
 #include "toPy.hpp"
 
+#include "kwargparser.hpp"
+
 #endif
