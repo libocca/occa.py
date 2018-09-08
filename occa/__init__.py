@@ -24,3 +24,5 @@ from .base import *
 from .device import Device
 from .memory import Memory
 from .kernel import Kernel
+from .stream import Stream
+from .streamtag import StreamTag

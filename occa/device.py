@@ -29,7 +29,7 @@ from .exceptions import UninitializedError
 
 class Device:
     def __init__(self, props=None, **kwargs):
-        if isisntance(props, c.Device):
+        if isinstance(props, c.Device):
             self._c = props
             return
 
@@ -44,11 +44,6 @@ class Device:
     def _assert_initialized(self):
         if not self.is_initialized:
             raise UninitializedError('occa.Device is not initialized')
-
-    @property
-    def _mode_handle(self):
-        self._assert_initialized()
-        return self._c._get_mode_handle()
 
     @property
     def is_initialized(self):

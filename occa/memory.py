@@ -39,11 +39,6 @@ class Memory:
             raise UninitializedError('occa.Memory is not initialized')
 
     @property
-    def _mode_handle(self):
-        self._assert_initialized()
-        return self._c._get_mode_handle()
-
-    @property
     def is_initialized(self):
         '''Return if the memory has been initialized'''
         return self._c.is_initialized()
