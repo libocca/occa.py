@@ -126,13 +126,13 @@ keywords = ', '.join([
 
 
 classifiers = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
     'Intended Audience :: Science/Research',
     'License :: OSI Approved :: MIT License',
     'Operating System :: MacOS',
     'Operating System :: POSIX',
-    'Operating System :: Linux',
+    'Operating System :: Unix',
     'Programming Language :: Python :: 2',
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
@@ -140,6 +140,7 @@ classifiers = [
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: Implementation :: CPython',
     'Topic :: Scientific/Engineering',
     'Topic :: Software Development',
 ]
@@ -147,7 +148,7 @@ classifiers = [
 
 setup(
     name='occa',
-    version='0.1.0',
+    version='0.1.1',
     description='Portable Approach for Parallel Architectures',
     long_description=long_description,
     keywords=keywords,
@@ -160,7 +161,8 @@ setup(
         'build_ext': OccaInstaller,
     },
     packages=find_packages(),
-    ext_modules=ext_modules,
     package_data=package_data,
+    include_package_data=True,
+    ext_modules=ext_modules,
     zip_safe=False,
 )

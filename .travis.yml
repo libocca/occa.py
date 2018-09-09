@@ -1,0 +1,26 @@
+sudo: false
+language: python
+cache: pip
+notifications:
+  email: false
+
+python:
+  - 2.7
+  - 3.4
+  - 3.5
+  - 3.6
+
+script: true
+
+install:
+  - pip install -r requirements.txt
+  - python setup.py install
+
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
+  user: dmed256
+  password:
+    secure: "o7kusD+PIZ6ppcE+W9/E7G1eBqdaUMTvP0mh0ALWP2+fvCUZUtlH/3lCrfnBYlHYmO+rZqc2Z02umxaHOgxLovl3CiBLIgmNhR5LiLurjGJn5uYvhjJQIyf+ZFd1d9wadzLuRWwhhvxePVKHuQ4r6EVo9feIzAuHqmgk22NCGSMRYXpv7ACEXtW6+DgBIm3AWunGnHCKYCDUzun3MCoS4EnpKJ9MR9xhe6gUyNZb8Q7oA3UlaxA79XImnbNgyjLhX7ANI9pZkl7rqLSKL9pZePQHQ1KcExYaUYOys5gTYn2QqpKE8EedV0qDISL7amTYWYtU9FphcRS6/YfKCCe5/tV6mvswZvzoMeRV0Ixtl5SP+hc14qYEbKHgCBAzMVd474mpnkJxl8JTF6WhZu2MsYr/tNvoLq0xHpGmiucAOsDPj2zFG3fVSRQoyaj9jT2+9X7aAPkYNucHoiPzc+kCfX8HtWoL5SAgFpxMhnz77IBhBztB4cpSavjRlc6ur1UIaLbGTXxfhdliBe6c13a4kivwYZ9Ni2v6LlCjrfY9039rkC0CyEm1CIVHiZjV1SyA5n0BTRpZ5HmZfFZ+Hu5g4B6Z/y4rJFbL+6Tf6sL8Uyf+9cT+6/3qHlZb6F5M8z2pnqzjS4zI/p1EaevsfskihFuQqLXfeeuaHw9VO2Ty46Y="

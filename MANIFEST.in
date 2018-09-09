@@ -1,2 +1,8 @@
+recursive-include occa *.py
+
+include requirements.txt
+include setup.py
+include LICENSE
+include MANIFEST.in
 include versioneer.py
 include occa/_version.py
