@@ -33,4 +33,6 @@ In a nutshell, OCCA (like *oca*-rina) is an open-source library which aims to
 
 ### Installing
 
-:warning: Missing
+```bash
+pip install occa
+```
