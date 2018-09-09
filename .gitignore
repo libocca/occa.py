@@ -5,3 +5,4 @@ libocca.so
 
 __pycache__
 .pyc
+.eggs

@@ -26,7 +26,6 @@ from setuptools.command import build_ext
 from setuptools import setup, find_packages, Extension
 import os
 import sys
-import numpy as np
 
 
 class OccaInstaller(build_ext.build_ext):
@@ -50,7 +49,6 @@ class OccaInstaller(build_ext.build_ext):
         # Copy libocca.so to build directory
         self.copy_file(self.libocca_so, self.occa_c_path)
 
-
     def post_build(self):
         # Not sure why setup.py doesn't copy it over the first time...
         build_path = os.path.abspath(os.path.dirname(
@@ -70,6 +68,13 @@ class OccaInstaller(build_ext.build_ext):
                           ' {output}'.format(libocca_so=self.libocca_so,
                                              output=output))
 
+    def finalize_options(self):
+        build_ext.build_ext.finalize_options(self)
+        # Prevent numpy from thinking it is still in its setup process:
+        __builtins__.__NUMPY_SETUP__ = False
+        import numpy
+        self.include_dirs.append(numpy.get_include())
+
     def run(self):
         self.pre_build()
         build_ext.build_ext.run(self)
@@ -83,7 +88,6 @@ def get_ext_module(module):
         include_dirs=[
             'occa/c',
             'occa/c/occa.git/include',
-            np.get_include(),
         ],
         depends=['./occa/c/libocca.so'],
         libraries=['occa'],
@@ -164,5 +168,12 @@ setup(
     package_data=package_data,
     include_package_data=True,
     ext_modules=ext_modules,
+    setup_requires=[
+        'numpy>=1.7',
+        'setuptools>=28.0.0',
+    ],
+    install_requires=[
+        'numpy>=1.7',
+    ],
     zip_safe=False,
 )
