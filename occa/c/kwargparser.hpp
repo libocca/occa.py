@@ -25,19 +25,22 @@
 
 #include <map>
 
-#include "fromPy.hpp"
 #include "types.hpp"
 
 namespace occa {
   namespace py {
     namespace argType {
       enum type {
+        // Primitives
         longlong,
         string,
         dim,
         ptr,
+        // Custom types
         list,
         ndArray,
+        memoryLike,
+        // Core types
         device,
         memory,
         kernel,
@@ -73,18 +76,19 @@ namespace occa {
         return *this;                                       \
       }
 
-      DEFINE_ADD(std::string      , argType::string)
-      DEFINE_ADD(long long        , argType::longlong)
-      DEFINE_ADD(void*            , argType::ptr)
-      DEFINE_ADD(occa::py::list   , argType::list)
-      DEFINE_ADD(occa::py::ndArray, argType::ndArray)
-      DEFINE_ADD(occa::dim        , argType::dim)
-      DEFINE_ADD(occa::device     , argType::device)
-      DEFINE_ADD(occa::memory     , argType::memory)
-      DEFINE_ADD(occa::kernel     , argType::kernel)
-      DEFINE_ADD(occa::stream     , argType::stream)
-      DEFINE_ADD(occa::streamTag  , argType::streamTag)
-      DEFINE_ADD(occa::properties , argType::properties)
+      DEFINE_ADD(std::string         , argType::string)
+      DEFINE_ADD(long long           , argType::longlong)
+      DEFINE_ADD(void*               , argType::ptr)
+      DEFINE_ADD(occa::py::list      , argType::list)
+      DEFINE_ADD(occa::py::ndArray   , argType::ndArray)
+      DEFINE_ADD(occa::py::memoryLike, argType::memoryLike)
+      DEFINE_ADD(occa::dim           , argType::dim)
+      DEFINE_ADD(occa::device        , argType::device)
+      DEFINE_ADD(occa::memory        , argType::memory)
+      DEFINE_ADD(occa::kernel        , argType::kernel)
+      DEFINE_ADD(occa::stream        , argType::stream)
+      DEFINE_ADD(occa::streamTag     , argType::streamTag)
+      DEFINE_ADD(occa::properties    , argType::properties)
 
 #undef DEFINE_ADD
       //================================
@@ -101,6 +105,13 @@ namespace occa {
                               void *value) {
         setInput<InputType, ValueType>(index,
                                        occa::py::ptr((PyObject*) value));
+      }
+
+      template <class InputType>
+      inline void setObject(const int index,
+                            void *value) {
+        InputType *input = (InputType*) inputs[index];
+        input->setObj((PyObject*) value);
       }
       //================================
 
@@ -123,14 +134,17 @@ namespace occa {
 
       inline void setList(const int index,
                           void *value) {
-        occa::py::list &input = *((occa::py::list*) inputs[index]);
-        input.setObj((PyObject*) value);
+        setObject<occa::py::list>(index, value);
       }
 
       inline void setNDArray(const int index,
                              void *value) {
-        occa::py::ndArray &input = *((occa::py::ndArray*) inputs[index]);
-        input.setObj((PyObject*) value);
+        setObject<occa::py::ndArray>(index, value);
+      }
+
+      inline void setMemoryLike(const int index,
+                                void *value) {
+        setObject<occa::py::memoryLike>(index, value);
       }
 
       inline void setDim(const int index,
@@ -192,6 +206,7 @@ namespace occa {
         case argType::ptr       : return setPtr(index, value);
         case argType::list      : return setList(index, value);
         case argType::ndArray   : return setNDArray(index, value);
+        case argType::memoryLike: return setMemoryLike(index, value);
         case argType::dim       : return setDim(index, value);
         case argType::device    : return setDevice(index, value);
         case argType::memory    : return setMemory(index, value);

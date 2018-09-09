@@ -26,10 +26,7 @@
 #include "defines.hpp"
 #include "errors.hpp"
 #include "types.hpp"
-
-#include "fromPy.hpp"
 #include "toPy.hpp"
-
 #include "kwargparser.hpp"
 
 #endif

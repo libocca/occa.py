@@ -55,6 +55,114 @@ namespace occa {
     } StreamTag;
     //==================================
 
+
+    //---[ Type Getters ]---------------
+    static PyTypeObject* getTypeFromModule(const std::string &moduleName,
+                                           const std::string &className) {
+      PyObject *module = PyImport_ImportModule(moduleName.c_str());
+      PyTypeObject *type = (PyTypeObject*) PyObject_GetAttrString(module, className.c_str());
+      Py_DECREF(module);
+      return type;
+    }
+
+    PyTypeObject* ErrorType() {
+      static PyTypeObject *Error = getTypeFromModule("occa.exceptions", "CError");
+      return Error;
+    }
+
+    PyTypeObject* DeviceType() {
+      static PyTypeObject *Device = getTypeFromModule("occa.c.device", "Device");
+      return Device;
+    }
+
+    PyTypeObject* KernelType() {
+      static PyTypeObject *Kernel = getTypeFromModule("occa.c.kernel", "Kernel");
+      return Kernel;
+    }
+
+    PyTypeObject* MemoryType() {
+      static PyTypeObject *Memory = getTypeFromModule("occa.c.memory", "Memory");
+      return Memory;
+    }
+
+    PyTypeObject* StreamType() {
+      static PyTypeObject *Stream = getTypeFromModule("occa.c.stream", "Stream");
+      return Stream;
+    }
+
+    PyTypeObject* StreamTagType() {
+      static PyTypeObject *StreamTag = getTypeFromModule("occa.c.streamtag", "StreamTag");
+      return StreamTag;
+    }
+    //==================================
+
+
+    //---[ Checks ]---------------------
+    static bool isNone(void *obj) {
+      return (!obj || obj == Py_None);
+    }
+
+    static bool isString(PyObject *obj) {
+#if OCCA_PY3
+      return obj && PyUnicode_Check(obj);
+#elif OCCA_PY2
+      return obj && PyObject_TypeCheck(obj, &PyBaseString_Type);
+#endif
+    }
+
+    static bool isMemory(PyObject *obj) {
+      return obj && PyObject_TypeCheck(obj, MemoryType());
+    }
+
+    static bool isNumpyArray(PyObject *obj) {
+      return obj && PyArray_Check(obj);
+    }
+
+    static bool isNumpyScalar(PyObject *obj) {
+      return obj && PyArray_CheckScalar(obj);
+    }
+    //==================================
+
+
+    //---[ Py -> C ]--------------------
+    static std::string str(void *obj) {
+      if (!obj) {
+        return std::string();
+      }
+#if OCCA_PY3
+      PyObject *pyObj = PyUnicode_AsEncodedString((PyObject*) obj,
+                                                  "utf-8",
+                                                  "Error ~");
+      if (!pyObj) {
+        return std::string();
+      }
+      std::string s = PyBytes_AS_STRING(pyObj);
+      Py_XDECREF(pyObj);
+      return s;
+#elif OCCA_PY2
+      return PyString_AsString((PyObject*) obj);
+#endif
+    }
+
+    static long long longlong(void *obj) {
+      return (obj
+              ? PyLong_AsLongLong((PyObject*) obj)
+              : 0);
+    }
+
+    static void* ptr(PyObject *obj) {
+      if (isNone(obj)) {
+        return NULL;
+      }
+      if (isNumpyArray(obj)) {
+        return PyArray_DATA((PyArrayObject*) obj);
+      }
+      return PyCapsule_GetPointer(obj, NULL);
+    }
+    //==================================
+
+
+    //---[ Custom Types ]---------------
     class object {
     public:
       PyObject *obj;
@@ -122,44 +230,31 @@ namespace occa {
       }
     };
 
-    //---[ Type Getters ]---------------
-    static PyTypeObject* getTypeFromModule(const std::string &moduleName,
-                                           const std::string &className) {
-      PyObject *module = PyImport_ImportModule(moduleName.c_str());
-      PyTypeObject *type = (PyTypeObject*) PyObject_GetAttrString(module, className.c_str());
-      Py_DECREF(module);
-      return type;
-    }
+    class memoryLike : public object {
+    public:
+      inline memoryLike(PyObject *obj_ = NULL) :
+        object(obj_) {}
 
-    PyTypeObject* ErrorType() {
-      static PyTypeObject *Error = getTypeFromModule("occa.exceptions", "CError");
-      return Error;
-    }
+      inline bool isInitialized() {
+        return obj;
+      }
 
-    PyTypeObject* DeviceType() {
-      static PyTypeObject *Device = getTypeFromModule("occa.c.device", "Device");
-      return Device;
-    }
+      inline bool isMemory() {
+        return (obj && occa::py::isMemory(obj));
+      }
 
-    PyTypeObject* KernelType() {
-      static PyTypeObject *Kernel = getTypeFromModule("occa.c.kernel", "Kernel");
-      return Kernel;
-    }
+      inline bool isNDArray() {
+        return (obj && !occa::py::isMemory(obj));
+      }
 
-    PyTypeObject* MemoryType() {
-      static PyTypeObject *Memory = getTypeFromModule("occa.c.memory", "Memory");
-      return Memory;
-    }
+      inline occa::memory memory() {
+        return *(((Memory*) obj)->memory);
+      }
 
-    PyTypeObject* StreamType() {
-      static PyTypeObject *Stream = getTypeFromModule("occa.c.stream", "Stream");
-      return Stream;
-    }
-
-    PyTypeObject* StreamTagType() {
-      static PyTypeObject *StreamTag = getTypeFromModule("occa.c.streamtag", "StreamTag");
-      return StreamTag;
-    }
+      inline char* ptr() {
+        return (char*) occa::py::ptr(obj);
+      }
+    };
     //==================================
   }
 }

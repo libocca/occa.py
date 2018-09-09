@@ -115,6 +115,27 @@ def malloc(self, bytes, src=None, props=None):
     )
 
 def memcpy(dest, src, *,
-           bytes, dest_offset, src_offset, props):
-    raise NotImplementedError
+           bytes=None,
+           dest_offset=None, src_offset=None,
+           props=None):
+    utils.assert_memory_like(dest)
+    utils.assert_memory_like(src)
+    if bytes is not None:
+        utils.assert_int(bytes)
+    if dest_offset is not None:
+        utils.assert_int(dest_offset)
+    if src_offset is not None:
+        utils.assert_int(src_offset)
+    props = utils.properties(props)
+
+    if isinstance(dest, memory.Memory):
+        dest = dest._c
+    if isinstance(src, memory.Memory):
+        src = src._c
+
+    c.memcpy(dest=dest,
+             src=src,
+             dest_offset=dest_offset,
+             src_offset=src_offset,
+             props=props)
 #=======================================

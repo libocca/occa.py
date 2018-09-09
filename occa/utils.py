@@ -50,71 +50,71 @@ VALID_NP_TYPES = {
 
 
 #---[ Assert C ]------------------------
-def assert_c_device(d):
-    if not isinstance(d, c.Device):
+def assert_c_device(value):
+    if not isinstance(value, c.Device):
         raise ValueError('Expected an occa.c.Device')
 
 
-def assert_c_memory(d):
-    if not isinstance(d, c.Memory):
+def assert_c_memory(value):
+    if not isinstance(value, c.Memory):
         raise ValueError('Expected an occa.c.Memory')
 
 
-def assert_c_kernel(d):
-    if not isinstance(d, c.Kernel):
+def assert_c_kernel(value):
+    if not isinstance(value, c.Kernel):
         raise ValueError('Expected an occa.c.Kernel')
 
 
-def assert_c_stream(d):
-    if not isinstance(d, c.Stream):
+def assert_c_stream(value):
+    if not isinstance(value, c.Stream):
         raise ValueError('Expected an occa.c.Stream')
 
 
-def assert_c_streamTag(d):
-    if not isinstance(d, c.StreamTag):
+def assert_c_streamTag(value):
+    if not isinstance(value, c.StreamTag):
         raise ValueError('Expected an occa.c.StreamTag')
 #=======================================
 
 #---[ Assert Py ]-----------------------
-def assert_str(d):
-    if not isinstance(d, str):
+def assert_str(value):
+    if not isinstance(value, str):
         raise ValueError('Expected an str')
 
 
-def assert_int(d):
-    if not isinstance(d, int):
+def assert_int(value):
+    if not isinstance(value, int):
         raise ValueError('Expected an int')
 
 
-def assert_device(d):
-    if not isinstance(d, Device):
+def assert_device(value):
+    if not isinstance(value, Device):
         raise ValueError('Expected an occa.Device')
 
 
-def assert_memory(d):
-    if not isinstance(d, Memory):
+def assert_memory(value):
+    if not isinstance(value, Memory):
         raise ValueError('Expected an occa.Memory')
 
 
-def assert_kernel(d):
-    if not isinstance(d, Kernel):
+def assert_kernel(value):
+    if not isinstance(value, Kernel):
         raise ValueError('Expected an occa.Kernel')
 
 
-def assert_stream(d):
-    if not isinstance(d, Stream):
+def assert_stream(value):
+    if not isinstance(value, Stream):
         raise ValueError('Expected an occa.Stream')
 
 
-def assert_streamTag(d):
-    if not isinstance(d, StreamTag):
+def assert_streamTag(value):
+    if not isinstance(value, StreamTag):
         raise ValueError('Expected an occa.StreamTag')
 
 
-def assert_properties(props, **kwargs):
-    if not (props is None or
-            isinstance(props, str) or
-            isinstance(props, dict)):
+def assert_properties(value, **kwargs):
+    if not (value is None or
+            isinstance(value, str) or
+            isinstance(value, dict)):
         raise ValueError('Props is expected to be None, str, or dict')
 
     if len(kwargs) > 0:
@@ -126,15 +126,22 @@ def assert_properties(props, **kwargs):
             )
 
 
-def assert_dim(d):
-    if (not isinstance(d, collections.Iterable) or
-        len(list(d)) > 3):
+def assert_dim(value):
+    if (not isinstance(value, collections.Iterable) or
+        len(list(value)) > 3):
         raise ValueError('Expected an iterable of at most size 3')
 
 
-def assert_ndarray(array):
-    if not isinstance(array, np.ndarray):
+def assert_ndarray(value):
+    if not isinstance(value, np.ndarray):
         raise ValueError('Expected a numpy.ndarray')
+
+
+def assert_memory_like(value):
+    if (not isinstance(value, memory.Memory) and
+        not isinstance(value, np.ndarray)):
+        raise ValueError('Expected occa.Memory or numpy.ndarray')
+
 #=======================================
 
 #---[ Type Conversions ]----------------

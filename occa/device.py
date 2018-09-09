@@ -36,7 +36,7 @@ class Device:
         utils.assert_properties(props, **kwargs)
         props = utils.properties(props, **kwargs)
 
-        if props:
+        if props is not None:
             self._c = c.Device(props=props)
         else:
             self._c = None
@@ -129,7 +129,7 @@ class Device:
     #===================================
 
     #---[ Kernel ]----------------------
-    def build_kernel(self, filename, kernel, props=None):
+    def build_kernel(self, filename, kernel, *, props=None):
         self._assert_initialized()
         utils.assert_str(filename)
         utils.assert_str(kernel)
@@ -141,7 +141,7 @@ class Device:
                                  props=props)
         )
 
-    def build_kernel_from_string(self, source, kernel, props=None):
+    def build_kernel_from_string(self, source, kernel, *, props=None):
         self._assert_initialized()
         utils.assert_str(source)
         utils.assert_str(kernel)
@@ -155,7 +155,7 @@ class Device:
     #===================================
 
     #---[ Memory ]----------------------
-    def malloc(self, bytes=None, src=None, props=None):
+    def malloc(self, *, bytes=None, src=None, props=None):
         self._assert_initialized()
         if bytes is not None:
             utils.assert_int(bytes)

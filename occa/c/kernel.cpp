@@ -171,6 +171,57 @@ static PyObject* Kernel_set_run_dims(occa::py::Kernel *self,
   return occa::py::None();
 }
 
+static bool occa_setKernelArg(PyObject *obj,
+                              occa::kernelArg &arg) {
+  // NULL or None
+  if (occa::py::isNone(obj)) {
+    arg = occa::kernelArg((void*) NULL);
+    return true;
+  }
+
+  // occa::memory
+  if (occa::py::isMemory(obj)) {
+    arg = *(((occa::py::Memory*) obj)->memory);
+    return true;
+  }
+
+  // numpy dtype
+  if (occa::py::isNumpyScalar(obj)) {
+    PyArray_Descr *descr = PyArray_DescrFromScalar(obj);
+    bool setArg = false;
+
+#define CASE_TYPENUM(TYPENUM, SCALARTYPE)       \
+    case TYPENUM:                               \
+      arg = ((SCALARTYPE*)obj)->obval;          \
+      setArg = true;                            \
+      break
+
+    switch (descr->type_num) {
+      CASE_TYPENUM(NPY_BOOL   , PyBoolScalarObject);
+      CASE_TYPENUM(NPY_INT8   , PyInt8ScalarObject);
+      CASE_TYPENUM(NPY_UINT8  , PyUInt8ScalarObject);
+      CASE_TYPENUM(NPY_INT16  , PyInt16ScalarObject);
+      CASE_TYPENUM(NPY_UINT16 , PyUInt16ScalarObject);
+      CASE_TYPENUM(NPY_INT32  , PyInt32ScalarObject);
+      CASE_TYPENUM(NPY_UINT32 , PyUInt32ScalarObject);
+      CASE_TYPENUM(NPY_INT64  , PyInt64ScalarObject);
+      CASE_TYPENUM(NPY_UINT64 , PyUInt64ScalarObject);
+      CASE_TYPENUM(NPY_FLOAT32, PyFloat32ScalarObject);
+      CASE_TYPENUM(NPY_FLOAT64, PyFloat64ScalarObject);
+    }
+#undef CASE_TYPENUM
+
+    Py_DECREF(descr);
+
+    if (setArg) {
+      return true;
+    }
+  }
+
+  occa::py::raise("Unsupported type for a kernel argument");
+  return false;
+}
+
 static PyObject* Kernel_run(occa::py::Kernel *self,
                             PyObject *args,
                             PyObject *kwargs) {
@@ -192,12 +243,11 @@ static PyObject* Kernel_run(occa::py::Kernel *self,
   const int argc = argList.size();
   for (int i = 0; i < argc; ++i) {
     occa::kernelArg arg;
-    if (!occa::py::setKernelArg(argList[i], arg)) {
+    if (!occa_setKernelArg(argList[i], arg)) {
       return NULL;
     }
     self->kernel->pushArg(arg);
   }
-  return occa::py::None();
 
   self->kernel->run();
 

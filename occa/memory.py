@@ -22,7 +22,7 @@
 #
 import json
 
-from . import c, utils, device
+from . import c, utils, device, base
 from .exceptions import UninitializedError
 
 
@@ -70,13 +70,59 @@ class Memory:
         self._assert_initialized()
         return json.loads(self._c.properties())
 
-    def copy_to(self, dest, *, bytes=-1, offset=0, props=None):
+    def __getitem__(self, key):
         self._assert_initialized()
-        raise NotImplementedError
+        if (not isinstance(key, slice) or
+            key.step != 1):
+            raise KeyError('Only accepts slices with step of 1(e.g. mem[:-10])')
+        return Memory(
+            self._c.slice(offset=key.start,
+                          bytes=(key.end - key.start))
+        )
 
-    def copy_from(self, src,*,  bytes=-1, offset=0, props=None):
+    def copy_to(self, dest, *,
+                bytes=None,
+                src_offset=None,
+                dest_offset=None,
+                props=None):
         self._assert_initialized()
-        raise NotImplementedError
+        utils.assert_memory_like(dest)
+        if bytes is not None:
+            utils.assert_int(bytes)
+        if dest_offset is not None:
+            utils.assert_int(dest_offset)
+        if src_offset is not None:
+            utils.assert_int(src_offset)
+        props = utils.properties(props)
+
+        base.memcpy(dest=dest,
+                    src=self,
+                    bytes=bytes,
+                    src_offset=src_offset,
+                    dest_offset=dest_offset,
+                    props=props)
+
+    def copy_from(self, src, *,
+                  bytes=None,
+                  src_offset=None,
+                  dest_offset=None,
+                  props=None):
+        self._assert_initialized()
+        utils.assert_memory_like(src)
+        if bytes is not None:
+            utils.assert_int(bytes)
+        if dest_offset is not None:
+            utils.assert_int(dest_offset)
+        if src_offset is not None:
+            utils.assert_int(src_offset)
+        props = utils.properties(props)
+
+        base.memcpy(dest=self,
+                    src=src,
+                    bytes=bytes,
+                    src_offset=src_offset,
+                    dest_offset=dest_offset,
+                    props=props)
 
     def clone(self):
         self._assert_initialized()

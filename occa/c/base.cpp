@@ -250,99 +250,71 @@ static PyObject* py_occa_malloc(PyObject *self,
   );
 }
 
-static PyObject* py_occa_copy_mem_to_mem(PyObject *self,
-                                         PyObject *args,
-                                         PyObject *kwargs) {
-  occa::memory dest;
-  occa::memory src;
+static PyObject* py_occa_memcpy(PyObject *self,
+                                PyObject *args,
+                                PyObject *kwargs) {
+  occa::py::memoryLike dest;
+  occa::py::memoryLike src;
   long long bytes = -1;
-  long long destOffset = -1;
-  long long srcOffset = -1;
+  long long destOffset = 0;
+  long long srcOffset = 0;
   occa::properties props;
 
   occa::py::kwargParser parser;
   parser
     .add("dest", dest)
     .add("src", src)
+    .startOptionalKwargs()
     .add("bytes", bytes)
-    .add("destOffset", destOffset)
-    .add("srcOffset", srcOffset)
+    .add("dest_offset", destOffset)
+    .add("src_offset", srcOffset)
     .add("props", props);
 
   if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
-  OCCA_TRY(
-    occa::memcpy(dest, src,
-                 bytes,
-                 destOffset, srcOffset,
-                 props);
-  );
-  return occa::py::None();
-}
-
-static PyObject* py_occa_copy_ptr_to_mem(PyObject *self,
-                                         PyObject *args,
-                                         PyObject *kwargs) {
-  occa::memory dest;
-  void *src;
-  long long bytes = -1;
-  long long destOffset = -1;
-  long long srcOffset = -1;
-  occa::properties props;
-
-  occa::py::kwargParser parser;
-  parser
-    .add("dest", dest)
-    .add("src", src)
-    .add("bytes", bytes)
-    .add("destOffset", destOffset)
-    .add("srcOffset", srcOffset)
-    .add("props", props);
-
-  if (!parser.parse(args, kwargs)) {
+  if (!dest.isInitialized()) {
+    occa::py::raise("dest is not an occa.Memory or numpy.ndarray object");
+    return NULL;
+  }
+  if (!src.isInitialized()) {
+    occa::py::raise("src is not an occa.Memory or numpy.ndarray object");
     return NULL;
   }
 
   OCCA_TRY(
-    occa::memcpy(dest, src,
-                 bytes,
-                 destOffset, srcOffset,
-                 props);
+    if (dest.isMemory()) {
+      if (src.isMemory()) {
+        occa::memcpy(dest.memory(),
+                     src.memory(),
+                     bytes,
+                     destOffset,
+                     srcOffset,
+                     props);
+      } else {
+        occa::memcpy(dest.memory(),
+                     (void*) (src.ptr() + srcOffset),
+                     bytes,
+                     destOffset,
+                     props);
+      }
+    } else {
+      if (src.isMemory()) {
+        occa::memcpy((void*) (dest.ptr() + destOffset),
+                     src.memory(),
+                     bytes,
+                     srcOffset,
+                     props);
+      } else {
+        occa::memcpy((void*) (dest.ptr() + destOffset),
+                     (void*) (src.ptr() + srcOffset),
+                     bytes,
+                     props);
+      }
+    }
   );
-  return occa::py::None();
-}
 
-static PyObject* py_occa_copy_mem_to_ptr(PyObject *self,
-                                         PyObject *args,
-                                         PyObject *kwargs) {
-  void *dest;
-  occa::memory src;
-  long long bytes = -1;
-  long long destOffset = -1;
-  long long srcOffset = -1;
-  occa::properties props;
-
-  occa::py::kwargParser parser;
-  parser
-    .add("dest", dest)
-    .add("src", src)
-    .add("bytes", bytes)
-    .add("destOffset", destOffset)
-    .add("srcOffset", srcOffset)
-    .add("props", props);
-
-  if (!parser.parse(args, kwargs)) {
-    return NULL;
-  }
-
-  OCCA_TRY(
-    occa::memcpy(dest, src,
-                 bytes,
-                 destOffset, srcOffset,
-                 props);
-  );
   return occa::py::None();
 }
 //======================================
@@ -378,7 +350,5 @@ OCCA_PY_MODULE(
   BASE_METHOD_WITH_KWARGS(build_kernel_from_string),
   BASE_METHOD_WITH_KWARGS(build_kernel_from_binary),
   BASE_METHOD_WITH_KWARGS(malloc),
-  BASE_METHOD_WITH_KWARGS(copy_mem_to_mem),
-  BASE_METHOD_WITH_KWARGS(copy_ptr_to_mem),
-  BASE_METHOD_WITH_KWARGS(copy_mem_to_ptr)
+  BASE_METHOD_WITH_KWARGS(memcpy)
 );

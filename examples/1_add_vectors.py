@@ -21,70 +21,50 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
-raise Exception('WARNING: Still not functional, only showcasing how the API is intended to be used soon')
-
 import argparse
 import numpy as np
 import occa
 
 
 def main(args):
-    # Setup host data
-    a  = np.array([1,2,3,4,5], dtype=np.int32)
+    # Create device
+    d = occa.Device(args.device)
+
+    # Allocate memory in host
+    entries = 10
+
+    a  = np.arange(entries, dtype=np.float32)
     b  = 1 - a
+    ab = np.zeros(entries, dtype=np.float32)
 
-    # Start with 0
-    # After adding a + b, ab should equal to 1
-    ab = 0 * a
+    # Allocate memory in device and copy over data
+    o_a  = d.malloc(src=a)
+    o_b  = d.malloc(src=b)
+    o_ab = d.malloc(src=ab)
 
-    # Device setup with string flags
-    device = occa.Device(args.device)
+    # Build kernel
+    add_vectors = r'''
+    @kernel void addVectors(const int entries,
+                            const float *a,
+                            const float *b,
+                            float *ab) {
+      for (int i = 0; i < entries; ++i; @tile(16, @outer, @inner)) {
+        ab[i] = a[i] + b[i];
+      }
+    }
+    '''
 
-    # Use Strings:
-    #
-    #   device = occa.Device("mode: 'Serial'")
-    #
-    # More Backends:
-    #
-    #   device = occa.Device(mode='OpenMP',
-    #                        schedule='compact',
-    #                        chunk=10)
-    #
-    #   device = occa.Device(mode='OpenCL',
-    #                        platform_id=0,
-    #                        device_id=0)
-    #
-    #   device = occa.Device(mode='CUDA',
-    #                        device_id=0)
+    k = d.build_kernel_from_string(add_vectors,
+                                   'addVectors')
 
-    # Allocate memory on the device
-    o_a = device.malloc(a)
-    o_b = device.malloc(b)
+    # Launch kernel
+    k(np.intc(entries),
+      o_a, o_b, o_ab)
 
-    # Allocate only from the bytes
-    o_ab = device.malloc(occa.bytes(ab))
+    # Copy device data to host
+    o_ab.copy_to(ab)
 
-    # Compile the kernel at run-time
-    add_vectors = device.build_kernel('addVectors.okl', 'addVectors')
-
-    # Pass run-time defines
-    #   add_vectors = device.build_kernel('addVectors.okl', 'addVectors', {
-    #       'defines': {
-    #           'TYPE': 'double',
-    #       },
-    #   })
-
-    # Copy memory to the device
-    o_a = a
-    o_b = b
-
-    # Launch device kernel
-    add_vectors(entries, o_a, o_b, o_ab);
-
-    # Copy result to the host
-    ab = o_ab.to_numpy();
-
-    # Assert values
+    # Print results
     print(ab)
 
 
@@ -93,7 +73,8 @@ if __name__ == '__main__':
         description='Example adding two vectors'
     )
     parser.add_argument('-d', '--device',
-                        type=str
+                        type=str,
+                        default='',
                         help='''Device properties (default: "mode: 'Serial'")''')
     parser.add_argument('-v', '--verbose',
                         action='store_true',
@@ -101,6 +82,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    occa.settings.kernel.verbose = args.verbose
+    # TODO: Missing properties object
+    # occa.settings.kernel.verbose = args.verbose
 
-    return main(args)
+    main(args)
