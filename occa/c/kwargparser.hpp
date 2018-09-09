@@ -32,11 +32,12 @@ namespace occa {
   namespace py {
     namespace argType {
       enum type {
-        long_long,
+        longlong,
         string,
         dim,
         ptr,
         list,
+        ndArray,
         device,
         memory,
         kernel,
@@ -62,27 +63,28 @@ namespace occa {
       }
 
       //---[ Input ]--------------------
-#define DEFINE_ADD(INPUT_TYPE, ARG_TYPE, FORMAT)            \
+#define DEFINE_ADD(INPUT_TYPE, ARG_TYPE)                    \
       inline kwargParser& add(const std::string &kwargName, \
                               INPUT_TYPE &input) {          \
-        format += FORMAT;                                   \
+        format += 'O';                                      \
         argTypes.push_back(ARG_TYPE);                       \
         kwargNames.push_back(kwargName);                    \
         inputs.push_back((void*) &input);                   \
         return *this;                                       \
       }
 
-      DEFINE_ADD(std::string     , argType::string    , 's')
-      DEFINE_ADD(long long       , argType::long_long , 'L')
-      DEFINE_ADD(void*           , argType::ptr       , 'O')
-      DEFINE_ADD(occa::py::list  , argType::list      , 'O')
-      DEFINE_ADD(occa::dim       , argType::dim       , 'O')
-      DEFINE_ADD(occa::device    , argType::device    , 'O')
-      DEFINE_ADD(occa::memory    , argType::memory    , 'O')
-      DEFINE_ADD(occa::kernel    , argType::kernel    , 'O')
-      DEFINE_ADD(occa::stream    , argType::stream    , 'O')
-      DEFINE_ADD(occa::streamTag , argType::streamTag , 'O')
-      DEFINE_ADD(occa::properties, argType::properties, 's')
+      DEFINE_ADD(std::string      , argType::string)
+      DEFINE_ADD(long long        , argType::longlong)
+      DEFINE_ADD(void*            , argType::ptr)
+      DEFINE_ADD(occa::py::list   , argType::list)
+      DEFINE_ADD(occa::py::ndArray, argType::ndArray)
+      DEFINE_ADD(occa::dim        , argType::dim)
+      DEFINE_ADD(occa::device     , argType::device)
+      DEFINE_ADD(occa::memory     , argType::memory)
+      DEFINE_ADD(occa::kernel     , argType::kernel)
+      DEFINE_ADD(occa::stream     , argType::stream)
+      DEFINE_ADD(occa::streamTag  , argType::streamTag)
+      DEFINE_ADD(occa::properties , argType::properties)
 
 #undef DEFINE_ADD
       //================================
@@ -105,12 +107,13 @@ namespace occa {
       //---[ Arg Setters ]--------------
       inline void setLongLong(const int index,
                               void *value) {
-        ::memcpy(inputs[index], &value, sizeof(long long));
+        long long longValue = longlong(value);
+        ::memcpy(inputs[index], &longValue, sizeof(long long));
       }
 
       inline void setString(const int index,
                             void *value) {
-        setInput<std::string, char*>(index, value);
+        *((std::string*) inputs[index]) = str(value);
       }
 
       inline void setPtr(const int index,
@@ -121,6 +124,12 @@ namespace occa {
       inline void setList(const int index,
                           void *value) {
         occa::py::list &input = *((occa::py::list*) inputs[index]);
+        input.setObj((PyObject*) value);
+      }
+
+      inline void setNDArray(const int index,
+                             void *value) {
+        occa::py::ndArray &input = *((occa::py::ndArray*) inputs[index]);
         input.setObj((PyObject*) value);
       }
 
@@ -169,19 +178,20 @@ namespace occa {
 
       inline void setProperties(const int index,
                                 void *value) {
-        *((occa::properties*) inputs[index]) = occa::properties((char*) value);
+        *((occa::properties*) inputs[index]) = occa::properties(str(value));
       }
 
       inline void setArgValue(const int index,
                               void *value) {
-        if (!value) {
+        if (isNone(value)) {
           return;
         }
         switch (argTypes[index]) {
-        case argType::long_long : return setLongLong(index, value);
+        case argType::longlong  : return setLongLong(index, value);
         case argType::string    : return setString(index, value);
         case argType::ptr       : return setPtr(index, value);
         case argType::list      : return setList(index, value);
+        case argType::ndArray   : return setNDArray(index, value);
         case argType::dim       : return setDim(index, value);
         case argType::device    : return setDevice(index, value);
         case argType::memory    : return setMemory(index, value);
@@ -194,8 +204,7 @@ namespace occa {
       //================================
 
       inline bool parse(PyObject *args, PyObject *kwargs) {
-        OCCA_TRY_AND_RETURN(
-          false,
+        OCCA_TRY(
           return unsafeParse(args, kwargs);
         );
       }

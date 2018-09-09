@@ -31,43 +31,62 @@
 
 namespace occa {
   namespace py {
-    static bool isNone(PyObject *obj) {
+    static bool isNone(void *obj) {
       return (!obj || obj == Py_None);
     }
 
     static bool isString(PyObject *obj) {
 #if OCCA_PY3
-      return PyUnicode_Check(obj);
+      return obj && PyUnicode_Check(obj);
 #elif OCCA_PY2
-      return PyObject_TypeCheck(obj, &PyBaseString_Type);
+      return obj && PyObject_TypeCheck(obj, &PyBaseString_Type);
 #endif
     }
 
     static bool isMemory(PyObject *obj) {
-      return PyObject_TypeCheck(obj, MemoryType());
+      return obj && PyObject_TypeCheck(obj, MemoryType());
     }
 
     static bool isNumpyArray(PyObject *obj) {
-      return PyArray_Check(obj);
+      return obj && PyArray_Check(obj);
     }
 
     static bool isNumpyScalar(PyObject *obj) {
-      return PyArray_CheckScalar(obj);
+      return obj && PyArray_CheckScalar(obj);
     }
 
-    static const char* str(PyObject *obj) {
+    static std::string str(void *obj) {
+      if (!obj) {
+        return std::string();
+      }
 #if OCCA_PY3
-      return PyUnicode_AS_DATA(obj);
+      PyObject *pyObj = PyUnicode_AsEncodedString((PyObject*) obj,
+                                                  "utf-8",
+                                                  "Error ~");
+      if (!pyObj) {
+        return std::string();
+      }
+      std::string s = PyBytes_AS_STRING(pyObj);
+      Py_XDECREF(pyObj);
+      return s;
 #elif OCCA_PY2
-      return PyString_AsString(obj);
+      return PyString_AsString((PyObject*) obj);
 #endif
     }
 
-    static long long longlong(PyObject *obj) {
-      return PyLong_AsLongLong(obj);
+    static long long longlong(void *obj) {
+      return (obj
+              ? PyLong_AsLongLong((PyObject*) obj)
+              : 0);
     }
 
     static void* ptr(PyObject *obj) {
+      if (isNone(obj)) {
+        return NULL;
+      }
+      if (isNumpyArray(obj)) {
+        return PyArray_DATA((PyArrayObject*) obj);
+      }
       return PyCapsule_GetPointer(obj, NULL);
     }
 
@@ -75,18 +94,21 @@ namespace occa {
                              occa::kernelArg &arg) {
       // NULL or None
       if (isNone(obj)) {
+        std::cout << "NONE\n";
         arg = occa::kernelArg((void*) NULL);
         return true;
       }
 
       // occa::memory
       if (isMemory(obj)) {
+        std::cout << "MEMORY\n";
         arg = *(((Memory*) obj)->memory);
         return true;
       }
 
       // numpy dtype
       if (isNumpyScalar(obj)) {
+        std::cout << "SCALAR\n";
         PyArray_Descr *descr = PyArray_DescrFromScalar(obj);
         bool setArg = false;
 

@@ -155,12 +155,13 @@ class Device:
     #===================================
 
     #---[ Memory ]----------------------
-    def malloc(self, bytes, src=None, props=None):
+    def malloc(self, bytes=None, src=None, props=None):
         self._assert_initialized()
-        utils.assert_int(bytes)
-        props = utils.properties(props) or ''
-
-        raise NotImplementedError
+        if bytes is not None:
+            utils.assert_int(bytes)
+        if src is not None:
+            utils.assert_ndarray(src)
+        props = utils.properties(props)
 
         return memory.Memory(
             self._c.malloc(bytes=bytes,

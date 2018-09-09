@@ -44,8 +44,7 @@ static int Device_init(occa::py::Device *self,
   if (device.isInitialized()) {
     self->device = new occa::device(device);
   } else if (props.isInitialized()) {
-    OCCA_TRY_AND_RETURN(
-      -1,
+    OCCA_INIT_TRY(
       self->device = new occa::device(props);
     );
   }
@@ -328,12 +327,13 @@ static PyObject* Device_malloc(occa::py::Device *self,
     return occa::py::None();
   }
 
-  long long bytes = -1;
-  void *src = NULL;
+  long long bytes = 0;
+  occa::py::ndArray src;
   occa::properties props;
 
   occa::py::kwargParser parser;
   parser
+    .startOptionalKwargs()
     .add("bytes", bytes)
     .add("src", src)
     .add("props", props);
@@ -342,8 +342,14 @@ static PyObject* Device_malloc(occa::py::Device *self,
     return NULL;
   }
 
+  if (!bytes) {
+    bytes = src.size();
+  }
+
   return occa::py::toPy(
-    self->device->malloc(bytes, src, props)
+    self->device->malloc(bytes,
+                         src.ptr(),
+                         props)
   );
 }
 //  |===================================

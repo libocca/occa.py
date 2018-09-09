@@ -130,6 +130,11 @@ def assert_dim(d):
     if (not isinstance(d, collections.Iterable) or
         len(list(d)) > 3):
         raise ValueError('Expected an iterable of at most size 3')
+
+
+def assert_ndarray(array):
+    if not isinstance(array, np.ndarray):
+        raise ValueError('Expected a numpy.ndarray')
 #=======================================
 
 #---[ Type Conversions ]----------------
@@ -171,11 +176,10 @@ def cast_arg(value):
     # Pod
     to_dtype = PY_TO_DTYPE.get(valtype)
     if to_dtype:
-        return PackedArg.to_dtype(to_dtype(value))
+        return to_dtype(value)
 
-    # Numpy dtype/ndarray or None
+    # Numpy dtype or None
     if (valtype in VALID_NP_TYPES or
-        isinstance(value, np.ndarray) or
         value is None):
         return value
 
@@ -183,9 +187,9 @@ def cast_arg(value):
                     .format(argtype=type(value)))
 
 
-def args(args):
+def cast_args(args):
     return [
-        cast_art(arg)
+        cast_arg(arg)
         for arg in args
     ]
 #=======================================

@@ -197,6 +197,8 @@ static PyObject* Kernel_run(occa::py::Kernel *self,
     }
     self->kernel->pushArg(arg);
   }
+  return occa::py::None();
+
   self->kernel->run();
 
   return occa::py::None();

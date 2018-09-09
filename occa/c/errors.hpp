@@ -39,6 +39,10 @@
   OCCA_TRY_AND_RETURN(NULL, __VA_ARGS__)
 
 
+#define OCCA_INIT_TRY(...)                      \
+  OCCA_TRY_AND_RETURN(-1, __VA_ARGS__)
+
+
 namespace occa {
   namespace py {
     static void raise(occa::exception e) {

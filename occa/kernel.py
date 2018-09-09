@@ -102,4 +102,4 @@ class Kernel:
 
     def __call__(self, *args):
         self._assert_initialized()
-        self._c.run(args=utils.np_args(args))
+        self._c.run(args=utils.cast_args(args))

@@ -55,18 +55,18 @@ namespace occa {
     } StreamTag;
     //==================================
 
-    class list {
+    class object {
     public:
       PyObject *obj;
 
-      inline list(PyObject *obj_ = NULL) :
+      inline object(PyObject *obj_ = NULL) :
         obj(obj_) {
         if (obj) {
           Py_INCREF(obj);
         }
       }
 
-      inline ~list() {
+      inline ~object() {
         if (obj) {
           Py_DECREF(obj);
         }
@@ -80,6 +80,16 @@ namespace occa {
         Py_INCREF(obj);
       }
 
+      inline bool isInitialized() {
+        return obj;
+      }
+    };
+
+    class list : public object {
+    public:
+      inline list(PyObject *obj_ = NULL) :
+        object(obj_) {}
+
       inline int size() {
         return (obj
                 ? (int) PyList_Size(obj)
@@ -88,8 +98,27 @@ namespace occa {
 
       inline PyObject* operator [] (const int index) {
         return (obj
-                ? PyList_GetItem(obj, 0)
+                ? PyList_GetItem(obj, index)
                 : NULL);
+      }
+    };
+
+    class ndArray : public object {
+    public:
+      inline ndArray(PyObject *obj_ = NULL) :
+        object(obj_) {}
+
+      inline void* ptr() {
+        return (obj
+                ? PyArray_DATA((PyArrayObject*) obj)
+                : NULL);
+      }
+
+      inline int size() {
+        PyArrayObject *arrayPtr = (PyArrayObject*) obj;
+        return (arrayPtr
+                ? PyArray_SIZE(arrayPtr) * PyArray_ITEMSIZE(arrayPtr)
+                : 0);
       }
     };
 
@@ -97,7 +126,9 @@ namespace occa {
     static PyTypeObject* getTypeFromModule(const std::string &moduleName,
                                            const std::string &className) {
       PyObject *module = PyImport_ImportModule(moduleName.c_str());
-      return (PyTypeObject*) PyObject_GetAttrString(module, className.c_str());
+      PyTypeObject *type = (PyTypeObject*) PyObject_GetAttrString(module, className.c_str());
+      Py_DECREF(module);
+      return type;
     }
 
     PyTypeObject* ErrorType() {
