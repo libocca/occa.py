@@ -36,3 +36,26 @@ In a nutshell, OCCA (like *oca*-rina) is an open-source library which aims to
 ```bash
 pip install occa
 ```
+
+### Development
+
+Try out local installation
+
+```bash
+python setup.py install
+```
+
+Test deployment before uploading package to pypi
+
+```bash
+python setup.py sdist
+pip install dist/occa-<version>.tar.gz
+```
+
+### Deployment
+
+Upload to pypi
+
+```
+twine upload dist/*
+```
