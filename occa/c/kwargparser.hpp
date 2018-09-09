@@ -26,6 +26,7 @@
 #include <map>
 
 #include "fromPy.hpp"
+#include "types.hpp"
 
 namespace occa {
   namespace py {
@@ -35,6 +36,7 @@ namespace occa {
         string,
         dim,
         ptr,
+        list,
         device,
         memory,
         kernel,
@@ -73,6 +75,7 @@ namespace occa {
       DEFINE_ADD(std::string     , argType::string    , 's')
       DEFINE_ADD(long long       , argType::long_long , 'L')
       DEFINE_ADD(void*           , argType::ptr       , 'O')
+      DEFINE_ADD(occa::py::list  , argType::list      , 'O')
       DEFINE_ADD(occa::dim       , argType::dim       , 'O')
       DEFINE_ADD(occa::device    , argType::device    , 'O')
       DEFINE_ADD(occa::memory    , argType::memory    , 'O')
@@ -115,15 +118,28 @@ namespace occa {
         setPtrInput<void*, void*>(index, value);
       }
 
+      inline void setList(const int index,
+                          void *value) {
+        occa::py::list &input = *((occa::py::list*) inputs[index]);
+        input.setObj((PyObject*) value);
+      }
+
       inline void setDim(const int index,
                          void *value) {
 
-        occa::py::tuple tuple((PyObject*) value);
+        occa::py::list list((PyObject*) value);
+        const int listSize = list.size();
 
         occa::dim &input = *((occa::dim*) inputs[index]);
-        input.x = occa::py::longlong(tuple[0]);
-        input.y = occa::py::longlong(tuple[1]);
-        input.z = occa::py::longlong(tuple[2]);
+        if (listSize >= 0) {
+          input.x = occa::py::longlong(list[0]);
+          if (listSize >= 1) {
+            input.y = occa::py::longlong(list[1]);
+            if (listSize >= 2) {
+              input.z = occa::py::longlong(list[2]);
+            }
+          }
+        }
       }
 
       inline void setDevice(const int index,
@@ -165,6 +181,7 @@ namespace occa {
         case argType::long_long : return setLongLong(index, value);
         case argType::string    : return setString(index, value);
         case argType::ptr       : return setPtr(index, value);
+        case argType::list      : return setList(index, value);
         case argType::dim       : return setDim(index, value);
         case argType::device    : return setDevice(index, value);
         case argType::memory    : return setMemory(index, value);

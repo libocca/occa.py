@@ -100,6 +100,6 @@ class Kernel:
         self._c.set_run_dims(outer=list(outer),
                              inner=list(inner))
 
-    def __call__(self):
+    def __call__(self, *args):
         self._assert_initialized()
-        raise NotImplementedError
+        self._c.run(args=utils.np_args(args))

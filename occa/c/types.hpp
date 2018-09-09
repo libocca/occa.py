@@ -28,24 +28,72 @@
 
 namespace occa {
   namespace py {
-    class tuple {
+    //---[ PyType ]---------------------
+    typedef struct {
+      PyObject_HEAD
+      occa::device *device;
+    } Device;
+
+    typedef struct {
+      PyObject_HEAD
+      occa::memory *memory;
+    } Memory;
+
+    typedef struct {
+      PyObject_HEAD
+      occa::kernel *kernel;
+    } Kernel;
+
+    typedef struct {
+      PyObject_HEAD
+      occa::stream *stream;
+    } Stream;
+
+    typedef struct {
+      PyObject_HEAD
+      occa::streamTag *streamTag;
+    } StreamTag;
+    //==================================
+
+    class list {
     public:
       PyObject *obj;
 
-      inline tuple(PyObject *obj_) :
+      inline list(PyObject *obj_ = NULL) :
         obj(obj_) {
+        if (obj) {
+          Py_INCREF(obj);
+        }
+      }
+
+      inline ~list() {
+        if (obj) {
+          Py_DECREF(obj);
+        }
+      }
+
+      inline void setObj(PyObject *obj_) {
+        if (obj) {
+          Py_DECREF(obj);
+        }
+        obj = obj_;
         Py_INCREF(obj);
       }
 
-      inline ~tuple() {
-        Py_DECREF(obj);
+      inline int size() {
+        return (obj
+                ? (int) PyList_Size(obj)
+                : 0);
       }
 
       inline PyObject* operator [] (const int index) {
-        return PyTuple_GetItem(obj, 0);
+        return (obj
+                ? PyList_GetItem(obj, 0)
+                : NULL);
       }
     };
 
+    //---[ Type Getters ]---------------
     static PyTypeObject* getTypeFromModule(const std::string &moduleName,
                                            const std::string &className) {
       PyObject *module = PyImport_ImportModule(moduleName.c_str());
@@ -81,6 +129,7 @@ namespace occa {
       static PyTypeObject *StreamTag = getTypeFromModule("occa.c.streamtag", "StreamTag");
       return StreamTag;
     }
+    //==================================
   }
 }
 

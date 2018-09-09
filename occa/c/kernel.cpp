@@ -23,12 +23,7 @@
 
 
 //---[ Class Python Methods ]-----------
-typedef struct {
-  PyObject_HEAD
-  occa::kernel *kernel;
-} Kernel;
-
-static int Kernel_init(Kernel *self,
+static int Kernel_init(occa::py::Kernel *self,
                        PyObject *args,
                        PyObject *kwargs) {
   self->kernel = NULL;
@@ -50,7 +45,7 @@ static int Kernel_init(Kernel *self,
   return 0;
 }
 
-static void Kernel_dealloc(Kernel *self) {
+static void Kernel_dealloc(occa::py::Kernel *self) {
   delete self->kernel;
   Py_TYPE(self)->tp_free((PyObject*) self);
 }
@@ -58,21 +53,21 @@ static void Kernel_dealloc(Kernel *self) {
 
 
 //---[ Class Methods ]------------------
-static PyObject* Kernel_is_initialized(Kernel *self) {
+static PyObject* Kernel_is_initialized(occa::py::Kernel *self) {
   return occa::py::toPy(
     (bool) (self->kernel &&
             self->kernel->isInitialized())
   );
 }
 
-static PyObject* Kernel_free(Kernel *self) {
+static PyObject* Kernel_free(occa::py::Kernel *self) {
   if (self->kernel) {
     self->kernel->free();
   }
   return occa::py::None();
 }
 
-static PyObject* Kernel_mode(Kernel *self) {
+static PyObject* Kernel_mode(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -81,7 +76,7 @@ static PyObject* Kernel_mode(Kernel *self) {
   );
 }
 
-static PyObject* Kernel_properties(Kernel *self) {
+static PyObject* Kernel_properties(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -90,7 +85,7 @@ static PyObject* Kernel_properties(Kernel *self) {
   );
 }
 
-static PyObject* Kernel_get_device(Kernel *self) {
+static PyObject* Kernel_get_device(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -99,7 +94,7 @@ static PyObject* Kernel_get_device(Kernel *self) {
   );
 }
 
-static PyObject* Kernel_name(Kernel *self) {
+static PyObject* Kernel_name(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -108,7 +103,7 @@ static PyObject* Kernel_name(Kernel *self) {
   );
 }
 
-static PyObject* Kernel_source_filename(Kernel *self) {
+static PyObject* Kernel_source_filename(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -117,7 +112,7 @@ static PyObject* Kernel_source_filename(Kernel *self) {
   );
 }
 
-static PyObject* Kernel_binary_filename(Kernel *self) {
+static PyObject* Kernel_binary_filename(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -126,7 +121,7 @@ static PyObject* Kernel_binary_filename(Kernel *self) {
   );
 }
 
-static PyObject* Kernel_max_dims(Kernel *self) {
+static PyObject* Kernel_max_dims(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -135,7 +130,7 @@ static PyObject* Kernel_max_dims(Kernel *self) {
   );
 }
 
-static PyObject* Kernel_max_outer_dims(Kernel *self) {
+static PyObject* Kernel_max_outer_dims(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -144,7 +139,7 @@ static PyObject* Kernel_max_outer_dims(Kernel *self) {
   );
 }
 
-static PyObject* Kernel_max_inner_dims(Kernel *self) {
+static PyObject* Kernel_max_inner_dims(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
@@ -153,7 +148,7 @@ static PyObject* Kernel_max_inner_dims(Kernel *self) {
   );
 }
 
-static PyObject* Kernel_set_run_dims(Kernel *self,
+static PyObject* Kernel_set_run_dims(occa::py::Kernel *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
   if (!self->kernel) {
@@ -176,11 +171,34 @@ static PyObject* Kernel_set_run_dims(Kernel *self,
   return occa::py::None();
 }
 
-static PyObject* Kernel_run(Kernel *self,
-                            PyObject *args) {
+static PyObject* Kernel_run(occa::py::Kernel *self,
+                            PyObject *args,
+                            PyObject *kwargs) {
   if (!self->kernel) {
     return occa::py::None();
   }
+
+  occa::py::list argList;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("args", argList);
+
+  if (!parser.parse(args, kwargs)) {
+    return NULL;
+  }
+
+  self->kernel->clearArgs();
+  const int argc = argList.size();
+  for (int i = 0; i < argc; ++i) {
+    occa::kernelArg arg;
+    if (!occa::py::setKernelArg(argList[i], arg)) {
+      return NULL;
+    }
+    self->kernel->pushArg(arg);
+  }
+  self->kernel->run();
+
   return occa::py::None();
 }
 //======================================
@@ -189,9 +207,6 @@ static PyObject* Kernel_run(Kernel *self,
 //---[ Module ]-------------------------
 #define KERNEL_METHOD_NO_ARGS(FUNC)             \
   OCCA_PY_METHOD_NO_ARGS(#FUNC, Kernel_##FUNC)
-
-#define KERNEL_METHOD_WITH_ARGS(FUNC)             \
-  OCCA_PY_METHOD_WITH_ARGS(#FUNC, Kernel_##FUNC)
 
 #define KERNEL_METHOD_WITH_KWARGS(FUNC)             \
   OCCA_PY_METHOD_WITH_KWARGS(#FUNC, Kernel_##FUNC)
@@ -210,13 +225,13 @@ OCCA_PY_METHODS(
   KERNEL_METHOD_NO_ARGS(max_outer_dims),
   KERNEL_METHOD_NO_ARGS(max_inner_dims),
   KERNEL_METHOD_WITH_KWARGS(set_run_dims),
-  KERNEL_METHOD_WITH_ARGS(run)
+  KERNEL_METHOD_WITH_KWARGS(run)
 );
 
 static PyTypeObject KernelType = {
   PyVarObject_HEAD_INIT(NULL, 0)
   "occa.c.Kernel",                          // tp_name
-  sizeof(Kernel),                           // tp_basicsize
+  sizeof(occa::py::Kernel),                 // tp_basicsize
   0,                                        // tp_itemsize
   (destructor) Kernel_dealloc,              // tp_dealloc
   0,                                        // tp_print

@@ -156,40 +156,6 @@ namespace occa {
       return toPy(j.dump(0));
     }
 
-    static bool tupleToNpIntVector(PyObject *dimsTuple,
-                                   npIntVector &dims) {
-      if (!PyTuple_Check(dimsTuple)) {
-        py::raise("Expected a tuple of longs for dims");
-        return false;
-      }
-
-      const int dimCount = (int) PyTuple_Size(dimsTuple);
-      dims.clear();
-      dims.resize(dimCount);
-
-      for (int i = 0; i < dimCount; ++i) {
-        PyObject *value = PyTuple_GetItem(dimsTuple, i);
-        if (!PyLong_Check(value)) {
-          py::raise("Expected a tuple of longs for dims");
-          return false;
-        }
-        dims[i] = (npy_intp) PyLong_AsLong(value);
-      }
-
-      return true;
-    }
-
-    static size_t dimsEntries(npIntVector &dims) {
-      size_t count = 1;
-
-      const int dimCount = (int) dims.size();
-      for (int i = 0; i < dimCount; ++i) {
-        count *= dims[i];
-      }
-
-      return count;
-    }
-
     // Numpy
     static PyObject* npArray(void *ptr,
                              npIntVector &dims,

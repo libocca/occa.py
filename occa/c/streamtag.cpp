@@ -23,12 +23,7 @@
 
 
 //---[ Class Python Methods ]-----------
-typedef struct {
-  PyObject_HEAD
-  occa::streamTag *streamTag;
-} StreamTag;
-
-static int StreamTag_init(StreamTag *self,
+static int StreamTag_init(occa::py::StreamTag *self,
                           PyObject *args,
                           PyObject *kwargs) {
   self->streamTag = NULL;
@@ -50,7 +45,7 @@ static int StreamTag_init(StreamTag *self,
   return 0;
 }
 
-static void StreamTag_dealloc(StreamTag *self) {
+static void StreamTag_dealloc(occa::py::StreamTag *self) {
   delete self->streamTag;
   Py_TYPE(self)->tp_free((PyObject*) self);
 }
@@ -58,21 +53,21 @@ static void StreamTag_dealloc(StreamTag *self) {
 
 
 //---[ Class Methods ]------------------
-static PyObject* StreamTag_is_initialized(StreamTag *self) {
+static PyObject* StreamTag_is_initialized(occa::py::StreamTag *self) {
   return occa::py::toPy(
     (bool) (self->streamTag &&
             self->streamTag->isInitialized())
   );
 }
 
-static PyObject* StreamTag_free(StreamTag *self) {
+static PyObject* StreamTag_free(occa::py::StreamTag *self) {
   if (self->streamTag) {
     self->streamTag->free();
   }
   return occa::py::None();
 }
 
-static PyObject* StreamTag_get_device(StreamTag *self) {
+static PyObject* StreamTag_get_device(occa::py::StreamTag *self) {
   if (!self->streamTag) {
     return occa::py::None();
   }
@@ -81,7 +76,7 @@ static PyObject* StreamTag_get_device(StreamTag *self) {
   );
 }
 
-static PyObject* StreamTag_wait(StreamTag *self) {
+static PyObject* StreamTag_wait(occa::py::StreamTag *self) {
   if (self->streamTag) {
     self->streamTag->wait();
   }
@@ -104,10 +99,10 @@ OCCA_PY_METHODS(
 
 static PyTypeObject StreamTagType = {
   PyVarObject_HEAD_INIT(NULL, 0)
-  "occa.c.StreamTag",                          // tp_name
-  sizeof(StreamTag),                           // tp_basicsize
+  "occa.c.StreamTag",                       // tp_name
+  sizeof(occa::py::StreamTag),              // tp_basicsize
   0,                                        // tp_itemsize
-  (destructor) StreamTag_dealloc,              // tp_dealloc
+  (destructor) StreamTag_dealloc,           // tp_dealloc
   0,                                        // tp_print
   0,                                        // tp_getattr
   0,                                        // tp_setattr
@@ -123,14 +118,14 @@ static PyTypeObject StreamTagType = {
   0,                                        // tp_setattro
   0,                                        // tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, // tp_flags
-  "Wrapper for occa::streamTag",               // tp_doc
+  "Wrapper for occa::streamTag",            // tp_doc
   0,                                        // tp_traverse
   0,                                        // tp_clear
   0,                                        // tp_richcompare
   0,                                        // tp_weaklistoffset
   0,                                        // tp_iter
   0,                                        // tp_iternext
-  StreamTag_methods,                           // tp_methods
+  StreamTag_methods,                        // tp_methods
   0,                                        // tp_members
   0,                                        // tp_getset
   0,                                        // tp_base
@@ -138,7 +133,7 @@ static PyTypeObject StreamTagType = {
   0,                                        // tp_descr_get
   0,                                        // tp_descr_set
   0,                                        // tp_dictoffset
-  (initproc) StreamTag_init,                   // tp_init
+  (initproc) StreamTag_init,                // tp_init
   0,                                        // tp_alloc
   0                                         // tp_new
 };

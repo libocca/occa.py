@@ -23,12 +23,7 @@
 
 
 //---[ Class Python Methods ]-----------
-typedef struct {
-  PyObject_HEAD
-  occa::stream *stream;
-} Stream;
-
-static int Stream_init(Stream *self,
+static int Stream_init(occa::py::Stream *self,
                        PyObject *args,
                        PyObject *kwargs) {
   self->stream = NULL;
@@ -50,7 +45,7 @@ static int Stream_init(Stream *self,
   return 0;
 }
 
-static void Stream_dealloc(Stream *self) {
+static void Stream_dealloc(occa::py::Stream *self) {
   delete self->stream;
   Py_TYPE(self)->tp_free((PyObject*) self);
 }
@@ -58,21 +53,21 @@ static void Stream_dealloc(Stream *self) {
 
 
 //---[ Class Methods ]------------------
-static PyObject* Stream_is_initialized(Stream *self) {
+static PyObject* Stream_is_initialized(occa::py::Stream *self) {
   return occa::py::toPy(
     (bool) (self->stream &&
             self->stream->isInitialized())
   );
 }
 
-static PyObject* Stream_free(Stream *self) {
+static PyObject* Stream_free(occa::py::Stream *self) {
   if (self->stream) {
     self->stream->free();
   }
   return occa::py::None();
 }
 
-static PyObject* Stream_mode(Stream *self) {
+static PyObject* Stream_mode(occa::py::Stream *self) {
   if (!self->stream) {
     return occa::py::None();
   }
@@ -81,7 +76,7 @@ static PyObject* Stream_mode(Stream *self) {
   );
 }
 
-static PyObject* Stream_properties(Stream *self) {
+static PyObject* Stream_properties(occa::py::Stream *self) {
   if (!self->stream) {
     return occa::py::None();
   }
@@ -90,7 +85,7 @@ static PyObject* Stream_properties(Stream *self) {
   );
 }
 
-static PyObject* Stream_get_device(Stream *self) {
+static PyObject* Stream_get_device(occa::py::Stream *self) {
   if (!self->stream) {
     return occa::py::None();
   }
@@ -117,7 +112,7 @@ OCCA_PY_METHODS(
 static PyTypeObject StreamType = {
   PyVarObject_HEAD_INIT(NULL, 0)
   "occa.c.Stream",                          // tp_name
-  sizeof(Stream),                           // tp_basicsize
+  sizeof(occa::py::Stream),                 // tp_basicsize
   0,                                        // tp_itemsize
   (destructor) Stream_dealloc,              // tp_dealloc
   0,                                        // tp_print

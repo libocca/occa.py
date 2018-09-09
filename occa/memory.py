@@ -38,6 +38,9 @@ class Memory:
         if not self.is_initialized:
             raise UninitializedError('occa.Memory is not initialized')
 
+    def _to_occa_kernel_arg(self):
+        return self._c
+
     @property
     def is_initialized(self):
         '''Return if the memory has been initialized'''

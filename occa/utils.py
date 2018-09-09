@@ -22,8 +22,31 @@
 #
 import collections
 import json
+import numpy as np
 
 from . import c, device, memory, kernel, stream, streamtag
+
+
+PY_TO_DTYPE = {
+    int: np.dtype(int).type,
+    float: np.dtype(float).type,
+    bool: np.dtype(bool).type,
+}
+
+
+VALID_NP_TYPES = {
+    np.bool_,
+    np.int8,
+    np.uint8,
+    np.int16,
+    np.uint16,
+    np.int32,
+    np.uint32,
+    np.int64,
+    np.uint64,
+    np.float32,
+    np.float64,
+}
 
 
 #---[ Assert C ]------------------------
@@ -105,11 +128,11 @@ def assert_properties(props, **kwargs):
 
 def assert_dim(d):
     if (not isinstance(d, collections.Iterable) or
-        len(list(d)) != 3):
-        raise ValueError('Expected an iterable of size 3')
+        len(list(d)) > 3):
+        raise ValueError('Expected an iterable of at most size 3')
 #=======================================
 
-
+#---[ Type Conversions ]----------------
 def properties(props, **kwargs):
     if not (props is None or
             isinstance(props, str) or
@@ -136,3 +159,33 @@ def properties(props, **kwargs):
 
     # Nothing
     return None
+
+
+def cast_arg(value):
+    # Memory and custom types
+    if hasattr(value, '_to_occa_kernel_arg'):
+        return value._to_occa_kernel_arg()
+
+    valtype = type(value)
+
+    # Pod
+    to_dtype = PY_TO_DTYPE.get(valtype)
+    if to_dtype:
+        return PackedArg.to_dtype(to_dtype(value))
+
+    # Numpy dtype/ndarray or None
+    if (valtype in VALID_NP_TYPES or
+        isinstance(value, np.ndarray) or
+        value is None):
+        return value
+
+    raise TypeError('Unsupported type for a kernel argument: [{argtype}]'
+                    .format(argtype=type(value)))
+
+
+def args(args):
+    return [
+        cast_art(arg)
+        for arg in args
+    ]
+#=======================================

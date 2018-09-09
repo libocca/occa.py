@@ -26,8 +26,10 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
 #include <Python.h>
-#include "structmember.h"
-#include "numpy/arrayobject.h"
+#include <structmember.h>
+#include <numpy/arrayobject.h>
+#include <numpy/arrayscalars.h>
+#include <numpy/npy_common.h>
 
 #include <occa.hpp>
 

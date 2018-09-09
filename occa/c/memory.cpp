@@ -23,12 +23,7 @@
 
 
 //---[ Class Python Methods ]-----------
-typedef struct {
-  PyObject_HEAD
-  occa::memory *memory;
-} Memory;
-
-static int Memory_init(Memory *self,
+static int Memory_init(occa::py::Memory *self,
                        PyObject *args,
                        PyObject *kwargs) {
   self->memory = NULL;
@@ -50,7 +45,7 @@ static int Memory_init(Memory *self,
   return 0;
 }
 
-static void Memory_dealloc(Memory *self) {
+static void Memory_dealloc(occa::py::Memory *self) {
   delete self->memory;
   Py_TYPE(self)->tp_free((PyObject*) self);
 }
@@ -58,21 +53,21 @@ static void Memory_dealloc(Memory *self) {
 
 
 //---[ Class Methods ]------------------
-static PyObject* Memory_is_initialized(Memory *self) {
+static PyObject* Memory_is_initialized(occa::py::Memory *self) {
   return occa::py::toPy(
     (bool) (self->memory &&
             self->memory->isInitialized())
   );
 }
 
-static PyObject* Memory_free(Memory *self) {
+static PyObject* Memory_free(occa::py::Memory *self) {
   if (self->memory) {
     self->memory->free();
   }
   return occa::py::None();
 }
 
-static PyObject* Memory_mode(Memory *self) {
+static PyObject* Memory_mode(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
@@ -81,7 +76,7 @@ static PyObject* Memory_mode(Memory *self) {
   );
 }
 
-static PyObject* Memory_properties(Memory *self) {
+static PyObject* Memory_properties(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
@@ -90,7 +85,7 @@ static PyObject* Memory_properties(Memory *self) {
   );
 }
 
-static PyObject* Memory_get_device(Memory *self) {
+static PyObject* Memory_get_device(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
@@ -99,7 +94,7 @@ static PyObject* Memory_get_device(Memory *self) {
   );
 }
 
-static PyObject* Memory_size(Memory *self) {
+static PyObject* Memory_size(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
@@ -109,7 +104,7 @@ static PyObject* Memory_size(Memory *self) {
   );
 }
 
-static PyObject* Memory_slice(Memory *self,
+static PyObject* Memory_slice(occa::py::Memory *self,
                               PyObject *args,
                               PyObject *kwargs) {
   if (!self->memory) {
@@ -134,42 +129,42 @@ static PyObject* Memory_slice(Memory *self,
 }
 
 //---[ UVA ]----------------------------
-static PyObject* Memory_is_managed(Memory *self) {
+static PyObject* Memory_is_managed(occa::py::Memory *self) {
   return occa::py::toPy(
     (bool) (self->memory &&
             self->memory->isManaged())
   );
 }
 
-static PyObject* Memory_in_device(Memory *self) {
+static PyObject* Memory_in_device(occa::py::Memory *self) {
   return occa::py::toPy(
     (bool) (self->memory &&
             self->memory->inDevice())
   );
 }
 
-static PyObject* Memory_is_stale(Memory *self) {
+static PyObject* Memory_is_stale(occa::py::Memory *self) {
   return occa::py::toPy(
     (bool) (self->memory &&
             self->memory->isStale())
   );
 }
 
-static PyObject* Memory_start_managing(Memory *self) {
+static PyObject* Memory_start_managing(occa::py::Memory *self) {
   if (self->memory) {
     self->memory->startManaging();
   }
   return occa::py::None();
 }
 
-static PyObject* Memory_stop_managing(Memory *self) {
+static PyObject* Memory_stop_managing(occa::py::Memory *self) {
   if (self->memory) {
     self->memory->stopManaging();
   }
   return occa::py::None();
 }
 
-static PyObject* Memory_sync_to_device(Memory *self,
+static PyObject* Memory_sync_to_device(occa::py::Memory *self,
                                        PyObject *args,
                                        PyObject *kwargs) {
   if (!self->memory) {
@@ -193,7 +188,7 @@ static PyObject* Memory_sync_to_device(Memory *self,
   return occa::py::None();
 }
 
-static PyObject* Memory_sync_to_host(Memory *self,
+static PyObject* Memory_sync_to_host(occa::py::Memory *self,
                                      PyObject *args,
                                      PyObject *kwargs) {
   if (!self->memory) {
@@ -218,7 +213,7 @@ static PyObject* Memory_sync_to_host(Memory *self,
 }
 //======================================
 
-static PyObject* Memory_clone(Memory *self) {
+static PyObject* Memory_clone(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
@@ -258,7 +253,7 @@ OCCA_PY_METHODS(
 static PyTypeObject MemoryType = {
   PyVarObject_HEAD_INIT(NULL, 0)
   "occa.c.Memory",                          // tp_name
-  sizeof(Memory),                           // tp_basicsize
+  sizeof(occa::py::Memory),                 // tp_basicsize
   0,                                        // tp_itemsize
   (destructor) Memory_dealloc,              // tp_dealloc
   0,                                        // tp_print
