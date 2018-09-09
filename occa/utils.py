@@ -24,7 +24,7 @@ import collections
 import json
 import numpy as np
 
-from . import c, device, memory, kernel, stream, streamtag
+from . import c
 
 
 PY_TO_DTYPE = {
@@ -87,26 +87,32 @@ def assert_int(value):
 
 
 def assert_device(value):
+    from .device import Device
+
     if not isinstance(value, Device):
         raise ValueError('Expected an occa.Device')
 
 
 def assert_memory(value):
+    from .memory import Memory
     if not isinstance(value, Memory):
         raise ValueError('Expected an occa.Memory')
 
 
 def assert_kernel(value):
+    from .kernel import Kernel
     if not isinstance(value, Kernel):
         raise ValueError('Expected an occa.Kernel')
 
 
 def assert_stream(value):
+    from .stream import Stream
     if not isinstance(value, Stream):
         raise ValueError('Expected an occa.Stream')
 
 
 def assert_streamTag(value):
+    from .streamtag import StreamTag
     if not isinstance(value, StreamTag):
         raise ValueError('Expected an occa.StreamTag')
 
@@ -138,7 +144,9 @@ def assert_ndarray(value):
 
 
 def assert_memory_like(value):
-    if (not isinstance(value, memory.Memory) and
+    from .memory import Memory
+
+    if (not isinstance(value, Memory) and
         not isinstance(value, np.ndarray)):
         raise ValueError('Expected occa.Memory or numpy.ndarray')
 
@@ -156,10 +164,8 @@ def properties(props, **kwargs):
 
     if has_props:
         if has_kwargs:
-            return json.dumps({
-                **props
-                **kwargs
-            })
+            props.update(kwargs)
+            return json.dumps(props)
         # No kwargs
         if isinstance(props, dict):
             props = json.dumps(props)

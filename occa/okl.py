@@ -81,7 +81,7 @@ def make_kernel(func):
            args=c_args))
 
 
-def bytecode_function(*, name, bytecode, **kwargs):
+def bytecode_function(name, bytecode, **kwargs):
     def _(): pass
     args = {
         'co_argcount': 0,
@@ -99,8 +99,9 @@ def bytecode_function(*, name, bytecode, **kwargs):
         'co_nlocals': 0,
         'co_stacksize': 0,
         'co_varnames': (),
-        **kwargs,
     }
+    args.update(kwargs)
+
     _.__code__ = types.CodeType(
         args['co_argcount'],
         args['co_kwonlyargcount'],

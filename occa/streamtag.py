@@ -22,7 +22,7 @@
 #
 import json
 
-from . import c, utils, device
+from . import c, utils
 from .exceptions import UninitializedError
 
 
@@ -49,8 +49,10 @@ class StreamTag:
 
     @property
     def device(self):
+        from .device import Device
+
         self._assert_initialized()
-        return device.Device(self._c.get_device())
+        return Device(self._c.get_device())
 
     def wait(self):
         self._assert_initialized()

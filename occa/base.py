@@ -22,7 +22,7 @@
 #
 import json
 
-from . import c, utils, device, memory, kernel as K, stream, streamtag
+from . import c, utils
 
 def settings():
     return json.loads(c.settings())
@@ -32,13 +32,19 @@ def print_mode_info():
 
 #---[ Device ]--------------------------
 def host():
-    return device.Device(c.host())
+    from .device import Device
+
+    return Device(c.host())
 
 def get_device():
-    return device.Device(c.get_device())
+    from .device import Device
+
+    return Device(c.get_device())
 
 def set_device(device_or_props=None, **kwargs):
-    if isinstance(device_or_props, device.Device):
+    from .device import Device
+
+    if isinstance(device_or_props, Device):
         c.set_device(device_or_props._c)
         return
 
@@ -54,17 +60,25 @@ def finish():
     c.finish()
 
 def create_stream():
-    return stream.Stream(c.create_stream())
+    from .stream import Stream
+
+    return Stream(c.create_stream())
 
 def get_stream():
-    return stream.Stream(c.get_stream())
+    from .stream import Stream
+
+    return Stream(c.get_stream())
 
 def set_stream(stream):
+    from .stream import Stream
+
     utils.assert_stream(stream)
-    c.set_stream(stream._c)
+    c.set_stream(_c)
 
 def tag_stream():
-    return streamtag.StreamTag(c.tag_stream())
+    from .streamtag import StreamTag
+
+    return StreamTag(c.tag_stream())
 
 def wait_for_tag(tag):
     utils.assert_streamtag(tag)
@@ -79,22 +93,26 @@ def time_between_tags(start, end):
 
 #---[ Kernel ]--------------------------
 def build_kernel(filename, kernel, props=None):
+    from .kernel import Kernel
+
     utils.assert_str(filename)
     utils.assert_str(kernel)
     props = utils.properties(props) or ''
 
-    return K.Kernel(
+    return Kernel(
         c.build_kernel(filename=filename,
                        kernel=kernel,
                        props=props)
     )
 
 def build_kernel_from_string(source, kernel, props=None):
+    from .kernel import Kernel
+
     utils.assert_str(source)
     utils.assert_str(kernel)
     props = utils.properties(props) or ''
 
-    return K.Kernel(
+    return Kernel(
         c.build_kernel_from_string(source=source,
                                    kernel=kernel,
                                    props=props)
@@ -103,21 +121,25 @@ def build_kernel_from_string(source, kernel, props=None):
 
 #---[ Memory ]--------------------------
 def malloc(self, bytes, src=None, props=None):
+    from .memory import Memory
+
     utils.assert_int(bytes)
     props = utils.properties(props) or ''
 
     raise NotImplementedError
 
-    return memory.Memory(
+    return Memory(
         c.malloc(bytes=bytes,
                  src=src,
                  props=props)
     )
 
-def memcpy(dest, src, *,
+def memcpy(dest, src,
            bytes=None,
            dest_offset=None, src_offset=None,
            props=None):
+    from .memory import Memory
+
     utils.assert_memory_like(dest)
     utils.assert_memory_like(src)
     if bytes is not None:
@@ -128,9 +150,9 @@ def memcpy(dest, src, *,
         utils.assert_int(src_offset)
     props = utils.properties(props)
 
-    if isinstance(dest, memory.Memory):
+    if isinstance(dest, Memory):
         dest = dest._c
-    if isinstance(src, memory.Memory):
+    if isinstance(src, Memory):
         src = src._c
 
     c.memcpy(dest=dest,

@@ -98,22 +98,20 @@
 // Python 2.X
 #elif OCCA_PY2
 #  define OCCA_PY_MODULE(MODULE, ...)                                   \
-  OCCA_PY_METHODS(MODULE, __VA_ARGS__);                                 \
+  OCCA_PY_METHODS(occa_c_##MODULE##_methods,                            \
+                  __VA_ARGS__);                                         \
                                                                         \
   OCCA_START_EXTERN_C                                                   \
-  PyMODINIT_FUNC PyInit_##MODULE() {                                    \
+  PyMODINIT_FUNC init##MODULE() {                                       \
     import_array();                                                     \
     if (!MODULE##_has_valid_module()) {                                 \
-      return NULL;                                                      \
+      return;                                                           \
     }                                                                   \
-    PyObject *module = Py_InitModule3("occa.c." #MODULE,                \
-                                      occa_c_##MODULE##_methods,        \
-                                      "Wrappers for " #MODULE "methods"); \
-    if (!module) {                                                      \
-      return NULL;                                                      \
+    PyObject *module = Py_InitModule("occa.c." #MODULE,                 \
+                                     occa_c_##MODULE##_methods);        \
+    if (module) {                                                       \
+      MODULE##_init_module(module);                                     \
     }                                                                   \
-    MODULE##_init_module(module);                                       \
-    return module;                                                      \
   }                                                                     \
   OCCA_END_EXTERN_C
 // Python ?.X

@@ -23,7 +23,7 @@
 import functools
 import json
 
-from . import c, utils, memory, kernel as K, stream, streamtag
+from . import c, utils
 from .exceptions import UninitializedError
 
 
@@ -95,13 +95,17 @@ class Device:
 
     #---[ Stream ]----------------------
     def create_stream(self):
+        from .stream import Stream
+
         self._assert_initialized()
-        return stream.Stream(self._c.create_stream())
+        return Stream(self._c.create_stream())
 
     @property
     def stream(self):
+        from .stream import Stream
+
         self._assert_initialized()
-        return stream.Stream(self._c.get_stream())
+        return Stream(self._c.get_stream())
 
     def set_stream(self, stream):
         self._assert_initialized()
@@ -110,9 +114,11 @@ class Device:
         self._c.set_stream(stream._c)
 
     def tag_stream(self):
+        from .streamtag import StreamTag
+
         self._assert_initialized()
 
-        return streamtag.StreamTag(self._c.tag_stream())
+        return StreamTag(self._c.tag_stream())
 
     def wait_for(self, tag):
         self._assert_initialized()
@@ -129,25 +135,29 @@ class Device:
     #===================================
 
     #---[ Kernel ]----------------------
-    def build_kernel(self, filename, kernel, *, props=None):
+    def build_kernel(self, filename, kernel, props=None):
+        from .kernel import Kernel
+
         self._assert_initialized()
         utils.assert_str(filename)
         utils.assert_str(kernel)
         props = utils.properties(props) or ''
 
-        return K.Kernel(
+        return Kernel(
             self._c.build_kernel(filename=filename,
                                  kernel=kernel,
                                  props=props)
         )
 
-    def build_kernel_from_string(self, source, kernel, *, props=None):
+    def build_kernel_from_string(self, source, kernel, props=None):
+        from .kernel import Kernel
+
         self._assert_initialized()
         utils.assert_str(source)
         utils.assert_str(kernel)
         props = utils.properties(props) or ''
 
-        return K.Kernel(
+        return Kernel(
             self._c.build_kernel_from_string(source=source,
                                              kernel=kernel,
                                              props=props)
@@ -155,7 +165,9 @@ class Device:
     #===================================
 
     #---[ Memory ]----------------------
-    def malloc(self, *, bytes=None, src=None, props=None):
+    def malloc(self, bytes=None, src=None, props=None):
+        from .memory import Memory
+
         self._assert_initialized()
         if bytes is not None:
             utils.assert_int(bytes)
@@ -163,7 +175,7 @@ class Device:
             utils.assert_ndarray(src)
         props = utils.properties(props)
 
-        return memory.Memory(
+        return Memory(
             self._c.malloc(bytes=bytes,
                            src=src,
                            props=props)

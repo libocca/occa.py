@@ -22,7 +22,7 @@
 #
 import json
 
-from . import c, utils, device, base
+from . import c, utils
 from .exceptions import UninitializedError
 
 
@@ -52,8 +52,10 @@ class Memory:
 
     @property
     def device(self):
+        from .device import Device
+
         self._assert_initialized()
-        return device.Device(self._c.get_device())
+        return Device(self._c.get_device())
 
     @property
     def mode(self):
@@ -80,11 +82,13 @@ class Memory:
                           bytes=(key.end - key.start))
         )
 
-    def copy_to(self, dest, *,
+    def copy_to(self, dest,
                 bytes=None,
                 src_offset=None,
                 dest_offset=None,
                 props=None):
+        from .base import memcpy
+
         self._assert_initialized()
         utils.assert_memory_like(dest)
         if bytes is not None:
@@ -95,18 +99,20 @@ class Memory:
             utils.assert_int(src_offset)
         props = utils.properties(props)
 
-        base.memcpy(dest=dest,
-                    src=self,
-                    bytes=bytes,
-                    src_offset=src_offset,
-                    dest_offset=dest_offset,
-                    props=props)
+        memcpy(dest=dest,
+               src=self,
+               bytes=bytes,
+               src_offset=src_offset,
+               dest_offset=dest_offset,
+               props=props)
 
-    def copy_from(self, src, *,
+    def copy_from(self, src,
                   bytes=None,
                   src_offset=None,
                   dest_offset=None,
                   props=None):
+        from .base import memcpy
+
         self._assert_initialized()
         utils.assert_memory_like(src)
         if bytes is not None:
@@ -117,12 +123,12 @@ class Memory:
             utils.assert_int(src_offset)
         props = utils.properties(props)
 
-        base.memcpy(dest=self,
-                    src=src,
-                    bytes=bytes,
-                    src_offset=src_offset,
-                    dest_offset=dest_offset,
-                    props=props)
+        memcpy(dest=self,
+               src=src,
+               bytes=bytes,
+               src_offset=src_offset,
+               dest_offset=dest_offset,
+               props=props)
 
     def clone(self):
         self._assert_initialized()
