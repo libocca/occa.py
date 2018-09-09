@@ -1,3 +1,3 @@
 [submodule "occa.git"]
-	path = occa.git
+	path = occa/c/occa.git
 	url = https://github.com/libocca/occa.git

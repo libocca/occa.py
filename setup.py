@@ -38,14 +38,14 @@ class OccaInstaller(build_ext.build_ext):
 
     @property
     def libocca_so(self):
-        return os.path.abspath('./occa.git/lib/libocca.so')
+        return os.path.abspath('./occa/c/occa.git/lib/libocca.so')
 
     def sys_call(self, command):
         self.spawn(command.split(' '))
 
     def pre_build(self):
         # Build occa and copy libocca.so to occa/c
-        self.sys_call('make -C occa.git -j4')
+        self.sys_call('make -C ./occa/c/occa.git -j4')
 
         # Copy libocca.so to build directory
         self.copy_file(self.libocca_so, self.occa_c_path)
@@ -82,7 +82,7 @@ def get_ext_module(module):
         sources=['occa/c/{module}.cpp'.format(module=module)],
         include_dirs=[
             'occa/c',
-            'occa.git/include',
+            'occa/c/occa.git/include',
             np.get_include(),
         ],
         depends=['./occa/c/libocca.so'],
