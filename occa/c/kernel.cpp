@@ -190,24 +190,24 @@ static bool occa_setKernelArg(PyObject *obj,
     PyArray_Descr *descr = PyArray_DescrFromScalar(obj);
     bool setArg = false;
 
-#define CASE_TYPENUM(TYPENUM, SCALARTYPE)       \
-    case TYPENUM:                               \
-      arg = ((SCALARTYPE*)obj)->obval;          \
-      setArg = true;                            \
+#define CASE_TYPENUM(TYPENUM, CTYPE, SCALARTYPE)  \
+    case TYPENUM:                                 \
+      arg = (CTYPE) (((SCALARTYPE*) obj)->obval); \
+      setArg = true;                              \
       break
 
     switch (descr->type_num) {
-      CASE_TYPENUM(NPY_BOOL   , PyBoolScalarObject);
-      CASE_TYPENUM(NPY_INT8   , PyInt8ScalarObject);
-      CASE_TYPENUM(NPY_UINT8  , PyUInt8ScalarObject);
-      CASE_TYPENUM(NPY_INT16  , PyInt16ScalarObject);
-      CASE_TYPENUM(NPY_UINT16 , PyUInt16ScalarObject);
-      CASE_TYPENUM(NPY_INT32  , PyInt32ScalarObject);
-      CASE_TYPENUM(NPY_UINT32 , PyUInt32ScalarObject);
-      CASE_TYPENUM(NPY_INT64  , PyInt64ScalarObject);
-      CASE_TYPENUM(NPY_UINT64 , PyUInt64ScalarObject);
-      CASE_TYPENUM(NPY_FLOAT32, PyFloat32ScalarObject);
-      CASE_TYPENUM(NPY_FLOAT64, PyFloat64ScalarObject);
+      CASE_TYPENUM(NPY_BOOL   , bool    , PyBoolScalarObject);
+      CASE_TYPENUM(NPY_INT8   , int8_t  , PyInt8ScalarObject);
+      CASE_TYPENUM(NPY_UINT8  , uint8_t , PyUInt8ScalarObject);
+      CASE_TYPENUM(NPY_INT16  , int16_t , PyInt16ScalarObject);
+      CASE_TYPENUM(NPY_UINT16 , uint16_t, PyUInt16ScalarObject);
+      CASE_TYPENUM(NPY_INT32  , int32_t , PyInt32ScalarObject);
+      CASE_TYPENUM(NPY_UINT32 , uint32_t, PyUInt32ScalarObject);
+      CASE_TYPENUM(NPY_INT64  , int64_t , PyInt64ScalarObject);
+      CASE_TYPENUM(NPY_UINT64 , uint64_t, PyUInt64ScalarObject);
+      CASE_TYPENUM(NPY_FLOAT32, float   , PyFloat32ScalarObject);
+      CASE_TYPENUM(NPY_FLOAT64, double  , PyFloat64ScalarObject);
     }
 #undef CASE_TYPENUM
 
