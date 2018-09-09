@@ -148,7 +148,7 @@ classifiers = [
 
 setup(
     name='occa',
-    version='0.1.1',
+    version='0.3.0',
     description='Portable Approach for Parallel Architectures',
     long_description=long_description,
     keywords=keywords,

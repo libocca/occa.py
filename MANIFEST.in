@@ -1,8 +1,14 @@
-recursive-include occa *.py
+recursive-include occa/ *.py *.hpp *.cpp
 
 include requirements.txt
 include setup.py
 include LICENSE
 include MANIFEST.in
 include versioneer.py
-include occa/_version.py
+
+recursive-include occa.git *
+recursive-exclude occa.git/.git *
+recursive-exclude occa.git/.github *
+recursive-exclude occa.git/examples *
+recursive-exclude occa.git/obj *
+recursive-exclude occa.git/tests *
