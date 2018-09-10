@@ -32,7 +32,7 @@ static int StreamTag_init(occa::py::StreamTag *self,
   occa::py::kwargParser parser;
   parser
     .startOptionalKwargs()
-    .add("stream_tag", streamtag);
+    .add("streamtag", streamtag);
 
   if (!parser.parse(args, kwargs)) {
     return -1;
@@ -82,6 +82,12 @@ static PyObject* StreamTag_wait(occa::py::StreamTag *self) {
   }
   return occa::py::None();
 }
+
+static PyObject* StreamTag_ptr_as_long(occa::py::StreamTag *self) {
+  return occa::py::toPy(
+    (long long) self->streamTag->getModeStreamTag()
+  );
+}
 //======================================
 
 
@@ -94,7 +100,8 @@ OCCA_PY_METHODS(
   STREAMTAG_METHOD_NO_ARGS(is_initialized),
   STREAMTAG_METHOD_NO_ARGS(free),
   STREAMTAG_METHOD_NO_ARGS(get_device),
-  STREAMTAG_METHOD_NO_ARGS(wait)
+  STREAMTAG_METHOD_NO_ARGS(wait),
+  STREAMTAG_METHOD_NO_ARGS(ptr_as_long)
 );
 
 static PyTypeObject StreamTagType = {

@@ -38,9 +38,9 @@ def main(args):
     ab = np.zeros(entries, dtype=np.float32)
 
     # Allocate memory in device and copy over data
-    o_a  = d.malloc(src=a)
-    o_b  = d.malloc(src=b)
-    o_ab = d.malloc(src=ab)
+    o_a  = d.malloc(a)
+    o_b  = d.malloc(b)
+    o_ab = d.malloc(entries, dtype=np.float32)
 
     # Build kernel
     add_vectors = r'''
@@ -58,8 +58,7 @@ def main(args):
                                    'addVectors')
 
     # Launch kernel
-    k(np.intc(entries),
-      o_a, o_b, o_ab)
+    k(np.intc(1), o_a, o_b, o_ab)
 
     # Copy device data to host
     o_ab.copy_to(ab)

@@ -41,7 +41,8 @@ class Stream:
     @property
     def is_initialized(self):
         '''Return if the stream has been initialized'''
-        return self._c.is_initialized()
+        return (self._c is not None and
+                self._c.is_initialized())
 
     def free(self):
         self._assert_initialized()
@@ -63,3 +64,13 @@ class Stream:
     def properties(self):
         self._assert_initialized()
         return json.loads(self._c.properties())
+
+    def __eq__(self, other):
+        self._assert_initialized()
+        if not isinstance(other, Stream):
+            return False
+        return hash(self) == hash(other)
+
+    def __hash__(self):
+        self._assert_initialized()
+        return self._c.ptr_as_long()

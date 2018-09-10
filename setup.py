@@ -159,6 +159,7 @@ setup(
         'numpy>=1.7',
         'setuptools>=28.0.0',
         'flake8',
+        'pytest',
     ],
     install_requires=[
         'numpy>=1.7',

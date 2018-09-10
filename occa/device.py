@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
 import json
+import numpy as np
 
 from . import c, utils
 from .exceptions import UninitializedError
@@ -47,7 +48,8 @@ class Device:
     @property
     def is_initialized(self):
         '''Return if the device has been initialized'''
-        return self._c and self._c.is_initialized()
+        return (self._c is not None and
+                self._c.is_initialized())
 
     def free(self):
         self._assert_initialized()
@@ -164,19 +166,42 @@ class Device:
     #===================================
 
     #---[ Memory ]----------------------
-    def malloc(self, bytes=None, src=None, props=None):
+    def malloc(self, src_or_entries, dtype=None, props=None):
         from .memory import Memory
 
         self._assert_initialized()
-        if bytes is not None:
-            utils.assert_int(bytes)
-        if src is not None:
-            utils.assert_ndarray(src)
+        utils.assert_malloc_src(src_or_entries)
         props = utils.properties(props)
 
+        src = None
+        if isinstance(src_or_entries, np.ndarray):
+            src = src_or_entries
+            dtype = dtype or src.dtype
+
+            entries = len(src)
+            if dtype != src.dtype:
+                src = src.astype(dtype)
+        else:
+            entries = src_or_entries
+
+        if dtype:
+            dtype = np.dtype(dtype)
+        utils.assert_valid_dtype(dtype)
+
         return Memory(
-            self._c.malloc(bytes=bytes,
+            self._c.malloc(bytes=(entries * dtype.itemsize),
                            src=src,
-                           props=props)
+                           props=props),
+            dtype=dtype,
         )
     #===================================
+
+    def __eq__(self, other):
+        self._assert_initialized()
+        if not isinstance(other, Device):
+            return False
+        return hash(self) == hash(other)
+
+    def __hash__(self):
+        self._assert_initialized()
+        return self._c.ptr_as_long()

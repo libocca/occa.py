@@ -1,0 +1,30 @@
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+  status:
+    project:
+      default:
+        threshold: 0.1%
+    patch:
+      default:
+        threshold: 50%
+    changes: false
+
+ignore:
+  - examples
+  # C Modules
+  - occa/c
+  # Setup and Versioneer
+  - setup.py
+  - versioneer.py
+  - occa/_version.py
+
+comment:
+  layout: 'reach, diff, files'
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+  branches: null

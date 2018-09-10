@@ -353,6 +353,12 @@ static PyObject* Device_malloc(occa::py::Device *self,
   );
 }
 //  |===================================
+
+static PyObject* Device_ptr_as_long(occa::py::Device *self) {
+  return occa::py::toPy(
+    (long long) self->device->getModeDevice()
+  );
+}
 //======================================
 
 
@@ -384,7 +390,8 @@ OCCA_PY_METHODS(
   DEVICE_METHOD_WITH_KWARGS(build_kernel),
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_string),
   DEVICE_METHOD_WITH_KWARGS(build_kernel_from_binary),
-  DEVICE_METHOD_WITH_KWARGS(malloc)
+  DEVICE_METHOD_WITH_KWARGS(malloc),
+  DEVICE_METHOD_NO_ARGS(ptr_as_long)
 );
 
 static PyTypeObject DeviceType = {

@@ -93,6 +93,12 @@ static PyObject* Stream_get_device(occa::py::Stream *self) {
     self->stream->getDevice()
   );
 }
+
+static PyObject* Stream_ptr_as_long(occa::py::Stream *self) {
+  return occa::py::toPy(
+    (long long) self->stream->getModeStream()
+  );
+}
 //======================================
 
 
@@ -106,7 +112,8 @@ OCCA_PY_METHODS(
   STREAM_METHOD_NO_ARGS(free),
   STREAM_METHOD_NO_ARGS(mode),
   STREAM_METHOD_NO_ARGS(properties),
-  STREAM_METHOD_NO_ARGS(get_device)
+  STREAM_METHOD_NO_ARGS(get_device),
+  STREAM_METHOD_NO_ARGS(ptr_as_long)
 );
 
 static PyTypeObject StreamType = {

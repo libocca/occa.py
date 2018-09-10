@@ -211,7 +211,7 @@ static bool occa_setKernelArg(PyObject *obj,
     }
 #undef CASE_TYPENUM
 
-    Py_DECREF(descr);
+    Py_XDECREF(descr);
 
     if (setArg) {
       return true;
@@ -253,6 +253,12 @@ static PyObject* Kernel_run(occa::py::Kernel *self,
 
   return occa::py::None();
 }
+
+static PyObject* Kernel_ptr_as_long(occa::py::Kernel *self) {
+  return occa::py::toPy(
+    (long long) self->kernel->getModeKernel()
+  );
+}
 //======================================
 
 
@@ -277,7 +283,8 @@ OCCA_PY_METHODS(
   KERNEL_METHOD_NO_ARGS(max_outer_dims),
   KERNEL_METHOD_NO_ARGS(max_inner_dims),
   KERNEL_METHOD_WITH_KWARGS(set_run_dims),
-  KERNEL_METHOD_WITH_KWARGS(run)
+  KERNEL_METHOD_WITH_KWARGS(run),
+  KERNEL_METHOD_NO_ARGS(ptr_as_long)
 );
 
 static PyTypeObject KernelType = {

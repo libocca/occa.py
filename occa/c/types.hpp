@@ -61,7 +61,7 @@ namespace occa {
                                            const std::string &className) {
       PyObject *module = PyImport_ImportModule(moduleName.c_str());
       PyTypeObject *type = (PyTypeObject*) PyObject_GetAttrString(module, className.c_str());
-      Py_DECREF(module);
+      Py_XDECREF(module);
       return type;
     }
 
@@ -157,7 +157,10 @@ namespace occa {
       if (isNumpyArray(obj)) {
         return PyArray_DATA((PyArrayObject*) obj);
       }
-      return PyCapsule_GetPointer(obj, NULL);
+      if (PyCapsule_CheckExact(obj)) {
+        return PyCapsule_GetPointer(obj, NULL);
+      }
+      return obj;
     }
     //==================================
 
@@ -170,22 +173,22 @@ namespace occa {
       inline object(PyObject *obj_ = NULL) :
         obj(obj_) {
         if (obj) {
-          Py_INCREF(obj);
+          Py_XINCREF(obj);
         }
       }
 
       inline ~object() {
         if (obj) {
-          Py_DECREF(obj);
+          Py_XDECREF(obj);
         }
       }
 
       inline void setObj(PyObject *obj_) {
         if (obj) {
-          Py_DECREF(obj);
+          Py_XDECREF(obj);
         }
         obj = obj_;
-        Py_INCREF(obj);
+        Py_XINCREF(obj);
       }
 
       inline bool isInitialized() {

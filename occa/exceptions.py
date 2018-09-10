@@ -35,3 +35,8 @@ class CError(Error):
 class UninitializedError(Error):
     def __init__(self, message):
         super().__init__(message)
+
+
+class BufferWarning(Warning):
+    def __init__(self, message):
+        super().__init__(message)

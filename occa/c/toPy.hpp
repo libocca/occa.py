@@ -46,7 +46,10 @@ namespace occa {
     }
 
     static PyObject* toPy(void *ptr) {
-      return PyCapsule_New(ptr, NULL, NULL);
+      if (ptr) {
+        return PyCapsule_New(ptr, NULL, NULL);
+      }
+      return NULL;
     }
 
     // Bool
@@ -102,6 +105,9 @@ namespace occa {
     static PyObject* newCoreType(PyTypeObject *Type,
                                  void *ptr,
                                  const std::string &name) {
+      if (!ptr) {
+        return occa::py::None();
+      }
 
       PyObject *typeObj = occa::py::toPy(ptr);
       PyObject *typeArgs = Py_BuildValue("()");
@@ -110,9 +116,9 @@ namespace occa {
 
       PyObject *pyType = PyObject_Call((PyObject*) Type, typeArgs, typeKwargs);
 
-      Py_DECREF(typeObj);
-      Py_DECREF(typeArgs);
-      Py_DECREF(typeKwargs);
+      Py_XDECREF(typeObj);
+      Py_XDECREF(typeArgs);
+      Py_XDECREF(typeKwargs);
 
       return pyType;
     }
@@ -144,7 +150,7 @@ namespace occa {
     static PyObject* toPy(const occa::streamTag &streamTag) {
       return newCoreType(occa::py::StreamTagType(),
                          (void*) streamTag.getModeStreamTag(),
-                         "streamTag");
+                         "streamtag");
     }
 
     // Props / JSON

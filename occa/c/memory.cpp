@@ -221,6 +221,12 @@ static PyObject* Memory_clone(occa::py::Memory *self) {
     self->memory->clone()
   );
 }
+
+static PyObject* Memory_ptr_as_long(occa::py::Memory *self) {
+  return occa::py::toPy(
+    (long long) self->memory->getModeMemory()
+  );
+}
 //======================================
 
 
@@ -247,7 +253,8 @@ OCCA_PY_METHODS(
   MEMORY_METHOD_NO_ARGS(stop_managing),
   MEMORY_METHOD_WITH_KWARGS(sync_to_device),
   MEMORY_METHOD_WITH_KWARGS(sync_to_host),
-  MEMORY_METHOD_NO_ARGS(clone)
+  MEMORY_METHOD_NO_ARGS(clone),
+  MEMORY_METHOD_NO_ARGS(ptr_as_long)
 );
 
 static PyTypeObject MemoryType = {

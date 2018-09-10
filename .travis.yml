@@ -14,5 +14,9 @@ script: true
 
 install:
   - pip install -r requirements.txt
-  - python setup.py flake8
-  - python setup.py install
+  - pip install codecov
+  - python setup.py flake8 install
+  - cd tests && pytest .
+
+after_success:
+  - codecov

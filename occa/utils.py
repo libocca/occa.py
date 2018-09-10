@@ -23,14 +23,15 @@
 import collections
 import json
 import numpy as np
+import warnings
 
-from . import c
+from . import c, exceptions
 
 
 PY_TO_DTYPE = {
-    int: np.dtype(int).type,
-    float: np.dtype(float).type,
-    bool: np.dtype(bool).type,
+    bool: np.dtype(bool),
+    int: np.dtype(int),
+    float: np.dtype(float),
 }
 
 
@@ -47,6 +48,20 @@ VALID_NP_TYPES = {
     np.float32,
     np.float64,
 }
+
+
+VALID_NP_DTYPES = {
+    np.dtype(t)
+    for t in VALID_NP_TYPES
+}
+
+VALID_TYPES = set(PY_TO_DTYPE.keys())
+VALID_TYPES.update(VALID_NP_DTYPES)
+
+
+def is_int(value):
+    return (isinstance(value, int) or
+            isinstance(value, np.integer))
 
 
 #---[ Assert C ]------------------------
@@ -70,7 +85,7 @@ def assert_c_stream(value):
         raise ValueError('Expected an occa.c.Stream')
 
 
-def assert_c_streamTag(value):
+def assert_c_streamtag(value):
     if not isinstance(value, c.StreamTag):
         raise ValueError('Expected an occa.c.StreamTag')
 #=======================================
@@ -83,7 +98,7 @@ def assert_str(value):
 
 
 def assert_int(value):
-    if not isinstance(value, int):
+    if not is_int(value):
         raise ValueError('Expected an int')
 
 
@@ -112,7 +127,7 @@ def assert_stream(value):
         raise ValueError('Expected an occa.Stream')
 
 
-def assert_streamTag(value):
+def assert_streamtag(value):
     from .streamtag import StreamTag
     if not isinstance(value, StreamTag):
         raise ValueError('Expected an occa.StreamTag')
@@ -139,9 +154,28 @@ def assert_dim(value):
         raise ValueError('Expected an iterable of at most size 3')
 
 
+def assert_valid_dtype(value):
+    if value not in VALID_TYPES:
+        raise ValueError('Type [{value}] is not a valid type: {types}'.format(
+            value=value,
+            types=sorted([
+                (('np.' + t.__name__)
+                 if t in VALID_NP_DTYPES
+                 else t.__name__)
+                for t in VALID_TYPES
+            ]),
+        ))
+
+
 def assert_ndarray(value):
     if not isinstance(value, np.ndarray):
         raise ValueError('Expected a numpy.ndarray')
+
+
+def assert_malloc_src(value):
+    if (not is_int(value) and
+        not isinstance(value, np.ndarray)):
+        raise ValueError('Expected an int or numpy.ndarray')
 
 
 def assert_memory_like(value):
@@ -150,7 +184,6 @@ def assert_memory_like(value):
     if (not isinstance(value, Memory) and
         not isinstance(value, np.ndarray)):
         raise ValueError('Expected occa.Memory or numpy.ndarray')
-
 #=======================================
 
 
@@ -207,4 +240,32 @@ def cast_args(args):
         cast_arg(arg)
         for arg in args
     ]
+
+
+def memory_buffer(value,
+                  entries=None,
+                  buffer=None):
+    assert_memory_like(value)
+
+    if isinstance(value, np.ndarray):
+        return None
+
+    entries = entries or len(value)
+
+    # Test buffer
+    if buffer is not None:
+        assert_ndarray(buffer)
+        if len(buffer) < entries:
+            warnings.warn('Buffer is too small, ignoring buffer',
+                          exceptions.BufferWarning)
+            buffer = None
+        elif buffer.dtype != value.dtype:
+            warnings.warn('Buffer dtype differs from value, ignoring buffer',
+                          exceptions.BufferWarning)
+            buffer = None
+        else:
+            return buffer
+
+    return np.zeros(entries,
+                    dtype=value.dtype)
 #=======================================
