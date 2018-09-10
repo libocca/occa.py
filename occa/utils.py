@@ -75,6 +75,7 @@ def assert_c_streamTag(value):
         raise ValueError('Expected an occa.c.StreamTag')
 #=======================================
 
+
 #---[ Assert Py ]-----------------------
 def assert_str(value):
     if not isinstance(value, str):
@@ -151,6 +152,7 @@ def assert_memory_like(value):
         raise ValueError('Expected occa.Memory or numpy.ndarray')
 
 #=======================================
+
 
 #---[ Type Conversions ]----------------
 def properties(props, **kwargs):

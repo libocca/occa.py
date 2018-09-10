@@ -22,7 +22,7 @@
 #
 import json
 
-from . import c, utils
+from . import utils
 from .exceptions import UninitializedError
 
 

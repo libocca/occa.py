@@ -24,11 +24,14 @@ import json
 
 from . import c, utils
 
+
 def settings():
     return json.loads(c.settings())
 
+
 def print_mode_info():
     c.print_mode_info()
+
 
 #---[ Device ]--------------------------
 def host():
@@ -36,10 +39,12 @@ def host():
 
     return Device(c.host())
 
+
 def get_device():
     from .device import Device
 
     return Device(c.get_device())
+
 
 def set_device(device_or_props=None, **kwargs):
     from .device import Device
@@ -53,36 +58,41 @@ def set_device(device_or_props=None, **kwargs):
 
     if props:
         c.set_device(props=props)
-    else:
-        return None
+
 
 def finish():
     c.finish()
+
 
 def create_stream():
     from .stream import Stream
 
     return Stream(c.create_stream())
 
+
 def get_stream():
     from .stream import Stream
 
     return Stream(c.get_stream())
 
+
 def set_stream(stream):
     from .stream import Stream
 
     utils.assert_stream(stream)
-    c.set_stream(_c)
+    c.set_stream(stream._c)
+
 
 def tag_stream():
     from .streamtag import StreamTag
 
     return StreamTag(c.tag_stream())
 
+
 def wait_for_tag(tag):
     utils.assert_streamtag(tag)
-    self._c.wait_for(tag._c)
+    c.wait_for(tag._c)
+
 
 def time_between_tags(start, end):
     utils.assert_streamtag(start)
@@ -90,6 +100,7 @@ def time_between_tags(start, end):
 
     return c.time_between(start._c, end._c)
 #=======================================
+
 
 #---[ Kernel ]--------------------------
 def build_kernel(filename, kernel, props=None):
@@ -105,6 +116,7 @@ def build_kernel(filename, kernel, props=None):
                        props=props)
     )
 
+
 def build_kernel_from_string(source, kernel, props=None):
     from .kernel import Kernel
 
@@ -118,6 +130,7 @@ def build_kernel_from_string(source, kernel, props=None):
                                    props=props)
     )
 #=======================================
+
 
 #---[ Memory ]--------------------------
 def malloc(self, bytes, src=None, props=None):
@@ -133,6 +146,7 @@ def malloc(self, bytes, src=None, props=None):
                  src=src,
                  props=props)
     )
+
 
 def memcpy(dest, src,
            bytes=None,

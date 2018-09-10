@@ -27,6 +27,7 @@ from setuptools import setup, find_packages, Extension
 import os
 import sys
 
+
 class OccaInstaller(build_ext.build_ext):
     '''Compile occa.git'''
 
@@ -37,11 +38,14 @@ class OccaInstaller(build_ext.build_ext):
         # Build occa
         if 'NO_CLEAN' not in os.environ:
             self.sys_call('make -C ./occa/c/occa.git clean')
+
         self.sys_call('make -C ./occa/c/occa.git -j4')
 
     def post_build(self):
         if sys.platform != 'darwin':
             return
+
+        libocca_so = os.path.abspath('./occa/c/occa.git/lib/libocca.so')
 
         # Manually set relative rpath in OSX
         for output in self.get_outputs():
@@ -49,7 +53,7 @@ class OccaInstaller(build_ext.build_ext):
                           ' -change'
                           ' {libocca_so}'
                           ' @loader_path/occa.git/lib/libocca.so'
-                          ' {output}'.format(libocca_so=self.libocca_so,
+                          ' {output}'.format(libocca_so=libocca_so,
                                              output=output))
 
     def finalize_options(self):
@@ -129,13 +133,13 @@ classifiers = [
 ]
 
 package_data = {
-    'occa.c': ['occa.git'],
+    'occa.c': ['*.hpp', '*.cpp', '*.so'],
 }
 
 
 setup(
     name='occa',
-    version='0.3.4',
+    version='0.3.5',
     description='Portable Approach for Parallel Architectures',
     long_description=long_description,
     keywords=keywords,
@@ -154,6 +158,7 @@ setup(
     setup_requires=[
         'numpy>=1.7',
         'setuptools>=28.0.0',
+        'flake8',
     ],
     install_requires=[
         'numpy>=1.7',
