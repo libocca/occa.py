@@ -1,11 +1,13 @@
 recursive-include occa/ *.py *.hpp *.cpp
 
-recursive-include occa/c/occa.git *
-recursive-exclude occa/c/occa.git/.git *
-recursive-exclude occa/c/occa.git/.github *
-recursive-exclude occa/c/occa.git/examples *
-recursive-exclude occa/c/occa.git/obj *
-recursive-exclude occa/c/occa.git/tests *
+recursive-include occa/c/occa.git/include *
+recursive-include occa/c/occa.git/src *
+recursive-include occa/c/occa.git/scripts *
+recursive-include occa/c/occa.git/bin *
+
+include occa/c/occa.git/LICENSE
+include occa/c/occa.git/Makefile
+include occa/c/occa.git/lib/libocca.so
 
 include requirements.txt
 include setup.py

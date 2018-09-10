@@ -27,35 +27,19 @@ from setuptools import setup, find_packages, Extension
 import os
 import sys
 
-
 class OccaInstaller(build_ext.build_ext):
     '''Compile occa.git'''
-
-    @property
-    def occa_c_path(self):
-        return os.path.abspath('./occa/c/')
-
-    @property
-    def libocca_so(self):
-        return os.path.abspath('./occa/c/occa.git/lib/libocca.so')
 
     def sys_call(self, command):
         self.spawn(command.split(' '))
 
     def pre_build(self):
-        # Build occa and copy libocca.so to occa/c
+        # Build occa
+        if 'NO_CLEAN' not in os.environ:
+            self.sys_call('make -C ./occa/c/occa.git clean')
         self.sys_call('make -C ./occa/c/occa.git -j4')
 
-        # Copy libocca.so to build directory
-        self.copy_file(self.libocca_so, self.occa_c_path)
-
     def post_build(self):
-        # Not sure why setup.py doesn't copy it over the first time...
-        build_path = os.path.abspath(os.path.dirname(
-            self.get_outputs()[0]
-        ))
-        self.copy_file(self.libocca_so, build_path)
-
         if sys.platform != 'darwin':
             return
 
@@ -64,11 +48,12 @@ class OccaInstaller(build_ext.build_ext):
             self.sys_call('install_name_tool'
                           ' -change'
                           ' {libocca_so}'
-                          ' @loader_path/libocca.so'
+                          ' @loader_path/occa.git/lib/libocca.so'
                           ' {output}'.format(libocca_so=self.libocca_so,
                                              output=output))
 
     def finalize_options(self):
+        # Use numpy after setup_requirements installs it
         build_ext.build_ext.finalize_options(self)
         # Prevent numpy from thinking it is still in its setup process:
         __builtins__.__NUMPY_SETUP__ = False
@@ -89,11 +74,10 @@ def get_ext_module(module):
             'occa/c',
             'occa/c/occa.git/include',
         ],
-        depends=['./occa/c/libocca.so'],
         libraries=['occa'],
-        library_dirs=['./occa/c/'],
+        library_dirs=['./occa/c/occa.git/lib'],
         extra_compile_args=['-Wno-unused-function'],
-        extra_link_args=['-Wl,-rpath,$ORIGIN'],
+        extra_link_args=['-Wl,-rpath,$ORIGIN/occa.git/lib'],
     )
 
 
@@ -103,11 +87,6 @@ ext_modules = [
                    'device', 'kernel', 'memory',
                    'stream', 'streamtag']
 ]
-
-
-package_data = {
-    'occa.c': ['*.so'],
-}
 
 
 long_description = ('''
@@ -148,6 +127,10 @@ classifiers = [
     'Topic :: Scientific/Engineering',
     'Topic :: Software Development',
 ]
+
+package_data = {
+    'occa.c': ['occa.git'],
+}
 
 
 setup(

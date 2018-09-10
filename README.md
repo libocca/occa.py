@@ -48,8 +48,14 @@ python setup.py install
 Test deployment before uploading package to pypi
 
 ```bash
-python setup.py sdist
+python setup.py install sdist
 pip install dist/occa-<version>.tar.gz
+```
+
+To avoid doing a `make clean` each time, use the `NO_CLEAN` environment variable
+
+```bash
+NO_CLEAN python setup.py install sdist
 ```
 
 ### Deployment
