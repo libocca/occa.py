@@ -15,7 +15,8 @@ script: true
 install:
   - pip install -r requirements.txt
   - pip install codecov
-  - python setup.py flake8 install
+  - python setup.py flake8 install sdist
+  - pip install $(ls dist/*tar.gz -1 --sort version | tail -n 1)
   - cd tests && pytest .
 
 after_success:
