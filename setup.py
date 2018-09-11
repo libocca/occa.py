@@ -25,6 +25,7 @@
 from setuptools.command import build_ext
 from setuptools import setup, find_packages, Extension
 import os
+import shutil
 import sys
 
 
@@ -42,12 +43,18 @@ class OccaInstaller(build_ext.build_ext):
         self.sys_call('make -C ./occa/c/occa.git -j4')
 
     def post_build(self):
+        # Copy libocca.so manually, not sure why it isn't copied over
+        #   even though bin/occa is...
+        occa_git = os.path.abspath('./occa/c/occa.git')
+        build_occa_git = os.path.join(self.build_lib, 'occa/c/occa.git')
+        self.copy_tree(os.path.join(occa_git, 'lib'),
+                       os.path.join(build_occa_git, 'lib'))
+
         if sys.platform != 'darwin':
             return
 
-        libocca_so = os.path.abspath('./occa/c/occa.git/lib/libocca.so')
-
         # Manually set relative rpath in OSX
+        libocca_so = os.path.join(occa_git, 'lib/libocca.so')
         for output in self.get_outputs():
             self.sys_call('install_name_tool'
                           ' -change'
@@ -132,10 +139,6 @@ classifiers = [
     'Topic :: Software Development',
 ]
 
-package_data = {
-    'occa.c': ['*.hpp', '*.cpp', '*.so'],
-}
-
 
 setup(
     name='occa',
@@ -152,7 +155,6 @@ setup(
         'build_ext': OccaInstaller,
     },
     packages=find_packages(),
-    package_data=package_data,
     include_package_data=True,
     ext_modules=ext_modules,
     setup_requires=[
