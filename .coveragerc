@@ -1,0 +1,4 @@
+[run]
+omit =
+  occa/_version.py
+  occa/okl
