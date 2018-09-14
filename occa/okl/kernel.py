@@ -20,26 +20,18 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
-import os
-from os.path import abspath, dirname
+class Kernel:
+    def __init__(self, source, name):
+        self.source = source
+        self.name = name
 
-from ._version import get_versions
+    def _build(self, device, props):
+        return device.build_kernel_from_string(self.source,
+                                               self.name,
+                                               props)
 
+    def __getitem__(self, device):
+        return self._build(device)
 
-if 'OCCA_DIR' not in os.environ:
-    os.environ['OCCA_DIR'] = abspath(
-        os.path.join(dirname(__file__), 'c', 'occa.git')
-    )
-
-
-__version__ = get_versions()['version']
-del get_versions
-
-
-from .base import *
-from .device import Device
-from .memory import Memory
-from .kernel import Kernel
-from .stream import Stream
-from .streamtag import StreamTag
-from . import okl
+    def __call__(self, *args, props=None):
+        return self._build(occa.get_device(), props)(*args)

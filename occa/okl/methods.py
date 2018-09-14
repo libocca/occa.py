@@ -20,26 +20,33 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
-import os
-from os.path import abspath, dirname
+class Range:
+    def __init__(self, start, stop=None, step=None):
+        self.start = start
+        self.stop = stop
+        self.step = step
 
-from ._version import get_versions
+        if stop is None:
+            self.stop = start
+            self.start = 0
+
+        if step is None:
+            self.step = 1
+
+    def to_json(self, **kwargs):
+        return kwargs
+
+    @property
+    def outer(self):
+        pass
+
+    @property
+    def inner(self):
+        pass
+
+    def tile(self, *args):
+        pass
 
 
-if 'OCCA_DIR' not in os.environ:
-    os.environ['OCCA_DIR'] = abspath(
-        os.path.join(dirname(__file__), 'c', 'occa.git')
-    )
-
-
-__version__ = get_versions()['version']
-del get_versions
-
-
-from .base import *
-from .device import Device
-from .memory import Memory
-from .kernel import Kernel
-from .stream import Stream
-from .streamtag import StreamTag
-from . import okl
+def range(start, stop=None, step=None):
+    return Range(start, stop, step)
