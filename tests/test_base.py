@@ -42,6 +42,11 @@ def test_settings():
     assert isinstance(settings, dict)
     assert 'version' in settings
     assert 'okl-version' in settings
+    assert 'foobar' not in settings
+
+    occa.set_setting('foobar', 1)
+    settings = occa.settings()
+    assert 'foobar' in settings
 
 
 #---[ Device ]--------------------------
@@ -215,7 +220,7 @@ def test_memcpy():
     occa.memcpy(d2, d1)
 
     assert d2.dtype == np.int32
-    assert all(d2)
+    assert all(d2 == 1)
 
     # M1 -> D1
     m = m_ones(np.float32)
@@ -223,7 +228,7 @@ def test_memcpy():
     occa.memcpy(d, m)
 
     assert d.dtype == np.int32
-    assert all(d)
+    assert all(d == 1)
 
     # M1 -> D2
     m = m_ones(np.float32)
@@ -231,7 +236,7 @@ def test_memcpy():
     occa.memcpy(d, m)
 
     assert d.dtype == np.int32
-    assert all(d)
+    assert all(d == 1)
 
     # D1 -> M1
     d = ones(np.float32)
@@ -239,7 +244,7 @@ def test_memcpy():
     occa.memcpy(m, d)
 
     assert m.dtype == np.int32
-    assert all(m.to_ndarray())
+    assert all(m.to_ndarray() == 1)
 
     # D1 -> M2
     d = ones(np.float32)
@@ -247,7 +252,7 @@ def test_memcpy():
     occa.memcpy(m, d)
 
     assert m.dtype == np.int32
-    assert all(m.to_ndarray())
+    assert all(m.to_ndarray() == 1)
 
     # M1 -> M1
     m1 = m_ones(np.float32)
@@ -255,7 +260,7 @@ def test_memcpy():
     occa.memcpy(m2, m1)
 
     assert m2.dtype == np.int32
-    assert all(m.to_ndarray())
+    assert all(m.to_ndarray() == 1)
 
     # M1 -> M2
     m1 = m_ones(np.float32)
@@ -263,5 +268,11 @@ def test_memcpy():
     occa.memcpy(m2, m1)
 
     assert m2.dtype == np.int32
-    assert all(m.to_ndarray())
+    assert all(m.to_ndarray() == 1)
+
+    # Ambiguous size
+    m1 = occa.malloc(5, dtype=np.int32)
+    m2 = occa.malloc(10, dtype=np.int32)
+    with pytest.raises(ValueError):
+        occa.memcpy(m1, m2)
 #=======================================

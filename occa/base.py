@@ -182,10 +182,13 @@ def memcpy(dest, src,
         src_offset = 0
 
     if dest_buffer is not None:
-        np.copyto(dest_buffer,
-                  src,
-                  casting='unsafe')
+        np.copyto(dest_buffer, src, casting='unsafe')
         src = dest_buffer
+
+    if (isinstance(dest, np.ndarray) and
+        isinstance(src, np.ndarray)):
+        np.copyto(dest, src, casting='unsafe')
+        return
 
     c.memcpy(dest=dest,
              src=src,
