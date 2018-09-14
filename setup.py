@@ -33,12 +33,29 @@ import sys
 class build_ext(setup_build_ext):
     '''Compile occa.git'''
 
+    user_options = [
+        ('no-clean', 'n', "Don't rebuild OCCA"),
+    ]
+
     def sys_call(self, command):
         self.spawn(command.split(' '))
 
+    def initialize_options(self):
+        setup_build_ext.initialize_options(self)
+        self.no_clean = False
+
+    def finalize_options(self):
+        # Use numpy after setup_requirements installs it
+        setup_build_ext.finalize_options(self)
+
+        # Prevent numpy from thinking it is still in its setup process:
+        __builtins__.__NUMPY_SETUP__ = False
+        import numpy
+        self.include_dirs.append(numpy.get_include())
+
     def pre_build(self):
         # Build occa
-        if 'NO_CLEAN' not in os.environ:
+        if not self.no_clean:
             self.sys_call('make -C ./occa/c/occa.git clean')
 
         self.sys_call('make -C ./occa/c/occa.git -j4')
@@ -64,14 +81,6 @@ class build_ext(setup_build_ext):
                           ' {output}'.format(libocca_so=libocca_so,
                                              output=output))
 
-    def finalize_options(self):
-        # Use numpy after setup_requirements installs it
-        setup_build_ext.finalize_options(self)
-        # Prevent numpy from thinking it is still in its setup process:
-        __builtins__.__NUMPY_SETUP__ = False
-        import numpy
-        self.include_dirs.append(numpy.get_include())
-
     def run(self):
         self.pre_build()
         setup_build_ext.run(self)
@@ -82,14 +91,21 @@ class coverage(Command):
     '''Run coverage'''
 
     description = 'Run coverage'
-    user_options = []
+    user_options = [
+        ('cov-report=', 'r', 'Coverage report type (default: term)'),
+    ]
 
-    def initialize_options(self): pass
-    def finalize_options(self): pass
+    def initialize_options(self):
+        self.cov_report = 'term'
+
+    def finalize_options(self):
+        options = ['html', 'xml', 'annotate', 'term']
+        if self.cov_report not in options:
+            raise ValueError('--cov-report not in {}'.format(options))
 
     def run(self):
         import pytest
-        pytest.main(['--cov-report', 'term', '--cov=occa', 'tests/'])
+        pytest.main(['--cov-report', self.cov_report, '--cov=occa', 'tests/'])
 #=======================================
 
 
