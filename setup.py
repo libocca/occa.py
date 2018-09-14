@@ -85,6 +85,7 @@ def get_ext_module(module):
             'occa/c',
             'occa/c/occa.git/include',
         ],
+        depends=['./occa/c/occa.git/lib/libocca.so'],
         libraries=['occa'],
         library_dirs=['./occa/c/occa.git/lib'],
         extra_compile_args=['-Wno-unused-function'],
