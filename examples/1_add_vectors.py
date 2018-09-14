@@ -43,7 +43,7 @@ def main(args):
     o_ab = d.malloc(entries, dtype=np.float32)
 
     # Build kernel
-    add_vectors = r'''
+    add_vectors_source = r'''
     @kernel void addVectors(const int entries,
                             const float *a,
                             const float *b,
@@ -54,11 +54,12 @@ def main(args):
     }
     '''
 
-    k = d.build_kernel_from_string(add_vectors,
-                                   'addVectors')
+    add_vectors = d.build_kernel_from_string(add_vectors_source,
+                                             'addVectors')
 
     # Launch kernel
-    k(np.intc(1), o_a, o_b, o_ab)
+    add_vectors(np.intc(entries),
+                o_a, o_b, o_ab)
 
     # Copy device data to host
     o_ab.copy_to(ab)

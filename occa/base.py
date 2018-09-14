@@ -160,8 +160,9 @@ def memcpy(dest, src,
     if isinstance(src, Memory):
         src = src._c
 
-    # M: occa.Memory    with types 1 or 2
+    # M: occa.Memory
     # A: numpy.ndarray
+    # Types 1 or 2
     #
     # | src | src_buffer | dest_buffer | dest |
     # +-----+------------+-------------+------+
