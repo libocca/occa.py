@@ -118,13 +118,11 @@ def test_set_stream():
 
 
 def test_tags():
-    # TODO: Fix
-    return
     start = occa.tag_stream()
     time.sleep(0.5)
     end = occa.tag_stream()
 
-    occa.wait_for_tag(end)
+    occa.wait_for(end)
 
     assert isinstance(start, occa.StreamTag)
     assert occa.time_between(start, end) > 0.4

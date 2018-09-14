@@ -81,12 +81,12 @@ def tag_stream():
     return get_device().tag_stream()
 
 
-def wait_for_tag(tag):
+def wait_for(tag):
     return get_device().wait_for(tag)
 
 
-def time_between_tags(start, end):
-    return get_device().wait_for(start, end)
+def time_between(start, end):
+    return get_device().time_between(start, end)
 #=======================================
 
 
