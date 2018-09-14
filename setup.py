@@ -25,7 +25,6 @@
 from setuptools import setup, find_packages, Command, Extension
 from setuptools.command.build_ext import build_ext as setup_build_ext
 import os
-import shutil
 import sys
 import versioneer
 
@@ -40,6 +39,13 @@ class build_ext(setup_build_ext):
 
     def sys_call(self, command):
         self.spawn(command.split(' '))
+
+    def replace_build_file(self, path):
+        local_path = os.path.abspath(path)
+        build_path = os.path.abspath(os.path.join(self.build_lib, path))
+
+        os.makedirs(os.path.dirname(build_path), exist_ok=True)
+        self.copy_file(local_path, build_path)
 
     def initialize_options(self):
         setup_build_ext.initialize_options(self)
@@ -64,16 +70,16 @@ class build_ext(setup_build_ext):
     def post_build(self):
         # Copy libocca.so manually, not sure why it isn't copied over
         #   even though bin/occa is...
-        occa_git = os.path.abspath('./occa/c/occa.git')
-        build_occa_git = os.path.join(self.build_lib, 'occa/c/occa.git')
-        self.copy_tree(os.path.join(occa_git, 'lib'),
-                       os.path.join(build_occa_git, 'lib'))
+        for path in ['./occa/c/occa.git/lib/libocca.so',
+                     './occa/c/occa.git/bin/occa',
+                     './occa/c/occa.git/include/occa/defines/compiledDefines.hpp']:
+            self.replace_build_file(path)
 
         if sys.platform != 'darwin':
             return
 
         # Manually set relative rpath in OSX
-        libocca_so = os.path.join(occa_git, 'lib/libocca.so')
+        libocca_so = os.path.abspath('./occa/c/occa.git/lib/libocca.so')
         for output in self.get_outputs():
             self.sys_call('install_name_tool'
                           ' -change'
