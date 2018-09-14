@@ -27,6 +27,7 @@ from setuptools.command.build_ext import build_ext as setup_build_ext
 import os
 import shutil
 import sys
+import versioneer
 
 
 #---[ Commands ]------------------------
@@ -176,7 +177,7 @@ classifiers = [
 
 setup(
     name='occa',
-    version='0.3.6',
+    version=versioneer.get_version(),
     description='Portable Approach for Parallel Architectures',
     long_description=long_description,
     keywords=keywords,
