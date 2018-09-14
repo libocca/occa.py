@@ -34,7 +34,7 @@ import versioneer
 class build_ext(setup_build_ext):
     '''Compile occa.git'''
 
-    user_options = [
+    user_options = setup_build_ext.user_options + [
         ('no-clean', 'n', "Don't rebuild OCCA"),
     ]
 

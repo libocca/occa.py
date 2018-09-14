@@ -262,9 +262,11 @@ static PyObject* Device_build_kernel(occa::py::Device *self,
     return NULL;
   }
 
-  return occa::py::toPy(
-    self->device->buildKernel(filename, kernel, props)
+  occa::kernel k;
+  OCCA_TRY(
+    k = self->device->buildKernel(filename, kernel, props);
   );
+  return occa::py::toPy(k);
 }
 
 static PyObject* Device_build_kernel_from_string(occa::py::Device *self,
@@ -287,9 +289,11 @@ static PyObject* Device_build_kernel_from_string(occa::py::Device *self,
     return NULL;
   }
 
-  return occa::py::toPy(
-    self->device->buildKernelFromString(source, kernel, props)
+  occa::kernel k;
+  OCCA_TRY(
+    k = self->device->buildKernelFromString(source, kernel, props);
   );
+  return occa::py::toPy(k);
 }
 
 static PyObject* Device_build_kernel_from_binary(occa::py::Device *self,
@@ -312,9 +316,11 @@ static PyObject* Device_build_kernel_from_binary(occa::py::Device *self,
     return NULL;
   }
 
-  return occa::py::toPy(
-    self->device->buildKernelFromBinary(filename, kernel, props)
+  occa::kernel k;
+  OCCA_TRY(
+    k = self->device->buildKernelFromBinary(filename, kernel, props);
   );
+  return occa::py::toPy(k);
 }
 //  |===================================
 
@@ -346,11 +352,13 @@ static PyObject* Device_malloc(occa::py::Device *self,
     bytes = src.size();
   }
 
-  return occa::py::toPy(
-    self->device->malloc(bytes,
-                         src.ptr(),
-                         props)
+  occa::memory memory;
+  OCCA_TRY(
+    memory = self->device->malloc(bytes,
+                                  src.ptr(),
+                                  props);
   );
+  return occa::py::toPy(memory);
 }
 //  |===================================
 
