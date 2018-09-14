@@ -29,6 +29,10 @@ import shutil
 import sys
 
 
+if sys.version_info < (3, 5):
+    sys.exit('Sorry, only Python 3.5 and above is supported')
+
+
 class OccaInstaller(build_ext.build_ext):
     '''Compile occa.git'''
 
@@ -128,10 +132,7 @@ classifiers = [
     'Operating System :: MacOS',
     'Operating System :: POSIX',
     'Operating System :: Unix',
-    'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
