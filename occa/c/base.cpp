@@ -29,6 +29,26 @@ static PyObject* py_occa_settings(PyObject *self) {
   );
 }
 
+static PyObject* py_occa_set_setting(PyObject *self,
+                                     PyObject *args,
+                                     PyObject *kwargs) {
+  std::string key;
+  occa::json value;
+
+  occa::py::kwargParser parser;
+  parser
+    .add("key", key)
+    .add("value", value);
+
+  if (!parser.parse(args, kwargs)) {
+    return NULL;
+  }
+  OCCA_TRY(
+    occa::settings()[key] = value;
+  );
+  return occa::py::None();
+}
+
 static PyObject* py_occa_print_mode_info(PyObject *self) {
   occa::printModeInfo();
   return occa::py::None();
@@ -163,6 +183,7 @@ static void base_init_module(PyObject *module) {}
 OCCA_PY_MODULE(
   base,
   BASE_METHOD_NO_ARGS(settings),
+  BASE_METHOD_WITH_KWARGS(set_setting),
   BASE_METHOD_NO_ARGS(print_mode_info),
   BASE_METHOD_NO_ARGS(host),
   BASE_METHOD_NO_ARGS(get_device),

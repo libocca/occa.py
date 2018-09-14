@@ -47,6 +47,7 @@ namespace occa {
         stream,
         streamTag,
         properties,
+        json,
       };
     }
 
@@ -89,6 +90,7 @@ namespace occa {
       DEFINE_ADD(occa::stream        , argType::stream)
       DEFINE_ADD(occa::streamTag     , argType::streamTag)
       DEFINE_ADD(occa::properties    , argType::properties)
+      DEFINE_ADD(occa::json          , argType::json)
 
 #undef DEFINE_ADD
       //================================
@@ -210,6 +212,11 @@ namespace occa {
         *((occa::properties*) inputs[index]) = occa::properties(str(value));
       }
 
+      inline void setJson(const int index,
+                          void *value) {
+        *((occa::json*) inputs[index]) = occa::json::parse(str(value));
+      }
+
       inline void setArgValue(const int index,
                               void *value) {
         if (isNone(value)) {
@@ -229,6 +236,7 @@ namespace occa {
         case argType::stream    : return setStream(index, value);
         case argType::streamTag : return setStreamTag(index, value);
         case argType::properties: return setProperties(index, value);
+        case argType::json      : return setJson(index, value);
         }
       }
       //================================

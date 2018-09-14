@@ -82,7 +82,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # TODO: Missing properties object
-    # occa.settings.kernel.verbose = args.verbose
+    occa.set_setting('kernel/verbose', args.verbose)
 
     main(args)

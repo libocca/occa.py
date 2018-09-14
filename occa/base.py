@@ -30,6 +30,11 @@ def settings():
     return json.loads(c.settings())
 
 
+def set_setting(key, value):
+    utils.assert_str(key)
+    c.set_setting(key=key, value=json.dumps(value))
+
+
 def print_mode_info():
     c.print_mode_info()
 
