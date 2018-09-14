@@ -70,7 +70,7 @@ namespace occa {
     }
 
     static PyObject* toPy(const long long value) {
-      return PyLong_FromLong(value);
+      return PyLong_FromLongLong(value);
     }
 
     static PyObject* toPy(const size_t value) {
@@ -125,31 +125,31 @@ namespace occa {
 
     static PyObject* toPy(const occa::device &device) {
       return newCoreType(occa::py::DeviceType(),
-                         (void*) device.getModeDevice(),
+                         (void*) new occa::device(device),
                          "device");
     }
 
     static PyObject* toPy(const occa::kernel &kernel) {
       return newCoreType(occa::py::KernelType(),
-                         (void*) kernel.getModeKernel(),
+                         (void*) new occa::kernel(kernel),
                          "kernel");
     }
 
     static PyObject* toPy(const occa::memory &memory) {
       return newCoreType(occa::py::MemoryType(),
-                         (void*) memory.getModeMemory(),
+                         (void*) new occa::memory(memory),
                          "memory");
     }
 
     static PyObject* toPy(const occa::stream &stream) {
       return newCoreType(occa::py::StreamType(),
-                         (void*) stream.getModeStream(),
+                         (void*) new occa::stream(stream),
                          "stream");
     }
 
     static PyObject* toPy(const occa::streamTag &streamTag) {
       return newCoreType(occa::py::StreamTagType(),
-                         (void*) streamTag.getModeStreamTag(),
+                         (void*) new occa::streamTag(streamTag),
                          "streamtag");
     }
 

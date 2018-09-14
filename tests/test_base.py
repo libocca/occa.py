@@ -66,8 +66,6 @@ def test_get_device():
 
 
 def test_set_device():
-    # TODO: Fix
-    return
     host = occa.host()
 
     assert host == occa.get_device()
@@ -79,7 +77,10 @@ def test_set_device():
     assert host != dev
 
     occa.set_device(host)
-    host.finish()
+    dev = occa.get_device()
+
+    assert isinstance(dev, occa.Device)
+    assert host == dev
 
 
 def test_finish():

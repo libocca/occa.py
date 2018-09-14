@@ -96,15 +96,15 @@ namespace occa {
       //---[ Input Transforms ]---------
       template <class InputType, class ValueType>
       inline void setInput(const int index,
-                           void *value) {
-        *((InputType*) inputs[index]) = (ValueType) value;
+                           ValueType value) {
+        *((InputType*) inputs[index]) = value;
       }
 
       template <class InputType, class ValueType>
       inline void setPtrInput(const int index,
                               void *value) {
         setInput<InputType, ValueType>(index,
-                                       occa::py::ptr((PyObject*) value));
+                                       (ValueType) occa::py::ptr((PyObject*) value));
       }
 
       template <class InputType>
@@ -167,27 +167,42 @@ namespace occa {
 
       inline void setDevice(const int index,
                             void *value) {
-        setPtrInput<occa::device, occa::modeDevice_t*>(index, value);
+        setInput<occa::device, occa::device&>(
+          index,
+          *(((occa::py::Device*) value)->device)
+        );
       }
 
       inline void setMemory(const int index,
                             void *value) {
-        setPtrInput<occa::memory, occa::modeMemory_t*>(index, value);
+        setInput<occa::memory, occa::memory&>(
+          index,
+          *(((occa::py::Memory*) value)->memory)
+        );
       }
 
       inline void setKernel(const int index,
                             void *value) {
-        setPtrInput<occa::kernel, occa::modeKernel_t*>(index, value);
+        setInput<occa::kernel, occa::kernel&>(
+          index,
+          *(((occa::py::Kernel*) value)->kernel)
+        );
       }
 
       inline void setStream(const int index,
                             void *value) {
-        setPtrInput<occa::stream, occa::modeStream_t*>(index, value);
+        setInput<occa::stream, occa::stream&>(
+          index,
+          *(((occa::py::Stream*) value)->stream)
+        );
       }
 
       inline void setStreamTag(const int index,
                                void *value) {
-        setPtrInput<occa::streamTag, occa::modeStreamTag_t*>(index, value);
+        setInput<occa::streamTag, occa::streamTag&>(
+          index,
+          *(((occa::py::StreamTag*) value)->streamTag)
+        );
       }
 
       inline void setProperties(const int index,
