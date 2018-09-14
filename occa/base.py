@@ -35,10 +35,6 @@ def set_setting(key, value):
     c.set_setting(key=key, value=json.dumps(value))
 
 
-def print_mode_info():
-    c.print_mode_info()
-
-
 #---[ Device ]--------------------------
 def host():
     from .device import Device

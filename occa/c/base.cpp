@@ -48,11 +48,6 @@ static PyObject* py_occa_set_setting(PyObject *self,
   );
   return occa::py::None();
 }
-
-static PyObject* py_occa_print_mode_info(PyObject *self) {
-  occa::printModeInfo();
-  return occa::py::None();
-}
 //======================================
 
 
@@ -184,7 +179,6 @@ OCCA_PY_MODULE(
   base,
   BASE_METHOD_NO_ARGS(settings),
   BASE_METHOD_WITH_KWARGS(set_setting),
-  BASE_METHOD_NO_ARGS(print_mode_info),
   BASE_METHOD_NO_ARGS(host),
   BASE_METHOD_NO_ARGS(get_device),
   BASE_METHOD_WITH_KWARGS(set_device),

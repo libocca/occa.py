@@ -44,10 +44,6 @@ def test_settings():
     assert 'okl-version' in settings
 
 
-def test_print_mode_info():
-    occa.print_mode_info()
-
-
 #---[ Device ]--------------------------
 def test_host():
     host = occa.host()

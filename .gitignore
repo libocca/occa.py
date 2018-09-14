@@ -10,3 +10,4 @@ __pycache__
 .pybuild
 .pytest_cache
 .cache
+.coverage

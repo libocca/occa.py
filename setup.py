@@ -22,18 +22,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
 
-from setuptools.command import build_ext
-from setuptools import setup, find_packages, Extension
+from setuptools import setup, find_packages, Command, Extension
+from setuptools.command.build_ext import build_ext as setup_build_ext
 import os
 import shutil
 import sys
 
 
-if sys.version_info < (3, 5):
-    sys.exit('Sorry, only Python 3.5 and above is supported')
-
-
-class OccaInstaller(build_ext.build_ext):
+#---[ Commands ]------------------------
+class build_ext(setup_build_ext):
     '''Compile occa.git'''
 
     def sys_call(self, command):
@@ -69,7 +66,7 @@ class OccaInstaller(build_ext.build_ext):
 
     def finalize_options(self):
         # Use numpy after setup_requirements installs it
-        build_ext.build_ext.finalize_options(self)
+        setup_build_ext.finalize_options(self)
         # Prevent numpy from thinking it is still in its setup process:
         __builtins__.__NUMPY_SETUP__ = False
         import numpy
@@ -77,8 +74,27 @@ class OccaInstaller(build_ext.build_ext):
 
     def run(self):
         self.pre_build()
-        build_ext.build_ext.run(self)
+        setup_build_ext.run(self)
         self.post_build()
+
+
+class coverage(Command):
+    '''Run coverage'''
+
+    description = 'Run coverage'
+    user_options = []
+
+    def initialize_options(self): pass
+    def finalize_options(self): pass
+
+    def run(self):
+        import pytest
+        pytest.main(['--cov-report', 'term', '--cov=occa', 'tests/'])
+#=======================================
+
+
+if sys.version_info < (3, 5):
+    sys.exit('Sorry, only Python 3.5 and above is supported')
 
 
 def get_ext_module(module):
@@ -154,7 +170,8 @@ setup(
     license='MIT',
     py_modules=['occa'],
     cmdclass={
-        'build_ext': OccaInstaller,
+        'build_ext': build_ext,
+        'coverage': coverage,
     },
     packages=find_packages(),
     include_package_data=True,
