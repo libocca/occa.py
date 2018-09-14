@@ -43,8 +43,18 @@ Try out local installation
 
 ```bash
 git submodule update --init
-python setup.py install
+pip install -e .
+python setup.py build_ext
 ```
+
+Between updates, run
+
+```bash
+# To avoid doing a `make clean` each time, use the `NO_CLEAN` environment variable
+NO_CLEAN python setup.py build_ext
+```
+
+### Deployment
 
 Test deployment before uploading package to pypi
 
@@ -53,15 +63,7 @@ python setup.py install sdist
 pip install dist/occa-<version>.tar.gz
 ```
 
-To avoid doing a `make clean` each time, use the `NO_CLEAN` environment variable
-
-```bash
-NO_CLEAN python setup.py install sdist
-```
-
-### Deployment
-
-Upload to pypi
+After testing, upload to pypi by running
 
 ```
 twine upload dist/*
