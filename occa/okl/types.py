@@ -20,14 +20,19 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
+
+
 const = 'const'
 restrict = '@restrict'
 
+
 def dtype(type, *args):
-    return { 'type': type, 'qualifiers': args }
+    return {'type': type, 'qualifiers': args}
+
 
 def shared(size, dtype=None):
     pass
+
 
 def exclusive(dtype=None):
     pass

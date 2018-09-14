@@ -20,6 +20,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
+from ..base import get_device
+
+
 class Kernel:
     def __init__(self, source, name):
         self.source = source
@@ -34,4 +37,4 @@ class Kernel:
         return self._build(device)
 
     def __call__(self, *args, props=None):
-        return self._build(occa.get_device(), props)(*args)
+        return self._build(get_device(), props)(*args)
