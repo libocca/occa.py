@@ -51,7 +51,7 @@ Between updates, run
 
 ```bash
 # To avoid doing a `make clean` each time, use the `NO_CLEAN` environment variable
-NO_CLEAN python setup.py build_ext --inplace
+NO_CLEAN=1 python setup.py build_ext --inplace
 ```
 
 ### Deployment
