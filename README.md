@@ -42,6 +42,7 @@ pip install occa
 Try out local installation
 
 ```bash
+git submodule update --init
 python setup.py install
 ```
 
