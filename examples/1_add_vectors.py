@@ -57,6 +57,10 @@ def main(args):
     add_vectors = d.build_kernel_from_string(add_vectors_source,
                                              'addVectors')
 
+    # Or you can build from a file
+    # add_vectors = d.build_kernel('addVectors.okl',
+    #                              'addVectors')
+
     # Launch kernel
     add_vectors(np.intc(entries),
                 o_a, o_b, o_ab)
