@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #
 import json
+import numpy as np
 
 from . import utils
 from .exceptions import UninitializedError
@@ -103,9 +104,33 @@ class Kernel:
         self._c.set_run_dims(outer=list(outer),
                              inner=list(inner))
 
+    def __bool__(self):
+        return self.is_initialized
+
     def __call__(self, *args):
         self._assert_initialized()
+
+        args = list(args)
+        np_array_args = {
+            index: arg
+            for index, arg in enumerate(args)
+            if isinstance(arg, np.ndarray)
+        }
+        if len(np_array_args) == 0:
+            self._c.run(args=utils.cast_args(args))
+            return
+
+        # Copy values to device
+        device = self.device
+        for index, array in np_array_args.items():
+            args[index] = device.malloc(array)
+
         self._c.run(args=utils.cast_args(args))
+
+        # Copy device values back to host
+        for index, array in np_array_args.items():
+            args[index].copy_to(array)
+            args[index].free()
 
     def __eq__(self, other):
         self._assert_initialized()

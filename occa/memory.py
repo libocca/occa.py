@@ -133,6 +133,9 @@ class Memory:
         self.copy_to(array)
         return array
 
+    def __bool__(self):
+        return self.is_initialized
+
     def __len__(self):
         self._assert_initialized()
         return int(self._c.size() / self.dtype.itemsize)

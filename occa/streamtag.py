@@ -57,6 +57,9 @@ class StreamTag:
         self._assert_initialized()
         self._c.wait()
 
+    def __bool__(self):
+        return self.is_initialized
+
     def __eq__(self, other):
         self._assert_initialized()
         if not isinstance(other, StreamTag):

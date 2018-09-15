@@ -65,6 +65,9 @@ class Stream:
         self._assert_initialized()
         return json.loads(self._c.properties())
 
+    def __bool__(self):
+        return self.is_initialized
+
     def __eq__(self, other):
         self._assert_initialized()
         if not isinstance(other, Stream):

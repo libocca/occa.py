@@ -236,10 +236,7 @@ def cast_arg(value):
 
 
 def cast_args(args):
-    return [
-        cast_arg(arg)
-        for arg in args
-    ]
+    return [cast_arg(arg) for arg in args]
 
 
 def memory_buffer(value,
