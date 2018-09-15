@@ -44,7 +44,6 @@ Try out local installation
 ```bash
 git submodule update --init
 pip install -e .
-python setup.py build_ext
 ```
 
 Between updates, run
