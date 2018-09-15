@@ -178,7 +178,7 @@ class Device:
             src = src_or_entries
             dtype = dtype or src.dtype
 
-            entries = len(src)
+            entries = src.size
             if dtype != src.dtype:
                 src = src.astype(dtype)
         else:
