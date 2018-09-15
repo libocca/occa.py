@@ -4,9 +4,27 @@ cache: pip
 notifications:
   email: false
 
-python:
-  - 3.5
-  - 3.6
+matrix:
+  include:
+    - name: "Linux · Python 3.5"
+      python: 3.5
+      os: linux
+      dist: trusty
+
+    - name: "Linux · Python 3.6"
+      python: 3.6
+      os: linux
+      dist: trusty
+
+    - name: "MacOS · Python 3.5"
+      python: 3.5
+      os: osx
+      osx_image: xcode8
+
+    - name: "MacOS · Python 3.6"
+      python: 3.6
+      os: osx
+      osx_image: xcode8
 
 script: true
 
