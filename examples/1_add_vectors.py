@@ -27,8 +27,22 @@ import occa
 
 
 def main(args):
-    # Create device
-    d = occa.Device(args.device)
+    # Device setup with string flags
+    device = occa.Device(args.device)
+
+    # Alternatively, try out:
+    #   device.setup(mode='Serial');
+    #
+    #   device.setup(mode='OpenMP',
+    #                schedule='compact',
+    #                chunk=10)
+    #
+    #   device.setup(mode='OpenCL',
+    #                platform_id=0,
+    #                device_id=0)
+    #
+    #   device.setup(mode='CUDA'
+    #                device_id=0)
 
     # Allocate memory in host
     entries = 10
@@ -38,9 +52,9 @@ def main(args):
     ab = np.zeros(entries, dtype=np.float32)
 
     # Allocate memory in device and copy over data
-    o_a  = d.malloc(a)
-    o_b  = d.malloc(b)
-    o_ab = d.malloc(entries, dtype=np.float32)
+    o_a  = device.malloc(a)
+    o_b  = device.malloc(b)
+    o_ab = device.malloc(entries, dtype=np.float32)
 
     # Build kernel
     add_vectors_source = r'''
@@ -54,8 +68,8 @@ def main(args):
     }
     '''
 
-    add_vectors = d.build_kernel_from_string(add_vectors_source,
-                                             'addVectors')
+    add_vectors = device.build_kernel_from_string(add_vectors_source,
+                                                  'addVectors')
 
     # Or you can build from a file
     # add_vectors = d.build_kernel('addVectors.okl',
