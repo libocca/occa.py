@@ -38,9 +38,11 @@ static int StreamTag_init(occa::py::StreamTag *self,
     return -1;
   }
 
-  if (streamtag.isInitialized()) {
-    self->streamTag = new occa::streamTag(streamtag);
-  }
+  OCCA_INIT_TRY(
+    if (streamtag.isInitialized()) {
+      self->streamTag = new occa::streamTag(streamtag);
+    }
+  );
 
   return 0;
 }
@@ -54,16 +56,20 @@ static void StreamTag_dealloc(occa::py::StreamTag *self) {
 
 //---[ Class Methods ]------------------
 static PyObject* StreamTag_is_initialized(occa::py::StreamTag *self) {
-  return occa::py::toPy(
-    (bool) (self->streamTag &&
-            self->streamTag->isInitialized())
+  OCCA_TRY(
+    return occa::py::toPy(
+      (bool) (self->streamTag &&
+              self->streamTag->isInitialized())
+    );
   );
 }
 
 static PyObject* StreamTag_free(occa::py::StreamTag *self) {
-  if (self->streamTag) {
-    self->streamTag->free();
-  }
+  OCCA_TRY(
+    if (self->streamTag) {
+      self->streamTag->free();
+    }
+  );
   return occa::py::None();
 }
 
@@ -71,21 +77,27 @@ static PyObject* StreamTag_get_device(occa::py::StreamTag *self) {
   if (!self->streamTag) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->streamTag->getDevice()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->streamTag->getDevice()
+    );
   );
 }
 
 static PyObject* StreamTag_wait(occa::py::StreamTag *self) {
-  if (self->streamTag) {
-    self->streamTag->wait();
-  }
+  OCCA_TRY(
+    if (self->streamTag) {
+      self->streamTag->wait();
+    }
+  );
   return occa::py::None();
 }
 
 static PyObject* StreamTag_ptr_as_long(occa::py::StreamTag *self) {
-  return occa::py::toPy(
-    (long long) self->streamTag->getModeStreamTag()
+  OCCA_TRY(
+    return occa::py::toPy(
+      (long long) self->streamTag->getModeStreamTag()
+    );
   );
 }
 //======================================

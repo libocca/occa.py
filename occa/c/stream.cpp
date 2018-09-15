@@ -38,9 +38,11 @@ static int Stream_init(occa::py::Stream *self,
     return -1;
   }
 
-  if (stream.isInitialized()) {
-    self->stream = new occa::stream(stream);
-  }
+  OCCA_INIT_TRY(
+    if (stream.isInitialized()) {
+      self->stream = new occa::stream(stream);
+    }
+  );
 
   return 0;
 }
@@ -54,16 +56,20 @@ static void Stream_dealloc(occa::py::Stream *self) {
 
 //---[ Class Methods ]------------------
 static PyObject* Stream_is_initialized(occa::py::Stream *self) {
-  return occa::py::toPy(
-    (bool) (self->stream &&
-            self->stream->isInitialized())
+  OCCA_TRY(
+    return occa::py::toPy(
+      (bool) (self->stream &&
+              self->stream->isInitialized())
+    );
   );
 }
 
 static PyObject* Stream_free(occa::py::Stream *self) {
-  if (self->stream) {
-    self->stream->free();
-  }
+  OCCA_TRY(
+    if (self->stream) {
+      self->stream->free();
+    }
+  );
   return occa::py::None();
 }
 
@@ -71,8 +77,10 @@ static PyObject* Stream_mode(occa::py::Stream *self) {
   if (!self->stream) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->stream->mode()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->stream->mode()
+    );
   );
 }
 
@@ -80,8 +88,10 @@ static PyObject* Stream_properties(occa::py::Stream *self) {
   if (!self->stream) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->stream->properties()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->stream->properties()
+    );
   );
 }
 
@@ -89,14 +99,18 @@ static PyObject* Stream_get_device(occa::py::Stream *self) {
   if (!self->stream) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->stream->getDevice()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->stream->getDevice()
+    );
   );
 }
 
 static PyObject* Stream_ptr_as_long(occa::py::Stream *self) {
-  return occa::py::toPy(
-    (long long) self->stream->getModeStream()
+  OCCA_TRY(
+    return occa::py::toPy(
+      (long long) self->stream->getModeStream()
+    );
   );
 }
 //======================================

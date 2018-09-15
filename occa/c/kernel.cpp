@@ -38,9 +38,11 @@ static int Kernel_init(occa::py::Kernel *self,
     return -1;
   }
 
-  if (kernel.isInitialized()) {
-    self->kernel = new occa::kernel(kernel);
-  }
+  OCCA_INIT_TRY(
+    if (kernel.isInitialized()) {
+      self->kernel = new occa::kernel(kernel);
+    }
+  );
 
   return 0;
 }
@@ -54,16 +56,20 @@ static void Kernel_dealloc(occa::py::Kernel *self) {
 
 //---[ Class Methods ]------------------
 static PyObject* Kernel_is_initialized(occa::py::Kernel *self) {
-  return occa::py::toPy(
-    (bool) (self->kernel &&
-            self->kernel->isInitialized())
+  OCCA_TRY(
+    return occa::py::toPy(
+      (bool) (self->kernel &&
+              self->kernel->isInitialized())
+    );
   );
 }
 
 static PyObject* Kernel_free(occa::py::Kernel *self) {
-  if (self->kernel) {
-    self->kernel->free();
-  }
+  OCCA_TRY(
+    if (self->kernel) {
+      self->kernel->free();
+    }
+  );
   return occa::py::None();
 }
 
@@ -71,8 +77,10 @@ static PyObject* Kernel_mode(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->kernel->mode()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->kernel->mode()
+    );
   );
 }
 
@@ -80,8 +88,10 @@ static PyObject* Kernel_properties(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->kernel->properties()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->kernel->properties()
+    );
   );
 }
 
@@ -89,8 +99,10 @@ static PyObject* Kernel_get_device(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->kernel->getDevice()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->kernel->getDevice()
+    );
   );
 }
 
@@ -98,8 +110,10 @@ static PyObject* Kernel_name(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->kernel->name()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->kernel->name()
+    );
   );
 }
 
@@ -107,8 +121,10 @@ static PyObject* Kernel_source_filename(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->kernel->sourceFilename()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->kernel->sourceFilename()
+    );
   );
 }
 
@@ -116,8 +132,10 @@ static PyObject* Kernel_binary_filename(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->kernel->binaryFilename()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->kernel->binaryFilename()
+    );
   );
 }
 
@@ -125,8 +143,10 @@ static PyObject* Kernel_max_dims(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->kernel->maxDims()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->kernel->maxDims()
+    );
   );
 }
 
@@ -134,8 +154,10 @@ static PyObject* Kernel_max_outer_dims(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->kernel->maxOuterDims()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->kernel->maxOuterDims()
+    );
   );
 }
 
@@ -143,8 +165,10 @@ static PyObject* Kernel_max_inner_dims(occa::py::Kernel *self) {
   if (!self->kernel) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->kernel->maxInnerDims()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->kernel->maxInnerDims()
+    );
   );
 }
 
@@ -166,7 +190,9 @@ static PyObject* Kernel_set_run_dims(occa::py::Kernel *self,
     return NULL;
   }
 
-  self->kernel->setRunDims(outer, inner);
+  OCCA_TRY(
+    self->kernel->setRunDims(outer, inner);
+  );
 
   return occa::py::None();
 }
@@ -239,24 +265,28 @@ static PyObject* Kernel_run(occa::py::Kernel *self,
     return NULL;
   }
 
-  self->kernel->clearArgs();
-  const int argc = argList.size();
-  for (int i = 0; i < argc; ++i) {
-    occa::kernelArg arg;
-    if (!occa_setKernelArg(argList[i], arg)) {
-      return NULL;
+  OCCA_TRY(
+    self->kernel->clearArgs();
+    const int argc = argList.size();
+    for (int i = 0; i < argc; ++i) {
+      occa::kernelArg arg;
+      if (!occa_setKernelArg(argList[i], arg)) {
+        return NULL;
+      }
+      self->kernel->pushArg(arg);
     }
-    self->kernel->pushArg(arg);
-  }
 
-  self->kernel->run();
+    self->kernel->run();
+  );
 
   return occa::py::None();
 }
 
 static PyObject* Kernel_ptr_as_long(occa::py::Kernel *self) {
-  return occa::py::toPy(
-    (long long) self->kernel->getModeKernel()
+  OCCA_TRY(
+    return occa::py::toPy(
+      (long long) self->kernel->getModeKernel()
+    );
   );
 }
 //======================================

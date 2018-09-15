@@ -38,9 +38,11 @@ static int Memory_init(occa::py::Memory *self,
     return -1;
   }
 
-  if (memory.isInitialized()) {
-    self->memory = new occa::memory(memory);
-  }
+  OCCA_INIT_TRY(
+    if (memory.isInitialized()) {
+      self->memory = new occa::memory(memory);
+    }
+  );
 
   return 0;
 }
@@ -54,16 +56,20 @@ static void Memory_dealloc(occa::py::Memory *self) {
 
 //---[ Class Methods ]------------------
 static PyObject* Memory_is_initialized(occa::py::Memory *self) {
-  return occa::py::toPy(
-    (bool) (self->memory &&
-            self->memory->isInitialized())
+  OCCA_TRY(
+    return occa::py::toPy(
+      (bool) (self->memory &&
+              self->memory->isInitialized())
+    );
   );
 }
 
 static PyObject* Memory_free(occa::py::Memory *self) {
-  if (self->memory) {
-    self->memory->free();
-  }
+  OCCA_TRY(
+    if (self->memory) {
+      self->memory->free();
+    }
+  );
   return occa::py::None();
 }
 
@@ -71,8 +77,10 @@ static PyObject* Memory_mode(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->memory->mode()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->memory->mode()
+    );
   );
 }
 
@@ -80,8 +88,10 @@ static PyObject* Memory_properties(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->memory->properties()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->memory->properties()
+    );
   );
 }
 
@@ -89,8 +99,10 @@ static PyObject* Memory_get_device(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->memory->getDevice()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->memory->getDevice()
+    );
   );
 }
 
@@ -98,9 +110,10 @@ static PyObject* Memory_size(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
-
-  return occa::py::toPy(
-    (long long) self->memory->size()
+  OCCA_TRY(
+    return occa::py::toPy(
+      (long long) self->memory->size()
+    );
   );
 }
 
@@ -123,108 +136,29 @@ static PyObject* Memory_slice(occa::py::Memory *self,
     return NULL;
   }
 
-  return occa::py::toPy(
-    self->memory->slice(offset, bytes)
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->memory->slice(offset, bytes)
+    );
   );
 }
-
-//---[ UVA ]----------------------------
-static PyObject* Memory_is_managed(occa::py::Memory *self) {
-  return occa::py::toPy(
-    (bool) (self->memory &&
-            self->memory->isManaged())
-  );
-}
-
-static PyObject* Memory_in_device(occa::py::Memory *self) {
-  return occa::py::toPy(
-    (bool) (self->memory &&
-            self->memory->inDevice())
-  );
-}
-
-static PyObject* Memory_is_stale(occa::py::Memory *self) {
-  return occa::py::toPy(
-    (bool) (self->memory &&
-            self->memory->isStale())
-  );
-}
-
-static PyObject* Memory_start_managing(occa::py::Memory *self) {
-  if (self->memory) {
-    self->memory->startManaging();
-  }
-  return occa::py::None();
-}
-
-static PyObject* Memory_stop_managing(occa::py::Memory *self) {
-  if (self->memory) {
-    self->memory->stopManaging();
-  }
-  return occa::py::None();
-}
-
-static PyObject* Memory_sync_to_device(occa::py::Memory *self,
-                                       PyObject *args,
-                                       PyObject *kwargs) {
-  if (!self->memory) {
-    return occa::py::None();
-  }
-
-  long long bytes = -1;
-  long long offset = 0;
-
-  occa::py::kwargParser parser;
-  parser
-    .add("bytes", bytes)
-    .add("offset", offset);
-
-  if (!parser.parse(args, kwargs)) {
-    return NULL;
-  }
-
-  self->memory->syncToDevice(bytes, offset);
-
-  return occa::py::None();
-}
-
-static PyObject* Memory_sync_to_host(occa::py::Memory *self,
-                                     PyObject *args,
-                                     PyObject *kwargs) {
-  if (!self->memory) {
-    return occa::py::None();
-  }
-
-  long long bytes = -1;
-  long long offset = 0;
-
-  occa::py::kwargParser parser;
-  parser
-    .add("bytes", bytes)
-    .add("offset", offset);
-
-  if (!parser.parse(args, kwargs)) {
-    return NULL;
-  }
-
-  self->memory->syncToHost(bytes, offset);
-
-  return occa::py::None();
-}
-//======================================
 
 static PyObject* Memory_clone(occa::py::Memory *self) {
   if (!self->memory) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->memory->clone()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->memory->clone()
+    );
   );
 }
 
 static PyObject* Memory_ptr_as_long(occa::py::Memory *self) {
-  return occa::py::toPy(
-    (long long) self->memory->getModeMemory()
+  OCCA_TRY(
+    return occa::py::toPy(
+      (long long) self->memory->getModeMemory()
+    );
   );
 }
 //======================================
@@ -246,13 +180,6 @@ OCCA_PY_METHODS(
   MEMORY_METHOD_NO_ARGS(properties),
   MEMORY_METHOD_NO_ARGS(size),
   MEMORY_METHOD_WITH_KWARGS(slice),
-  MEMORY_METHOD_NO_ARGS(is_managed),
-  MEMORY_METHOD_NO_ARGS(in_device),
-  MEMORY_METHOD_NO_ARGS(is_stale),
-  MEMORY_METHOD_NO_ARGS(start_managing),
-  MEMORY_METHOD_NO_ARGS(stop_managing),
-  MEMORY_METHOD_WITH_KWARGS(sync_to_device),
-  MEMORY_METHOD_WITH_KWARGS(sync_to_host),
   MEMORY_METHOD_NO_ARGS(clone),
   MEMORY_METHOD_NO_ARGS(ptr_as_long)
 );

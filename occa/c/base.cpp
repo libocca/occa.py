@@ -24,8 +24,10 @@
 
 //---[ Globals & Flags ]----------------
 static PyObject* py_occa_settings(PyObject *self) {
-  return occa::py::toPy(
-    occa::settings()
+  OCCA_TRY(
+    return occa::py::toPy(
+      occa::settings()
+    );
   );
 }
 
@@ -53,14 +55,18 @@ static PyObject* py_occa_set_setting(PyObject *self,
 
 //---[ Device ]-------------------------
 static PyObject* py_occa_host(PyObject *self) {
-  return occa::py::toPy(
-    occa::host()
+  OCCA_TRY(
+    return occa::py::toPy(
+      occa::host()
+    );
   );
 }
 
 static PyObject* py_occa_get_device(PyObject *self) {
-  return occa::py::toPy(
-    occa::getDevice()
+  OCCA_TRY(
+    return occa::py::toPy(
+      occa::getDevice()
+    );
   );
 }
 
@@ -80,13 +86,13 @@ static PyObject* py_occa_set_device(PyObject *self,
     return NULL;
   }
 
-  if (device.isInitialized()) {
-    occa::setDevice(device);
-  } else {
-    OCCA_TRY(
+  OCCA_TRY(
+    if (device.isInitialized()) {
+      occa::setDevice(device);
+    } else {
       occa::setDevice(props);
-    );
-  }
+    }
+  );
 
   return occa::py::None();
 }

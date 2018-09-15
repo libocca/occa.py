@@ -41,13 +41,13 @@ static int Device_init(occa::py::Device *self,
     return -1;
   }
 
-  if (device.isInitialized()) {
-    self->device = new occa::device(device);
-  } else if (props.isInitialized()) {
-    OCCA_INIT_TRY(
+  OCCA_INIT_TRY(
+    if (device.isInitialized()) {
+      self->device = new occa::device(device);
+    } else if (props.isInitialized()) {
       self->device = new occa::device(props);
-    );
-  }
+    }
+  );
 
   return 0;
 }
@@ -61,16 +61,20 @@ static void Device_dealloc(occa::py::Device *self) {
 
 //---[ Class Methods ]------------------
 static PyObject* Device_is_initialized(occa::py::Device *self) {
-  return occa::py::toPy(
-    (bool) (self->device &&
-            self->device->isInitialized())
+  OCCA_TRY(
+    return occa::py::toPy(
+      (bool) (self->device &&
+              self->device->isInitialized())
+    );
   );
 }
 
 static PyObject* Device_free(occa::py::Device *self) {
-  if (self->device) {
-    self->device->free();
-  }
+  OCCA_TRY(
+    if (self->device) {
+      self->device->free();
+    }
+  );
   return occa::py::None();
 }
 
@@ -78,8 +82,10 @@ static PyObject* Device_mode(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->device->mode()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->device->mode()
+    );
   );
 }
 
@@ -87,8 +93,10 @@ static PyObject* Device_properties(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->device->properties()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->device->properties()
+    );
   );
 }
 
@@ -96,8 +104,10 @@ static PyObject* Device_kernel_properties(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->device->kernelProperties()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->device->kernelProperties()
+    );
   );
 }
 
@@ -105,8 +115,10 @@ static PyObject* Device_memory_properties(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->device->memoryProperties()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->device->memoryProperties()
+    );
   );
 }
 
@@ -114,8 +126,10 @@ static PyObject* Device_memory_size(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    (long long) self->device->memorySize()
+  OCCA_TRY(
+    return occa::py::toPy(
+      (long long) self->device->memorySize()
+    );
   );
 }
 
@@ -123,15 +137,19 @@ static PyObject* Device_memory_allocated(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    (long long) self->device->memoryAllocated()
+  OCCA_TRY(
+    return occa::py::toPy(
+      (long long) self->device->memoryAllocated()
+    );
   );
 }
 
 static PyObject* Device_finish(occa::py::Device *self) {
-  if (self->device) {
-    self->device->finish();
-  }
+  OCCA_TRY(
+    if (self->device) {
+      self->device->finish();
+    }
+  );
   return occa::py::None();
 }
 
@@ -139,8 +157,10 @@ static PyObject* Device_has_separate_memory_space(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->device->hasSeparateMemorySpace()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->device->hasSeparateMemorySpace()
+    );
   );
 }
 
@@ -150,8 +170,10 @@ static PyObject* Device_create_stream(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->device->createStream()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->device->createStream()
+    );
   );
 }
 
@@ -159,8 +181,10 @@ static PyObject* Device_get_stream(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->device->getStream()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->device->getStream()
+    );
   );
 }
 
@@ -181,7 +205,9 @@ static PyObject* Device_set_stream(occa::py::Device *self,
     return NULL;
   }
 
-  self->device->setStream(stream);
+  OCCA_TRY(
+    self->device->setStream(stream);
+  );
 
   return occa::py::None();
 }
@@ -190,8 +216,10 @@ static PyObject* Device_tag_stream(occa::py::Device *self) {
   if (!self->device) {
     return occa::py::None();
   }
-  return occa::py::toPy(
-    self->device->tagStream()
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->device->tagStream()
+    );
   );
 }
 
@@ -212,7 +240,9 @@ static PyObject* Device_wait_for(occa::py::Device *self,
     return NULL;
   }
 
-  self->device->waitFor(tag);
+  OCCA_TRY(
+    self->device->waitFor(tag);
+  );
   return occa::py::None();
 }
 
@@ -234,8 +264,10 @@ static PyObject* Device_time_between(occa::py::Device *self,
     return NULL;
   }
 
-  return occa::py::toPy(
-    self->device->timeBetween(start, end)
+  OCCA_TRY(
+    return occa::py::toPy(
+      self->device->timeBetween(start, end)
+    );
   );
 }
 //  |===================================
@@ -262,11 +294,11 @@ static PyObject* Device_build_kernel(occa::py::Device *self,
     return NULL;
   }
 
-  occa::kernel k;
   OCCA_TRY(
-    k = self->device->buildKernel(filename, kernel, props);
+    return occa::py::toPy(
+      self->device->buildKernel(filename, kernel, props)
+    );
   );
-  return occa::py::toPy(k);
 }
 
 static PyObject* Device_build_kernel_from_string(occa::py::Device *self,
@@ -289,11 +321,11 @@ static PyObject* Device_build_kernel_from_string(occa::py::Device *self,
     return NULL;
   }
 
-  occa::kernel k;
   OCCA_TRY(
-    k = self->device->buildKernelFromString(source, kernel, props);
+    return occa::py::toPy(
+      self->device->buildKernelFromString(source, kernel, props)
+    );
   );
-  return occa::py::toPy(k);
 }
 
 static PyObject* Device_build_kernel_from_binary(occa::py::Device *self,
@@ -316,11 +348,11 @@ static PyObject* Device_build_kernel_from_binary(occa::py::Device *self,
     return NULL;
   }
 
-  occa::kernel k;
   OCCA_TRY(
-    k = self->device->buildKernelFromBinary(filename, kernel, props);
+    return occa::py::toPy(
+      self->device->buildKernelFromBinary(filename, kernel, props)
+    );
   );
-  return occa::py::toPy(k);
 }
 //  |===================================
 
@@ -352,19 +384,21 @@ static PyObject* Device_malloc(occa::py::Device *self,
     bytes = src.size();
   }
 
-  occa::memory memory;
   OCCA_TRY(
-    memory = self->device->malloc(bytes,
-                                  src.ptr(),
-                                  props);
+    return occa::py::toPy(
+      self->device->malloc(bytes,
+                           src.ptr(),
+                           props)
+    );
   );
-  return occa::py::toPy(memory);
 }
 //  |===================================
 
 static PyObject* Device_ptr_as_long(occa::py::Device *self) {
-  return occa::py::toPy(
-    (long long) self->device->getModeDevice()
+  OCCA_TRY(
+    return occa::py::toPy(
+      (long long) self->device->getModeDevice()
+    );
   );
 }
 //======================================
