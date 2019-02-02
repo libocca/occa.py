@@ -56,6 +56,12 @@ Between updates, run
 python setup.py build_ext --no-clean --inplace
 ```
 
+### Running Tests
+
+```bash
+pytest tests
+```
+
 ### Deployment
 
 Test deployment before uploading package to pypi
