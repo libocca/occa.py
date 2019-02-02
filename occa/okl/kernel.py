@@ -1,18 +1,33 @@
 from ..base import get_device
+from .py2okl import py2okl
 
 
 class Kernel:
-    def __init__(self, source, name):
-        self.source = source
-        self.name = name
+    def __init__(self, func):
+        self._func = func
+        self._okl_source = None
+        self._kernels = dict()
 
-    def _build(self, device, props):
-        return device.build_kernel_from_string(self.source,
-                                               self.name,
-                                               props)
+    @property
+    def __name__(self):
+        return self._func.__name__
 
-    def __getitem__(self, device):
-        return self._build(device)
+    @property
+    def __okl_source__(self):
+        if self._okl_source is None:
+            self._okl_source = py2okl(self._func)
+        return self._okl_source
+
+    def build(self, device, props=None):
+        kernel = self._kernels.get(device)
+        if kernel is None or not kernel.is_initialized:
+            kernel = (
+                device.build_kernel_from_string(self.__okl_source__,
+                                                self.__name__,
+                                                props)
+            )
+            self._kernels[device] = kernel
+        return kernel
 
     def __call__(self, *args, props=None):
-        return self._build(get_device(), props)(*args)
+        return self.build(get_device(), props=props)(*args)
