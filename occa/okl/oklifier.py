@@ -1,4 +1,5 @@
 import ast
+import collections
 import inspect
 import types
 import numpy as np
@@ -120,8 +121,11 @@ class Oklifier:
             ast.AugAssign: self.stringify_AugAssign,
             ast.BinOp: self.stringify_BinOp,
             ast.BoolOp: self.stringify_BoolOp,
+            ast.Break: self.stringify_Break,
             ast.Call: self.stringify_Call,
+            ast.Continue: self.stringify_Continue,
             ast.Compare: self.stringify_Compare,
+            ast.If: self.stringify_If,
             ast.Index: self.stringify_Index,
             ast.Expr: self.stringify_Expr,
             ast.For: self.stringify_For,
@@ -131,6 +135,7 @@ class Oklifier:
             ast.Name: self.stringify_Name,
             ast.NameConstant: self.stringify_NameConstant,
             ast.Num: self.stringify_Num,
+            ast.Pass: self.stringify_Pass,
             ast.Return: self.stringify_Return,
             ast.Subscript: self.stringify_Subscript,
             ast.UnaryOp: self.stringify_UnaryOp,
@@ -251,11 +256,13 @@ class Oklifier:
 
     def stringify_BoolOp(self, node, indent=''):
         op = ' && ' if isinstance(node.op, ast.And) else ' || '
-        # TODO: Parentheses only if needed
-        return '({values})'.format(values=op.join(
+        return '{values}'.format(values=op.join(
             self.stringify_node(subnode, indent)
             for subnode in node.values
         ))
+
+    def stringify_Break(self, node, indent=''):
+        return 'break;'
 
     def stringify_Call(self, node, indent=''):
         args = ', '.join(
@@ -266,6 +273,9 @@ class Oklifier:
             func=self.stringify_node(node.func, indent),
             args=args,
         )
+
+    def stringify_Continue(self, node, indent=''):
+        return 'continue;'
 
     def stringify_Compare(self, node, indent=''):
         ops = [type(op) for op in node.ops]
@@ -281,15 +291,31 @@ class Oklifier:
                 self.stringify_node(subnode, indent)
                 for subnode in [node.left, *node.comparators]
             ]
-            # TODO: Parentheses only if needed
         return ' && '.join(
-            '({left} {op} {right})'.format(
+            '{left} {op} {right}'.format(
                 left=left,
                 right=right,
                 op=ops[index],
             )
             for index, (left, right) in enumerate(zip(values[:-1], values[1:]))
         )
+
+    def stringify_If(self, node, indent=''):
+        if_str = 'if ({test})'.format(test=self.stringify_node(node.test))
+        if_str += self.stringify_body(node.body, indent)
+
+        orelse_nodes = node.orelse
+        if orelse_nodes:
+            has_elif = (len(orelse_nodes) == 1
+                        and type(orelse_nodes[0]) is ast.If)
+            if_str += '\n' + indent
+            if_str += 'else '
+            if has_elif:
+                if_str += self.stringify_node(orelse_nodes[0], indent)
+            else:
+                if_str += self.stringify_body(orelse_nodes, indent)
+
+        return if_str
 
     def stringify_Index(self, node, indent=''):
         return self.stringify_node(node.value, indent)
@@ -309,7 +335,7 @@ class Oklifier:
             return self.get_range(node)
         if node_str.startswith('okl.range'):
             return self.get_okl_range(node)
-        self.__raies_error(node,
+        self.__raise_error(node,
                            'Unable to transform this iterable')
 
     def stringify_For(self, node, indent=''):
@@ -337,17 +363,13 @@ class Oklifier:
             step = '{index} += {step}'.format(index=index, step=step)
 
         for_str = (
-            'for (int {index} = {start}; {index} < {end}; {step}) {{'
+            'for (int {index} = {start}; {index} < {end}; {step})'
         ).format(index=index,
                  start=start,
                  end=end,
                  step=step)
 
-        body = self.stringify_block(node.body, indent + INDENT_TAB)
-        if body:
-            for_str += '\n{body}\n{indent}'.format(body=body,
-                                                   indent=indent)
-        return for_str + '}'
+        return for_str + self.stringify_body(node.body, indent)
 
     def stringify_function_signature(self, node, semicolon=True):
         name = node.name
@@ -357,7 +379,6 @@ class Oklifier:
             self.__raise_error(node,
                                'Function must have a return value type')
 
-        # TODO: Make sure they are only supported OKL attributes like @kernel
         decorators = ''
         for decorator in node.decorator_list:
             decorator_str = '@{attr}'.format(attr=self.stringify_node(decorator))
@@ -383,13 +404,8 @@ class Oklifier:
 
     def stringify_FunctionDef(self, node, indent=''):
         func_str = self.stringify_function_signature(node, semicolon=False)
-        func_str += ' {'
 
-        body = self.stringify_block(node.body, indent + INDENT_TAB)
-        if body:
-            func_str += '\n{body}\n{indent}'.format(body=body,
-                                                    indent=indent)
-        return func_str + '}'
+        return func_str + self.stringify_body(node.body, indent)
 
     def stringify_List(self, node, indent=''):
         entries = ', '.join(
@@ -430,6 +446,9 @@ class Oklifier:
             self.__raise_error(node.slice,
                                'Can only handle single access slices')
         return [node.value, node.slice.value]
+
+    def stringify_Pass(self, node, indent=''):
+        return ''
 
     def stringify_Return(self, node, indent=''):
         return 'return {value};'.format(value=self.stringify_node(node.value))
@@ -505,12 +524,24 @@ class Oklifier:
 
     def stringify_block(self, nodes, indent=''):
         self.scope_stack.append(set())
-        block_str = '\n'.join(
-            (indent + self.stringify_node(node, indent=indent))
+        nodes_str = (
+            self.stringify_node(node, indent=indent)
             for node in nodes
+        )
+        block_str = '\n'.join(
+            (indent + node_str)
+            for node_str in nodes_str
+            if node_str
         )
         self.scope_stack.pop()
         return block_str
+
+    def stringify_body(self, node, indent):
+        body = self.stringify_block(node, indent + INDENT_TAB)
+        if not body:
+            return ' {}'
+        return ' {{\n{body}\n{indent}}}'.format(body=body,
+                                               indent=indent)
 
     def __add_to_scope(self, var_name):
         self.scope_stack[-1].add(var_name)
@@ -572,3 +603,12 @@ class Oklifier:
             *[func['source'] for func in functions],
             self.stringify_node(self.root),
         ])
+
+
+def py2okl(obj):
+    if not isinstance(obj, collections.Iterable):
+        return Oklifier(obj).to_str()
+    return [
+        Oklifier(item).to_str()
+        for item in obj
+    ]
