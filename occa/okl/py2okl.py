@@ -215,25 +215,13 @@ class Oklifier:
             return self.NameConstant_str(node)
         if node_type is ast.Index:
             return self.Index_str(node)
-        if node_type is ast.Subscript or node_type is ast.List:
-            found_error = False
-            if node_type is ast.Subscript:
-                value, index = self.split_subscript(node)
-                if self.stringify_node(value) != 'List':
-                    found_error = True
-            if node_type is ast.List:
-                indices = node.elts
-                if len(indices) != 1:
-                    self.__raise_error(node,
-                                       'Can only handle single-valued lists as arguments')
-                index = indices[0]
-            # Make sure no errors were found
-            if not found_error:
+        if node_type is ast.Subscript:
+            value, index = self.split_subscript(node)
+            if self.stringify_node(value) == 'List':
                 type_str = self.TypeAnnotation_str(index)
                 if not type_str.endswith('*'):
                     type_str += ' '
                 return type_str + '*'
-
 
         self.__raise_error(node,
                            'Cannot handle type annotation')
@@ -330,19 +318,17 @@ class Oklifier:
             if line >= 0
         ]
         # Stringify lines and pad them
-        lines_str = [str(line) for line in lines]
+        lines_str = [str(line + 1) for line in lines]
         char_size = max(len(line) for line in lines_str)
         lines_str = [line.ljust(char_size) for line in lines_str]
 
         source_lines = self.source.splitlines()
+        prefix = '   '
 
         for index, line in enumerate(lines):
-            error_message += lines_str[index] + ' | ' + source_lines[line] + '\n'
+            error_message += prefix + lines_str[index] + ' | ' + source_lines[line] + '\n'
             if line == error_line:
-                error_message += ' ' * char_size
-                error_message += ' | '
-                error_message += ' ' * char_pos
-                error_message += '^\n'
+                error_message += prefix + (' ' * char_size) + ' | ' + (' ' * char_pos) + '^\n'
 
         raise ValueError(error_message)
 
