@@ -116,8 +116,8 @@ class coverage(Command):
 #=======================================
 
 
-if sys.version_info < (3, 5):
-    sys.exit('Only Python 3.5 and above is supported')
+if sys.version_info < (3, 6):
+    sys.exit('Only Python 3.6 and above is supported')
 
 
 def get_ext_module(module):
@@ -172,7 +172,6 @@ classifiers = [
     'Operating System :: POSIX',
     'Operating System :: Unix',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: Implementation :: CPython',
