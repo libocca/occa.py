@@ -4,6 +4,7 @@ import inspect
 import types
 
 from ..utils import VALID_PY_TYPES, VALID_NP_TYPES
+from .exceptions import FunctionClosureError, TransformError
 
 
 INDENT_TAB = '  '
@@ -99,7 +100,7 @@ class Oklifier:
             self.source = inspect.getsource(obj)
             self.root = ast.parse(self.source)
         else:
-            raise TypeError('Unable to okl-ify object')
+            raise TypeError('Unable to oklify object')
 
         self.stringify_node_map = {
             ast.AnnAssign: self.stringify_AnnAssign,
@@ -140,12 +141,16 @@ class Oklifier:
                     'source': oklifier.to_str(),
                 }
             elif name not in VALID_GLOBAL_NAMES:
-                raise ValueError('Unable to transform non-local variable: {}'.format(name))
+                raise FunctionClosureError(
+                    'Unable to transform non-local variable: {}'.format(name)
+                )
 
         # Inspect builtins
         for builtin in closure_vars.builtins.keys():
             if builtin not in VALID_BUILTINS:
-                raise ValueError('Unable to transform builtin: {}'.format(builtin))
+                raise FunctionClosureError(
+                    'Unable to transform builtin: {}'.format(builtin)
+                )
 
     def stringify_Arguments(self, args, indent=''):
         if args.kwarg:
@@ -546,7 +551,7 @@ class Oklifier:
                     error_message += ' | '
                     error_message += (' ' * char_pos) + '^\n'
 
-        raise ValueError(error_message)
+        raise TransformError(error_message)
 
     def to_str(self):
         functions = self.functions.values()
