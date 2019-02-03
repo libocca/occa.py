@@ -4,18 +4,18 @@ from .py2okl import py2okl
 
 class Kernel:
     def __init__(self, func):
-        self._func = func
+        self.func = func
         self._okl_source = None
         self._kernels = dict()
 
     @property
     def __name__(self):
-        return self._func.__name__
+        return self.func.__name__
 
     @property
     def __okl_source__(self):
         if self._okl_source is None:
-            self._okl_source = py2okl(self._func)
+            self._okl_source = py2okl(self.func)
         return self._okl_source
 
     def build(self, device, props=None):
