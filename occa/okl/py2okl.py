@@ -77,11 +77,15 @@ OKL_DECORATORS = {
     '@okl.kernel': '@kernel',
 }
 
+
 class Oklifier:
+    __last_error_node = None
+
     def __init__(self, obj):
         self.obj = obj
         self.source = None
         self.globals = dict()
+        self.functions = dict()
 
         if isinstance(obj, ast.AST):
             self.root = obj
@@ -108,6 +112,7 @@ class Oklifier:
             ast.Name: self.stringify_Name,
             ast.NameConstant: self.stringify_NameConstant,
             ast.Num: self.stringify_Num,
+            ast.Return: self.stringify_Return,
             ast.Subscript: self.stringify_Subscript,
             ast.UnaryOp: self.stringify_UnaryOp,
         }
@@ -116,9 +121,17 @@ class Oklifier:
         closure_vars = inspect.getclosurevars(func)
         # Inspect globals
         for name, value in closure_vars.globals.items():
-            value_type = type(value)
-            if value_type in VALID_GLOBAL_VALUE_TYPES:
+            if type(value) in VALID_GLOBAL_VALUE_TYPES:
                 self.globals[name] = self.stringify_constant(value) or str(value)
+            elif isinstance(value, types.FunctionType):
+                oklifier = Oklifier(value)
+                self.functions[name] = {
+                    'signature': oklifier.stringify_function_signature(
+                        node=oklifier.root.body[0],
+                        semicolon=True,
+                    ),
+                    'source': oklifier.to_str(),
+                }
             elif name not in VALID_GLOBAL_NAMES:
                 raise ValueError('Unable to transform non-local variable: {}'.format(name))
 
@@ -162,28 +175,36 @@ class Oklifier:
         if len(node.targets) != 1:
             self.__raise_error(node,
                                'Cannot handle assignment of more than 1 value')
-        return '{left} = {right}'.format(left=self.stringify_node(node.targets[0], indent),
-                                         right=self.stringify_node(node.value, indent))
+        return '{left} = {right}'.format(
+            left=self.stringify_node(node.targets[0], indent),
+            right=self.stringify_node(node.value, indent),
+        )
 
     def stringify_Attribute(self, node, indent=''):
-        return '{name}.{value}'.format(name=self.stringify_node(node.value, indent),
-                                       value=node.attr)
+        return '{name}.{value}'.format(
+            name=self.stringify_node(node.value, indent),
+            value=node.attr,
+        )
 
     def stringify_AugAssign(self, node, indent=''):
         str_format = AUG_OP_FORMATS.get(type(node.op))
         if str_format is None:
             self.__raise_error(node.op,
                                'Unable to handle operator')
-        return str_format.format(left=self.stringify_node(node.target, indent),
-                                 right=self.stringify_node(node.value, indent))
+        return str_format.format(
+            left=self.stringify_node(node.target, indent),
+            right=self.stringify_node(node.value, indent),
+        )
 
     def stringify_BinOp(self, node, indent=''):
         str_format = BIN_OP_FORMATS.get(type(node.op))
         if str_format is None:
             self.__raise_error(node.op,
                                'Unable to handle operator')
-        return str_format.format(left=self.stringify_node(node.left, indent),
-                                 right=self.stringify_node(node.right, indent))
+        return str_format.format(
+            left=self.stringify_node(node.left, indent),
+            right=self.stringify_node(node.right, indent),
+        )
 
     def stringify_BoolOp(self, node, indent=''):
         op = ' && ' if isinstance(node.op, ast.And) else ' || '
@@ -198,9 +219,8 @@ class Oklifier:
             self.stringify_node(arg)
             for arg in node.args
         )
-        return '{indent}{func}({args})'.format(
-            indent=indent,
-            func=self.stringify_node(node.func),
+        return '{func}({args})'.format(
+            func=self.stringify_node(node.func, indent),
             args=args,
         )
 
@@ -220,9 +240,11 @@ class Oklifier:
             ]
             # TODO: Parentheses only if needed
         return ' && '.join(
-            '({left} {op} {right})'.format(left=left,
-                                           right=right,
-                                           op=ops[index])
+            '({left} {op} {right})'.format(
+                left=left,
+                right=right,
+                op=ops[index],
+            )
             for index, (left, right) in enumerate(zip(values[:-1], values[1:]))
         )
 
@@ -284,7 +306,7 @@ class Oklifier:
                                                    indent=indent)
         return for_str + '}'
 
-    def stringify_FunctionDef(self, node, indent=''):
+    def stringify_function_signature(self, node, semicolon=True):
         name = node.name
 
         if node.returns is None:
@@ -311,7 +333,15 @@ class Oklifier:
 
         args = self.stringify_Arguments(node.args, indent=(' ' * len(func_str)))
 
-        func_str += '{args}) {{'.format(args=args)
+        func_str += '{args})'.format(args=args)
+        if semicolon:
+            func_str += ';'
+
+        return func_str
+
+    def stringify_FunctionDef(self, node, indent=''):
+        func_str = self.stringify_function_signature(node, semicolon=False)
+        func_str += ' {'
 
         body = self.stringify_nodes(node.body, indent + '  ')
         if body:
@@ -352,10 +382,16 @@ class Oklifier:
                                'Can only handle single access slices')
         return [node.value, node.slice]
 
+    def stringify_Return(self, node, indent=''):
+        return 'return {value};'.format(value=self.stringify_node(node.value))
+
+
     def stringify_Subscript(self, node, indent=''):
         value, index = self.split_subscript(node)
-        return '{value}[{index}]'.format(value=self.stringify_node(value, indent),
-                                         index=self.stringify_node(index, indent))
+        return '{value}[{index}]'.format(
+            value=self.stringify_node(value, indent),
+            index=self.stringify_node(index, indent),
+        )
 
     def stringify_TypeAnnotation(self, node):
         if node is None:
@@ -404,7 +440,13 @@ class Oklifier:
     def py_to_c_type(self, type_name):
         return type_name
 
+    @classmethod
+    def get_last_error_node(cls):
+        return cls.__last_error_node
+
     def __raise_error(self, node, message):
+        Oklifier.__last_error_node = node
+
         error_line = node.lineno - 1
         char_pos = node.col_offset
 
@@ -440,7 +482,12 @@ class Oklifier:
         raise ValueError(error_message)
 
     def to_str(self):
-        return self.stringify_node(self.root)
+        functions = self.functions.values()
+        return '\n\n'.join([
+            *[func['signature'] for func in functions],
+            *[func['source'] for func in functions],
+            self.stringify_node(self.root),
+        ])
 
 
 def py2okl(obj):
