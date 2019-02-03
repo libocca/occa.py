@@ -406,14 +406,17 @@ class Oklifier:
                 return 'void'
             return node_str
         if node_type is ast.Index:
-            return self.stringify_Index(node)
+            return self.stringify_TypeAnnotation(node.value)
         if node_type is ast.Subscript:
             value, index = self.split_subscript(node)
-            if self.stringify_node(value) == 'List':
+            value_str = self.stringify_node(value)
+            if value_str == 'List':
                 type_str = self.stringify_TypeAnnotation(index)
                 if not type_str.endswith('*'):
                     type_str += ' '
                 return type_str + '*'
+            if value_str == 'Const':
+                return 'const ' + self.stringify_TypeAnnotation(index)
 
         self.__raise_error(node,
                            'Cannot handle type annotation')
