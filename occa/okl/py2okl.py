@@ -6,6 +6,9 @@ import types
 from ..utils import VALID_PY_TYPES, VALID_NP_TYPES
 
 
+INDENT_TAB = '  '
+
+
 UNARY_OP_FORMATS = {
     ast.Invert: '~{value}',
     ast.Not: '!{value}',
@@ -323,7 +326,7 @@ class Oklifier:
                  end=end,
                  step=step)
 
-        body = self.stringify_block(node.body, indent + '  ')
+        body = self.stringify_block(node.body, indent + INDENT_TAB)
         if body:
             for_str += '\n{body}\n{indent}'.format(body=body,
                                                    indent=indent)
@@ -365,7 +368,7 @@ class Oklifier:
         func_str = self.stringify_function_signature(node, semicolon=False)
         func_str += ' {'
 
-        body = self.stringify_block(node.body, indent + '  ')
+        body = self.stringify_block(node.body, indent + INDENT_TAB)
         if body:
             func_str += '\n{body}\n{indent}'.format(body=body,
                                                     indent=indent)
@@ -373,7 +376,7 @@ class Oklifier:
 
     def stringify_List(self, node, indent=''):
         entries = ', '.join(
-            self.stringify_node(item, indent=indent + '  ')
+            self.stringify_node(item, indent)
             for item in node.elts
         )
         return '{' + entries + '}'
