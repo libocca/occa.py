@@ -13,6 +13,13 @@ PY_TO_DTYPE = {
 }
 
 
+VALID_PY_TYPES = {
+    bool,
+    int,
+    float,
+}
+
+
 VALID_NP_TYPES = {
     np.bool_,
     np.int8,

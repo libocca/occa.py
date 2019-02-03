@@ -6,9 +6,9 @@ def dtype(type, *args):
     return {'type': type, 'qualifiers': args}
 
 
-def shared(size, dtype=None):
+def shared(dtype, size):
     pass
 
 
-def exclusive(dtype=None):
+def exclusive(dtype):
     pass

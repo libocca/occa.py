@@ -1,8 +1,12 @@
 import ast
+import collections
 import inspect
+import types
+
+from ..utils import VALID_PY_TYPES, VALID_NP_TYPES
 
 
-UnaryOp_formats = {
+UNARY_OP_FORMATS = {
     ast.Invert: '~{value}',
     ast.Not: '!{value}',
     ast.UAdd: '+{value}',
@@ -10,7 +14,7 @@ UnaryOp_formats = {
 }
 
 
-BinOp_formats = {
+BIN_OP_FORMATS = {
     ast.Add: '{left} + {right}',
     ast.Sub: '{left} - {right}',
     ast.Mult: '{left} * {right}',
@@ -25,7 +29,22 @@ BinOp_formats = {
 }
 
 
-CompareOp_str = {
+AUG_OP_FORMATS = {
+    ast.Add: '{left} += {right}',
+    ast.Sub: '{left} -= {right}',
+    ast.Mult: '{left} *= {right}',
+    ast.Div: '{left} /= {right}',
+    ast.Mod: '{left} %= {right}',
+    ast.Pow: '{left} = pow({left}, {right})',
+    ast.LShift: '{left} << {right}',
+    ast.RShift: '{left} >>= {right}',
+    ast.BitOr: '{left} |= {right}',
+    ast.BitAnd: '{left} &= {right}',
+    ast.FloorDiv: '{left} = floor({left} /= {right})',
+}
+
+
+COMPARE_OP_STR = {
     ast.Eq: '==',
     ast.NotEq: '!=',
     ast.Lt: '<',
@@ -36,24 +55,47 @@ CompareOp_str = {
 }
 
 
-OklDecorators_str = {
+VALID_GLOBAL_NAMES = {
+    'okl',
+}
+
+
+VALID_GLOBAL_VALUE_TYPES = {
+    type(None),
+    *VALID_PY_TYPES,
+    *VALID_NP_TYPES,
+}
+
+
+VALID_BUILTINS = {
+    'range',
+    'len',
+}
+
+
+OKL_DECORATORS = {
     '@okl.kernel': '@kernel',
 }
 
-foobar = None
 class Oklifier:
     def __init__(self, obj):
         self.obj = obj
         self.source = None
+        self.globals = dict()
+
         if isinstance(obj, ast.AST):
             self.root = obj
-        else:
+        elif isinstance(obj, types.FunctionType):
+            self.__inspect_function_closure(obj)
             self.source = inspect.getsource(obj)
             self.root = ast.parse(self.source)
+        else:
+            raise TypeError('Unable to okl-ify object')
 
         self.stringify_node_map = {
             ast.Assign: self.stringify_Assign,
             ast.Attribute: self.stringify_Attribute,
+            ast.AugAssign: self.stringify_AugAssign,
             ast.BinOp: self.stringify_BinOp,
             ast.BoolOp: self.stringify_BoolOp,
             ast.Call: self.stringify_Call,
@@ -69,6 +111,21 @@ class Oklifier:
             ast.Subscript: self.stringify_Subscript,
             ast.UnaryOp: self.stringify_UnaryOp,
         }
+
+    def __inspect_function_closure(self, func):
+        closure_vars = inspect.getclosurevars(func)
+        # Inspect globals
+        for name, value in closure_vars.globals.items():
+            value_type = type(value)
+            if value_type in VALID_GLOBAL_VALUE_TYPES:
+                self.globals[name] = self.stringify_constant(value) or str(value)
+            elif name not in VALID_GLOBAL_NAMES:
+                raise ValueError('Unable to transform non-local variable: {}'.format(name))
+
+        # Inspect builtins
+        for builtin in closure_vars.builtins.keys():
+            if builtin not in VALID_BUILTINS:
+                raise ValueError('Unable to transform builtin: {}'.format(builtin))
 
     def stringify_Arguments(self, args, indent=''):
         if args.kwarg:
@@ -112,8 +169,16 @@ class Oklifier:
         return '{name}.{value}'.format(name=self.stringify_node(node.value, indent),
                                        value=node.attr)
 
+    def stringify_AugAssign(self, node, indent=''):
+        str_format = AUG_OP_FORMATS.get(type(node.op))
+        if str_format is None:
+            self.__raise_error(node.op,
+                               'Unable to handle operator')
+        return str_format.format(left=self.stringify_node(node.target, indent),
+                                 right=self.stringify_node(node.value, indent))
+
     def stringify_BinOp(self, node, indent=''):
-        str_format = BinOp_formats.get(type(node.op))
+        str_format = BIN_OP_FORMATS.get(type(node.op))
         if str_format is None:
             self.__raise_error(node.op,
                                'Unable to handle operator')
@@ -142,16 +207,16 @@ class Oklifier:
     def stringify_Compare(self, node, indent=''):
         ops = [type(op) for op in node.ops]
         for op_index, op in enumerate(ops):
-            if op not in CompareOp_str:
+            if op not in COMPARE_OP_STR:
                 self.__raise_error(node.ops[op_index],
                                    'Cannot handle comparison operator')
             ops = [
-                CompareOp_str[op]
-            for op in ops
+                COMPARE_OP_STR[op]
+                for op in ops
             ]
             values = [
                 self.stringify_node(subnode, indent)
-            for subnode in [node.left, *node.comparators]
+                for subnode in [node.left, *node.comparators]
             ]
             # TODO: Parentheses only if needed
         return ' && '.join(
@@ -167,10 +232,20 @@ class Oklifier:
     def stringify_Expr(self, node, indent=''):
         return self.stringify_node(node.value, indent)
 
-    def split_for_iter(self, node):
-        self.stringify_node(node)
-        # TODO: Extract start, end, step from node
+    def get_range(self, node):
         return 0, 10, 1
+
+    def get_okl_range(self, node):
+        return 0, 10, 1
+
+    def split_for_iter(self, node):
+        node_str = self.stringify_node(node)
+        if node_str.startswith('range'):
+            return self.get_range(node)
+        if node_str.startswith('okl.range'):
+            return self.get_okl_range(node)
+        self.__raies_error(node,
+                           'Unable to transform this iterable')
 
     def stringify_For(self, node, indent=''):
         if not isinstance(node.target, ast.Name):
@@ -179,20 +254,22 @@ class Oklifier:
         index = self.stringify_node(node.target, indent)
         start, end, step = self.split_for_iter(node.iter)
 
-        if step == 0:
-            self.__raise_error(node.iter,
-                               'Cannot have for-loop with a step size of 0')
-
-        if step > 0:
-            if step == 1:
-                step = '++{index}'.format(index=index)
+        if isinstance(step, int):
+            if step == 0:
+                self.__raise_error(node.iter,
+                                   'Cannot have for-loop with a step size of 0')
+            if step > 0:
+                if step == 1:
+                    step = '++{index}'.format(index=index)
+                else:
+                    step = '{index} += {step}'.format(index=index, step=step)
             else:
-                step = '{index} += {step}'.format(index=index, step=step)
-        else:
-            if step == -1:
-                step = '--{index}'.format(index=index)
-            else:
-                step = '{index} -= {step}'.format(index=index, step=-step)
+                if step == -1:
+                    step = '--{index}'.format(index=index)
+                else:
+                    step = '{index} -= {step}'.format(index=index, step=-step)
+        elif isinstance(step, str):
+            step = '{index} += {step}'.format(index=index, step=step)
 
         for_str = (
             'for (int {index} = {start}; {index} < {end}; {step}) {{'
@@ -220,7 +297,7 @@ class Oklifier:
         decorators = ''
         for decorator in node.decorator_list:
             decorator_str = '@{attr}'.format(attr=self.stringify_node(decorator))
-            okl_decorator = OklDecorators_str.get(decorator_str)
+            okl_decorator = OKL_DECORATORS.get(decorator_str)
             if okl_decorator is None:
                 self.__raise_error(decorator,
                                    'Cannot handle decorator')
@@ -246,18 +323,25 @@ class Oklifier:
         return self.stringify_nodes(node.body, indent)
 
     def stringify_Name(self, node, indent=''):
-        return node.id
+        name = node.id
+        var = self.globals.get(name)
+        return var or name
 
-    def stringify_NameConstant(self, node, indent=''):
-        value = node.value
+    def stringify_constant(self, value):
         if value is True:
             return 'true'
         if value is False:
             return 'false'
         if value is None:
-            return 'void'
-        self.__raise_error(node,
-                           'Cannot handle NameConstant')
+            return 'NULL'
+        return None
+
+    def stringify_NameConstant(self, node, indent=''):
+        value = self.stringify_constant(node.value)
+        if value is None:
+            self.__raise_error(node,
+                               'Cannot handle NameConstant')
+        return value
 
     def stringify_Num(self, node, indent=''):
         return str(node.n)
@@ -281,7 +365,10 @@ class Oklifier:
         if node_type is ast.Name:
             return self.py_to_c_type(self.stringify_Name(node))
         if node_type is ast.NameConstant:
-            return self.stringify_NameConstant(node)
+            node_str = self.stringify_NameConstant(node)
+            if node_str == 'NULL':
+                return 'void'
+            return node_str
         if node_type is ast.Index:
             return self.stringify_Index(node)
         if node_type is ast.Subscript:
@@ -296,7 +383,7 @@ class Oklifier:
                            'Cannot handle type annotation')
 
     def stringify_UnaryOp(self, node, indent=''):
-        str_format = UnaryOp_formats.get(type(node.op))
+        str_format = UNARY_OP_FORMATS.get(type(node.op))
         if str_format is None:
             self.__raise_error(node.op,
                                'Unable to handle operator')
@@ -356,5 +443,10 @@ class Oklifier:
         return self.stringify_node(self.root)
 
 
-def py2okl(func):
-    return Oklifier(func).to_str()
+def py2okl(obj):
+    if not isinstance(obj, collections.Iterable):
+        return Oklifier(obj).to_str()
+    return [
+        Oklifier(entry).to_str()
+            for entry in obj
+    ]
