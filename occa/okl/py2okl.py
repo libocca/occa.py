@@ -84,8 +84,10 @@ class Oklifier:
     def __init__(self, obj):
         self.obj = obj
         self.source = None
+
         self.globals = dict()
         self.functions = dict()
+        self.scope_stack = []
 
         if isinstance(obj, ast.AST):
             self.root = obj
@@ -97,6 +99,7 @@ class Oklifier:
             raise TypeError('Unable to okl-ify object')
 
         self.stringify_node_map = {
+            ast.AnnAssign: self.stringify_AnnAssign,
             ast.Assign: self.stringify_Assign,
             ast.Attribute: self.stringify_Attribute,
             ast.AugAssign: self.stringify_AugAssign,
@@ -108,6 +111,7 @@ class Oklifier:
             ast.Expr: self.stringify_Expr,
             ast.For: self.stringify_For,
             ast.FunctionDef: self.stringify_FunctionDef,
+            ast.List: self.stringify_List,
             ast.Module: self.stringify_Module,
             ast.Name: self.stringify_Name,
             ast.NameConstant: self.stringify_NameConstant,
@@ -156,27 +160,45 @@ class Oklifier:
 
         args_str = ''
         for index, arg in enumerate(args):
-            type_annotation = self.stringify_TypeAnnotation(arg.annotation)
-            if type_annotation is None:
+            arg_name = arg.arg
+            arg_str = self.stringify_annotation(arg.annotation, arg_name)
+            if arg_str == arg_name:
                 self.__raise_error(arg,
                                    'Arguments must have a type annotation')
 
-            if not type_annotation.endswith('*'):
-                type_annotation += ' '
-
-            args_str += '{type}{arg}'.format(type=type_annotation,
-                                             arg=arg.arg)
+            args_str += arg_str
             if index < (arg_count - 1):
                 args_str += ',\n' + indent
 
         return args_str
 
+    def stringify_AnnAssign(self, node, indent=''):
+        var_name = self.stringify_node(node.target)
+        self.__add_to_scope(var_name)
+
+        node_str = self.stringify_annotation(node.annotation, var_name)
+        if node.value:
+            node_str += ' = {value}'.format(
+                value=self.stringify_node(node.value),
+            )
+
+        return node_str + ';'
+
     def stringify_Assign(self, node, indent=''):
         if len(node.targets) != 1:
             self.__raise_error(node,
                                'Cannot handle assignment of more than 1 value')
-        return '{left} = {right}'.format(
-            left=self.stringify_node(node.targets[0], indent),
+
+        var = node.targets[0]
+        var_str = self.stringify_node(var, indent)
+
+        if (type(var) is ast.Name and
+            not self.__is_defined(var_str)):
+            self.__raise_error(node,
+                               'Cannot handle untyped variables')
+
+        return '{left} = {right};'.format(
+            left=var_str,
             right=self.stringify_node(node.value, indent),
         )
 
@@ -201,6 +223,7 @@ class Oklifier:
         if str_format is None:
             self.__raise_error(node.op,
                                'Unable to handle operator')
+
         return str_format.format(
             left=self.stringify_node(node.left, indent),
             right=self.stringify_node(node.right, indent),
@@ -300,7 +323,7 @@ class Oklifier:
                  end=end,
                  step=step)
 
-        body = self.stringify_nodes(node.body, indent + '  ')
+        body = self.stringify_block(node.body, indent + '  ')
         if body:
             for_str += '\n{body}\n{indent}'.format(body=body,
                                                    indent=indent)
@@ -309,11 +332,10 @@ class Oklifier:
     def stringify_function_signature(self, node, semicolon=True):
         name = node.name
 
-        if node.returns is None:
+        returns = self.stringify_annotation(node.returns)
+        if not returns:
             self.__raise_error(node,
                                'Function must have a return value type')
-
-        returns = self.stringify_TypeAnnotation(node.returns)
 
         # TODO: Make sure they are only supported OKL attributes like @kernel
         decorators = ''
@@ -343,14 +365,21 @@ class Oklifier:
         func_str = self.stringify_function_signature(node, semicolon=False)
         func_str += ' {'
 
-        body = self.stringify_nodes(node.body, indent + '  ')
+        body = self.stringify_block(node.body, indent + '  ')
         if body:
             func_str += '\n{body}\n{indent}'.format(body=body,
                                                     indent=indent)
         return func_str + '}'
 
+    def stringify_List(self, node, indent=''):
+        entries = ', '.join(
+            self.stringify_node(item, indent=indent + '  ')
+            for item in node.elts
+        )
+        return '{' + entries + '}'
+
     def stringify_Module(self, node, indent=''):
-        return self.stringify_nodes(node.body, indent)
+        return self.stringify_block(node.body, indent)
 
     def stringify_Name(self, node, indent=''):
         name = node.id
@@ -380,7 +409,7 @@ class Oklifier:
         if not isinstance(node.slice, ast.Index):
             self.__raise_error(node.slice,
                                'Can only handle single access slices')
-        return [node.value, node.slice]
+        return [node.value, node.slice.value]
 
     def stringify_Return(self, node, indent=''):
         return 'return {value};'.format(value=self.stringify_node(node.value))
@@ -393,33 +422,49 @@ class Oklifier:
             index=self.stringify_node(index, indent),
         )
 
-    def stringify_TypeAnnotation(self, node):
+    def stringify_annotation(self, node, var_name=''):
         if node is None:
-            return None
+            return var_name
 
         node_type = type(node)
         if node_type is ast.Name:
-            return self.py_to_c_type(self.stringify_Name(node))
+            type_str = self.py_to_c_type(self.stringify_Name(node))
+            if var_name:
+                return type_str + ' ' + var_name
+            return type_str
+
         if node_type is ast.NameConstant:
             node_str = self.stringify_NameConstant(node)
             if node_str == 'NULL':
+                if var_name:
+                    return 'void ' + var_name
                 return 'void'
-            return node_str
-        if node_type is ast.Index:
-            return self.stringify_TypeAnnotation(node.value)
+
         if node_type is ast.Subscript:
             value, index = self.split_subscript(node)
             value_str = self.stringify_node(value)
             if value_str == 'List':
-                type_str = self.stringify_TypeAnnotation(index)
-                if not type_str.endswith('*'):
-                    type_str += ' '
-                return type_str + '*'
+                return self.stringify_list_annotation(index, var_name)
             if value_str == 'Const':
-                return 'const ' + self.stringify_TypeAnnotation(index)
+                return 'const ' + self.stringify_annotation(index, var_name)
 
         self.__raise_error(node,
                            'Cannot handle type annotation')
+
+    def stringify_list_annotation(self, node, var_name):
+        if not isinstance(node, ast.Tuple):
+            type_str = self.stringify_annotation(node)
+            if not type_str.endswith('*'):
+                type_str += ' '
+            return type_str + '*' + var_name
+
+        type_node, *indices = node.elts
+        type_str = self.stringify_annotation(type_node)
+        arrays_str = ''.join((
+            '[{index}]'.format(index=self.stringify_node(index))
+            for index in indices
+        ))
+        return type_str + ' ' + var_name + arrays_str
 
     def stringify_UnaryOp(self, node, indent=''):
         str_format = UNARY_OP_FORMATS.get(type(node.op))
@@ -434,11 +479,23 @@ class Oklifier:
             return node_str_func(node, indent)
         self.__raise_error(node, 'Unable to handle node type {}'.format(type(node)))
 
-    def stringify_nodes(self, nodes, indent=''):
-        return '\n'.join(
+    def stringify_block(self, nodes, indent=''):
+        self.scope_stack.append(set())
+        block_str = '\n'.join(
             (indent + self.stringify_node(node, indent=indent))
             for node in nodes
         )
+        self.scope_stack.pop()
+        return block_str
+
+    def __add_to_scope(self, var_name):
+        self.scope_stack[-1].add(var_name)
+
+    def __is_defined(self, var_name):
+        for scope in self.scope_stack:
+            if var_name in scope:
+                return True
+        return False
 
     def py_to_c_type(self, type_name):
         return type_name
@@ -497,6 +554,6 @@ def py2okl(obj):
     if not isinstance(obj, collections.Iterable):
         return Oklifier(obj).to_str()
     return [
-        Oklifier(entry).to_str()
-            for entry in obj
+        Oklifier(item).to_str()
+            for item in obj
     ]
