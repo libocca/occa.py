@@ -117,7 +117,7 @@ class coverage(Command):
 
 
 if sys.version_info < (3, 5):
-    sys.exit('Sorry, only Python 3.5 and above is supported')
+    sys.exit('Only Python 3.5 and above is supported')
 
 
 def get_ext_module(module):
