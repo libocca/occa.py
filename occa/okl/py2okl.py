@@ -447,6 +447,10 @@ class Oklifier:
                 return self.stringify_list_annotation(index, var_name)
             if value_str == 'Const':
                 return 'const ' + self.stringify_annotation(index, var_name)
+            if value_str == 'Exclusive':
+                return '@exclusive ' + self.stringify_annotation(index, var_name)
+            if value_str == 'Shared':
+                return '@shared ' + self.stringify_annotation(index, var_name)
 
         self.__raise_error(node,
                            'Cannot handle type annotation')

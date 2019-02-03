@@ -5,17 +5,14 @@ class StaticGetItem(type):
     def __getitem__(cls, other_type):
         pass
 
+
 class Const(object, metaclass=StaticGetItem):
     pass
 
 
-def dtype(type, *args):
-    return {'type': type, 'qualifiers': args}
-
-
-def shared(dtype, size):
+class Exclusive(object, metaclass=StaticGetItem):
     pass
 
 
-def exclusive(dtype):
+class Shared(object, metaclass=StaticGetItem):
     pass
