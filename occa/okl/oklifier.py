@@ -94,9 +94,8 @@ OKL_DECORATORS = {
 }
 
 
+__last_error_node = None
 class Oklifier:
-    __last_error_node = None
-
     def __init__(self, obj):
         self.obj = obj
         self.source = None
@@ -108,7 +107,7 @@ class Oklifier:
         if isinstance(obj, ast.AST):
             self.root = obj
         elif isinstance(obj, types.FunctionType):
-            self.__inspect_function_closure(obj)
+            self.inspect_function_closure(obj)
             self.source = inspect.getsource(obj)
             self.root = ast.parse(self.source)
         else:
@@ -139,9 +138,10 @@ class Oklifier:
             ast.Return: self.stringify_Return,
             ast.Subscript: self.stringify_Subscript,
             ast.UnaryOp: self.stringify_UnaryOp,
+            ast.While: self.stringify_While,
         }
 
-    def __inspect_function_closure(self, func):
+    def inspect_function_closure(self, func):
         closure_vars = inspect.getclosurevars(func)
         # Inspect globals
         for name, value in closure_vars.globals.items():
@@ -171,11 +171,11 @@ class Oklifier:
 
     def stringify_Arguments(self, args, indent=''):
         if args.kwarg:
-            self.__raise_error(args, 'Cannot handle **kwargs')
+            self.raise_error(args, 'Cannot handle **kwargs')
         if args.vararg:
-            self.__raise_error(args, 'Cannot handle *args')
+            self.raise_error(args, 'Cannot handle *args')
         if args.defaults or args.kw_defaults:
-            self.__raise_error(args, 'Cannot handle default arguments yet')
+            self.raise_error(args, 'Cannot handle default arguments yet')
 
         args = [
             *args.args,
@@ -188,8 +188,8 @@ class Oklifier:
             arg_name = arg.arg
             arg_str = self.stringify_annotation(arg.annotation, arg_name)
             if arg_str == arg_name:
-                self.__raise_error(arg,
-                                   'Arguments must have a type annotation')
+                self.raise_error(arg,
+                                 'Arguments must have a type annotation')
 
             args_str += arg_str
             if index < (arg_count - 1):
@@ -199,7 +199,7 @@ class Oklifier:
 
     def stringify_AnnAssign(self, node, indent=''):
         var_name = self.stringify_node(node.target)
-        self.__add_to_scope(var_name)
+        self.add_to_scope(var_name)
 
         node_str = self.stringify_annotation(node.annotation, var_name)
         if node.value:
@@ -211,16 +211,16 @@ class Oklifier:
 
     def stringify_Assign(self, node, indent=''):
         if len(node.targets) != 1:
-            self.__raise_error(node,
-                               'Cannot handle assignment of more than 1 value')
+            self.raise_error(node,
+                             'Cannot handle assignment of more than 1 value')
 
         var = node.targets[0]
         var_str = self.stringify_node(var, indent)
 
         if (type(var) is ast.Name and
-            not self.__is_defined(var_str)):
-            self.__raise_error(node,
-                               'Cannot handle untyped variables')
+            not self.is_defined(var_str)):
+            self.raise_error(node,
+                             'Cannot handle untyped variables')
 
         return '{left} = {right};'.format(
             left=var_str,
@@ -236,8 +236,8 @@ class Oklifier:
     def stringify_AugAssign(self, node, indent=''):
         str_format = AUG_OP_FORMATS.get(type(node.op))
         if str_format is None:
-            self.__raise_error(node.op,
-                               'Unable to handle operator')
+            self.raise_error(node.op,
+                             'Unable to handle operator')
         return str_format.format(
             left=self.stringify_node(node.target, indent),
             right=self.stringify_node(node.value, indent),
@@ -246,8 +246,8 @@ class Oklifier:
     def stringify_BinOp(self, node, indent=''):
         str_format = BIN_OP_FORMATS.get(type(node.op))
         if str_format is None:
-            self.__raise_error(node.op,
-                               'Unable to handle operator')
+            self.raise_error(node.op,
+                             'Unable to handle operator')
 
         return str_format.format(
             left=self.stringify_node(node.left, indent),
@@ -281,8 +281,8 @@ class Oklifier:
         ops = [type(op) for op in node.ops]
         for op_index, op in enumerate(ops):
             if op not in COMPARE_OP_STR:
-                self.__raise_error(node.ops[op_index],
-                                   'Cannot handle comparison operator')
+                self.raise_error(node.ops[op_index],
+                                 'Cannot handle comparison operator')
             ops = [
                 COMPARE_OP_STR[op]
                 for op in ops
@@ -335,20 +335,20 @@ class Oklifier:
             return self.get_range(node)
         if node_str.startswith('okl.range'):
             return self.get_okl_range(node)
-        self.__raise_error(node,
-                           'Unable to transform this iterable')
+        self.raise_error(node,
+                         'Unable to transform this iterable')
 
     def stringify_For(self, node, indent=''):
         if not isinstance(node.target, ast.Name):
-            self.__raise_error(node.target,
-                               'Can only handle one variable for the for-loop index')
+            self.raise_error(node.target,
+                             'Can only handle one variable for the for-loop index')
         index = self.stringify_node(node.target, indent)
         start, end, step = self.split_for_iter(node.iter)
 
         if isinstance(step, int):
             if step == 0:
-                self.__raise_error(node.iter,
-                                   'Cannot have for-loop with a step size of 0')
+                self.raise_error(node.iter,
+                                 'Cannot have for-loop with a step size of 0')
             if step > 0:
                 if step == 1:
                     step = '++{index}'.format(index=index)
@@ -376,16 +376,16 @@ class Oklifier:
 
         returns = self.stringify_annotation(node.returns)
         if not returns:
-            self.__raise_error(node,
-                               'Function must have a return value type')
+            self.raise_error(node,
+                             'Function must have a return value type')
 
         decorators = ''
         for decorator in node.decorator_list:
             decorator_str = '@{attr}'.format(attr=self.stringify_node(decorator))
             okl_decorator = OKL_DECORATORS.get(decorator_str)
             if okl_decorator is None:
-                self.__raise_error(decorator,
-                                   'Cannot handle decorator')
+                self.raise_error(decorator,
+                                 'Cannot handle decorator')
             decorators += okl_decorator + ' '
 
         func_str = (
@@ -434,8 +434,8 @@ class Oklifier:
     def stringify_NameConstant(self, node, indent=''):
         value = self.stringify_constant(node.value)
         if value is None:
-            self.__raise_error(node,
-                               'Cannot handle NameConstant')
+            self.raise_error(node,
+                             'Cannot handle NameConstant')
         return value
 
     def stringify_Num(self, node, indent=''):
@@ -443,8 +443,8 @@ class Oklifier:
 
     def split_subscript(self, node):
         if not isinstance(node.slice, ast.Index):
-            self.__raise_error(node.slice,
-                               'Can only handle single access slices')
+            self.raise_error(node.slice,
+                             'Can only handle single access slices')
         return [node.value, node.slice.value]
 
     def stringify_Pass(self, node, indent=''):
@@ -491,8 +491,8 @@ class Oklifier:
             if value_str == 'Shared':
                 return '@shared ' + self.stringify_annotation(index, var_name)
 
-        self.__raise_error(node,
-                           'Cannot handle type annotation')
+        self.raise_error(node,
+                         'Cannot handle type annotation')
 
     def stringify_list_annotation(self, node, var_name):
         if not isinstance(node, ast.Tuple):
@@ -512,15 +512,23 @@ class Oklifier:
     def stringify_UnaryOp(self, node, indent=''):
         str_format = UNARY_OP_FORMATS.get(type(node.op))
         if str_format is None:
-            self.__raise_error(node.op,
-                               'Unable to handle operator')
+            self.raise_error(node.op,
+                             'Unable to handle operator')
         return str_format.format(value=self.stringify_node(node.operand, indent))
+
+    def stringify_While(self, node, indent=''):
+        if node.orelse:
+            self.raise_error(node.orelse[0],
+                             'Cannot handle statement after while')
+
+        while_str = 'while ({test})'.format(test=self.stringify_node(node.test))
+        return while_str + self.stringify_body(node.body, indent)
 
     def stringify_node(self, node, indent=''):
         node_str_func = self.stringify_node_map.get(type(node))
         if node_str_func is not None:
             return node_str_func(node, indent)
-        self.__raise_error(node, 'Unable to handle node type {}'.format(type(node)))
+        self.raise_error(node, 'Unable to handle node type {}'.format(type(node)))
 
     def stringify_block(self, nodes, indent=''):
         self.scope_stack.append(set())
@@ -543,10 +551,10 @@ class Oklifier:
         return ' {{\n{body}\n{indent}}}'.format(body=body,
                                                indent=indent)
 
-    def __add_to_scope(self, var_name):
+    def add_to_scope(self, var_name):
         self.scope_stack[-1].add(var_name)
 
-    def __is_defined(self, var_name):
+    def is_defined(self, var_name):
         for scope in self.scope_stack:
             if var_name in scope:
                 return True
@@ -555,12 +563,14 @@ class Oklifier:
     def py_to_c_type(self, type_name):
         return type_name
 
-    @classmethod
-    def get_last_error_node(cls):
-        return cls.__last_error_node
+    @staticmethod
+    def get_last_error_node():
+        global __last_error_node
+        return __last_error_node
 
-    def __raise_error(self, node, message):
-        Oklifier.__last_error_node = node
+    def raise_error(self, node, message):
+        global __last_error_node
+        __last_error_node = node
 
         error_line = node.lineno - 1
         char_pos = node.col_offset
