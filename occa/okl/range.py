@@ -18,9 +18,6 @@ class Range:
         if step is None:
             self.step = 1
 
-    def __as_range(self):
-        return range(self.start, self.stop, self.step)
-
     def __set_initialized(self):
         self._is_valid = not self._is_initialized
         self._is_initialized = True
@@ -42,6 +39,10 @@ class Range:
         self._tiling = args
         return self
 
+    def __iter__(self):
+        for i in range(self.start, self.stop, self.step):
+            yield i
 
-def range(start, stop=None, step=None):
+
+def _range(start, stop=None, step=None):
     return Range(start, stop, step)
