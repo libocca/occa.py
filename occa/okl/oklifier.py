@@ -64,22 +64,53 @@ VALID_GLOBAL_NAMES = {
 }
 
 
+PY_TO_C_TYPES = {
+    'bool': 'bool',
+    'int': 'int',
+    'float': 'double',
+    'str': 'char *',
+    'bool_': 'bool',
+    'int8': 'char',
+    'uint8': 'char',
+    'int16': 'short',
+    'uint16': 'short',
+    'int32': 'int',
+    'uint32': 'int',
+    'int64': 'long',
+    'uint64': 'long',
+    'float32': 'float',
+    'float64': 'double',
+    'np.bool_': 'bool',
+    'np.int8': 'char',
+    'np.uint8': 'char',
+    'np.int16': 'short',
+    'np.uint16': 'short',
+    'np.int32': 'int',
+    'np.uint32': 'int',
+    'np.int64': 'long',
+    'np.uint64': 'long',
+    'np.float32': 'float',
+    'np.float64': 'double',
+}
+
+
 VALID_GLOBAL_VALUE_TYPES = {
-    type(None): 'void',
-    bool: 'bool',
-    int: 'int',
-    float: 'double',
-    np.bool_: 'bool',
-    np.int8: 'char',
-    np.uint8: 'char',
-    np.int16: 'short',
-    np.uint16: 'short',
-    np.int32: 'int',
-    np.uint32: 'int',
-    np.int64: 'long',
-    np.uint64: 'long',
-    np.float32: 'float',
-    np.float64: 'double',
+    type(None),
+    bool,
+    int,
+    float,
+    str,
+    np.bool_,
+    np.int8,
+    np.uint8,
+    np.int16,
+    np.uint16,
+    np.int32,
+    np.uint32,
+    np.int64,
+    np.uint64,
+    np.float32,
+    np.float64,
 }
 
 
@@ -136,6 +167,7 @@ class Oklifier:
             ast.Num: self.stringify_Num,
             ast.Pass: self.stringify_Pass,
             ast.Return: self.stringify_Return,
+            ast.Str: self.stringify_Str,
             ast.Subscript: self.stringify_Subscript,
             ast.UnaryOp: self.stringify_UnaryOp,
             ast.While: self.stringify_While,
@@ -145,9 +177,8 @@ class Oklifier:
         closure_vars = inspect.getclosurevars(func)
         # Inspect globals
         for name, value in closure_vars.globals.items():
-            type_str = VALID_GLOBAL_VALUE_TYPES.get(type(value))
-            if type_str:
-                self.globals[name] = type_str
+            if type(value) in VALID_GLOBAL_VALUE_TYPES:
+                self.globals[name] = self.stringify_constant(value) or str(value)
             elif isinstance(value, types.FunctionType):
                 oklifier = Oklifier(value)
                 self.functions[name] = {
@@ -441,18 +472,20 @@ class Oklifier:
     def stringify_Num(self, node, indent=''):
         return str(node.n)
 
-    def split_subscript(self, node):
-        if not isinstance(node.slice, ast.Index):
-            self.raise_error(node.slice,
-                             'Can only handle single access slices')
-        return [node.value, node.slice.value]
-
     def stringify_Pass(self, node, indent=''):
         return ''
 
     def stringify_Return(self, node, indent=''):
         return 'return {value};'.format(value=self.stringify_node(node.value))
 
+    def stringify_Str(self, node, indent=''):
+        return '"{s}"'.format(s=node.s)
+
+    def split_subscript(self, node):
+        if not isinstance(node.slice, ast.Index):
+            self.raise_error(node.slice,
+                             'Can only handle single access slices')
+        return [node.value, node.slice.value]
 
     def stringify_Subscript(self, node, indent=''):
         value, index = self.split_subscript(node)
@@ -465,21 +498,36 @@ class Oklifier:
         if node is None:
             return var_name
 
+        if isinstance(node, str):
+            return node
+
         node_type = type(node)
         if node_type is ast.Name:
-            type_str = self.py_to_c_type(self.stringify_Name(node))
-            if var_name:
-                return type_str + ' ' + var_name
-            return type_str
+            type_str = PY_TO_C_TYPES.get(self.stringify_Name(node))
+            if type_str:
+                if var_name:
+                    return type_str + ' ' + var_name
+                return type_str
 
-        if node_type is ast.NameConstant:
+        elif node_type is ast.NameConstant:
             node_str = self.stringify_NameConstant(node)
             if node_str == 'NULL':
                 if var_name:
                     return 'void ' + var_name
                 return 'void'
 
-        if node_type is ast.Subscript:
+        elif node_type is ast.Attribute:
+            type_str = '{value}.{attr}'.format(
+                value=self.stringify_node(node.value),
+                attr=node.attr,
+            )
+            if not var_name:
+                return type_str
+            c_type = PY_TO_C_TYPES.get(type_str)
+            if c_type:
+                return c_type + ' '  + var_name
+
+        elif node_type is ast.Subscript:
             value, index = self.split_subscript(node)
             value_str = self.stringify_node(value)
             if value_str == 'List':
@@ -559,9 +607,6 @@ class Oklifier:
             if var_name in scope:
                 return True
         return False
-
-    def py_to_c_type(self, type_name):
-        return type_name
 
     @staticmethod
     def get_last_error_node():
