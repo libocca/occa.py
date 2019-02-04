@@ -49,6 +49,7 @@ class AttrOrderer:
             attr = left_node.attr
             left_node.attr = node
             setattr(node, left_field, attr)
+
             return cls.reorder(left_node)
 
         setattr(node, left_field, left_node)

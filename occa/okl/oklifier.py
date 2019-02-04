@@ -131,6 +131,7 @@ class Oklifier:
     def __init__(self, obj):
         self.obj = obj
         self.source = None
+        self.source_indent_size = 0
 
         self.globals = dict()
         self.functions = dict()
@@ -141,7 +142,7 @@ class Oklifier:
         elif isinstance(obj, types.FunctionType):
             self.inspect_function_closure(obj)
             self.source = inspect.getsource(obj)
-            self.root = ast.parse(self.source)
+            self.root = self.parse_source()
         else:
             raise TypeError('Unable to oklify object')
 
@@ -178,10 +179,38 @@ class Oklifier:
             'len': self.transform_len,
         }
 
+    def parse_source(self):
+        nindex = self.source.find('\n')
+        if nindex >= 0:
+            first_line = self.source[:nindex]
+        else:
+            first_line = self.source
+
+        # Find indentation in first line
+        indent_size = len(first_line) - len(first_line.lstrip())
+        self.source_indent_size = indent_size
+
+        # Remove indentation if needed
+        if indent_size == 0:
+            safe_source = self.source
+        else:
+            safe_source = '\n'.join(
+                line[indent_size:]
+                for line in self.source.splitlines()
+            )
+
+        return ast.parse(safe_source)
+
     def inspect_function_closure(self, func):
         closure_vars = inspect.getclosurevars(func)
+        used_vars = {
+            **closure_vars.nonlocals,
+            **closure_vars.globals,
+        }
+        used_builtins = closure_vars.builtins
+
         # Inspect globals
-        for name, value in closure_vars.globals.items():
+        for name, value in used_vars.items():
             if type(value) in VALID_GLOBAL_VALUE_TYPES:
                 self.globals[name] = self.stringify_constant(value) or str(value)
             elif isinstance(value, types.FunctionType):
@@ -199,7 +228,7 @@ class Oklifier:
                 )
 
         # Inspect builtins
-        for builtin in closure_vars.builtins.keys():
+        for builtin in used_builtins.keys():
             if builtin not in VALID_BUILTINS:
                 raise FunctionClosureError(
                     'Unable to transform builtin: {}'.format(builtin)
@@ -380,10 +409,10 @@ class Oklifier:
 
     def get_okl_range(self, attr_chain):
         if len(attr_chain) < 3:
-            self.raise_error(attr_chain[1],
+            self.raise_error(attr_chain[1].node,
                              'Missing .outer, .inner, or .tile()')
         if len(attr_chain) > 3:
-            self.raise_error(attr_chain[3],
+            self.raise_error(attr_chain[3].node,
                              'Unknown okl.range')
 
         iter_steps = self.get_range([attr_chain[1]])
@@ -628,7 +657,7 @@ class Oklifier:
         self.scope_stack.append(set())
         nodes_str = (
             self.stringify_node(node, indent=indent)
-            for node in nodes
+            for node in utils.flatten(nodes)
         )
         block_str = '\n'.join(
             (indent + node_str)
@@ -660,7 +689,9 @@ class Oklifier:
                              'len() takes exactly one argument')
 
         value = self.stringify_node(args[0])
-        if ' ' in value:
+        if (' ' in value
+            or '[' in value
+            or '(' in value):
             self.raise_error(args[0],
                              'Cannot transform complex len() arguments')
         return '{value}__len__'.format(value=value)
@@ -675,7 +706,7 @@ class Oklifier:
         __last_error_node = node
 
         error_line = node.lineno - 1
-        char_pos = node.col_offset
+        char_pos = node.col_offset + self.source_indent_size
 
         error_message = 'Error: {message}\n'.format(message=message)
 
