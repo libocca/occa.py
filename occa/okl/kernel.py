@@ -5,29 +5,48 @@ from .utils import py2okl
 class Kernel:
     def __init__(self, func):
         self.func = func
-        self._okl_source = None
+        self._source = None
+        self._hashed_sources = dict()
         self._kernels = dict()
 
     @property
     def __name__(self):
         return self.func.__name__
 
-    @property
-    def __okl_source__(self):
-        if self._okl_source is None:
-            self._okl_source = py2okl(self.func)
-        return self._okl_source
+    def hash_value(self, value):
+        if isinstance(value, dict):
+            return hash(frozenset(value.items()))
+        return hash(value)
 
-    def build(self, device, props=None):
-        kernel = self._kernels.get(device)
+    def hash_values(self, *values):
+        hash((self.hash_value(val)
+              for val in values
+              if val is not None))
+
+    def get_source(self, globals=None):
+        if not globals:
+            if not self._source:
+                self._source = py2okl(self.func)
+            return self._source
+
+        globals_hash = self.hash_value(globals)
+        source = self._hashed_sources.get(globals_hash)
+        if source is None:
+            source = py2okl(self.func, globals=globals)
+            self._hashed_sources[globals_hash] = source
+        return source
+
+    def build(self, device, props=None, globals=None):
+        kernel_hash = self.hash_values(device, props, globals)
+        kernel = self._kernels.get(kernel_hash)
         if kernel is None or not kernel.is_initialized:
-            kernel = (
-                device.build_kernel_from_string(self.__okl_source__,
-                                                self.__name__,
-                                                props)
-            )
-            self._kernels[device] = kernel
+            kernel = device.build_kernel_from_string(self.get_source(globals=globals),
+                                                     self.__name__,
+                                                     props)
+            self._kernels[kernel_hash] = kernel
         return kernel
 
-    def __call__(self, *args, props=None):
-        return self.build(get_device(), props=props)(*args)
+    def __call__(self, *args, props=None, **globals):
+        return self.build(get_device(),
+                          props=props,
+                          globals=globals)(*args)

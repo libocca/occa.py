@@ -18,12 +18,12 @@ def get_attribute_chain(node):
     return attrorderer.AttrOrderer(node)
 
 
-def py2okl(obj):
+def py2okl(obj, globals=None):
     if isinstance(obj, str):
         return obj
     if isinstance(obj, collections.Iterable):
         return [
-            py2okl(item)
+            py2okl(item, globals=globals)
             for item in obj
         ]
-    return oklifier.Oklifier(obj).to_str()
+    return oklifier.Oklifier(obj, globals=globals).to_str()

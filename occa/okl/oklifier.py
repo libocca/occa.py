@@ -131,7 +131,7 @@ OKL_DECORATORS = {
 
 __last_error_node = None
 class Oklifier:
-    def __init__(self, obj):
+    def __init__(self, obj, globals=None):
         self.obj = obj
         self.source = None
         self.source_indent_size = 0
@@ -148,6 +148,10 @@ class Oklifier:
             self.root = self.parse_source()
         else:
             raise TypeError('Unable to oklify object')
+
+        if globals:
+            for name, value in globals.items():
+                self.globals[self.safe_str(name)] = self.safe_str(value)
 
         self.stringify_node_map = {
             ast.AnnAssign: self.stringify_AnnAssign,
@@ -215,7 +219,8 @@ class Oklifier:
         # Inspect globals
         for name, value in used_vars.items():
             if type(value) in VALID_GLOBAL_VALUE_TYPES:
-                self.globals[name] = self.stringify_constant(value) or str(value)
+                self.globals[name] = (self.stringify_constant(value) or
+                                      self.safe_str(value))
             elif isinstance(value, types.FunctionType):
                 oklifier = Oklifier(value)
                 self.functions[name] = {
@@ -558,8 +563,7 @@ class Oklifier:
 
     def stringify_Name(self, node, indent=''):
         name = node.id
-        var = self.globals.get(name)
-        return var or name
+        return self.globals.get(name, name)
 
     def stringify_constant(self, value):
         if value is True:
@@ -720,6 +724,10 @@ class Oklifier:
             if var_name in scope:
                 return True
         return False
+
+    def safe_str(self, value):
+        name = getattr(value, '__name__', None)
+        return name or str(value)
 
     def transform_len(self, node, args):
         if len(args) != 1:
