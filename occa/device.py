@@ -152,7 +152,15 @@ class Device:
         props = utils.properties(props)
 
         src = None
-        if isinstance(src_or_entries, np.ndarray):
+
+        # Convert iterable into np.array
+        is_ndarray = isinstance(src_or_entries, np.ndarray)
+        if (not is_ndarray and
+            isinstance(src_or_entries, list)):
+            src_or_entries = np.array(src_or_entries)
+            is_ndarray = True
+
+        if is_ndarray:
             src = src_or_entries
             dtype = dtype or src.dtype
 

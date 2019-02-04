@@ -116,8 +116,11 @@ VALID_GLOBAL_VALUE_TYPES = {
 
 
 VALID_BUILTINS = {
-    'range',
+    'abs',
     'len',
+    'min',
+    'max',
+    'range',
 }
 
 
@@ -379,8 +382,8 @@ class Oklifier:
 
         orelse_nodes = node.orelse
         if orelse_nodes:
-            has_elif = (len(orelse_nodes) == 1
-                        and type(orelse_nodes[0]) is ast.If)
+            has_elif = (len(orelse_nodes) == 1 and
+                        type(orelse_nodes[0]) is ast.If)
             if_str += '\n' + indent
             if_str += 'else '
             if has_elif:
@@ -415,37 +418,22 @@ class Oklifier:
             self.raise_error(attr_chain[3].node,
                              'Unknown okl.range')
 
-        iter_steps = self.get_range([attr_chain[1]])
-
+        attr_name = attr_chain[2].name
         attr_node = attr_chain[2].node
+        if attr_name not in ['outer', 'inner', 'tile']:
+            self.raise_error(attr_node,
+                             'Expected outer, inner, or tile()')
+        if attr_name == 'tile':
+            if type(attr_node) is not ast.Call:
+                self.raise_error(attr_node,
+                                 'Expected tile(<tiling size>)')
+            if len(attr_node.args) != 1:
+                self.raise_error(attr_node,
+                                 'tile() takes exactly one argument')
 
-        return iter_steps
+        return self.get_range([attr_chain[1]])
 
-    def split_for_iter(self, node):
-        attr_chain = utils.get_attribute_chain(node)
-
-        iter_steps = None
-        if (len(attr_chain) == 1
-            and attr_chain[0].name == 'range'):
-            iter_steps = self.get_range(attr_chain)
-        elif (len(attr_chain) > 1
-              and attr_chain[0].name == 'okl'
-              and attr_chain[1].name == 'range'):
-            iter_steps = self.get_okl_range(attr_chain)
-
-        if iter_steps is not None:
-            return iter_steps
-
-        self.raise_error(node,
-                         'Unable to transform this iterable')
-
-    def stringify_For(self, node, indent=''):
-        if not isinstance(node.target, ast.Name):
-            self.raise_error(node.target,
-                             'Can only handle one variable for the for-loop index')
-        index = self.stringify_node(node.target, indent)
-        start, end, step = self.split_for_iter(node.iter)
-
+    def stringify_for_loop(self, index, start, end, step, attributes=None):
         if isinstance(step, int):
             if step == 0:
                 self.raise_error(node.iter,
@@ -463,14 +451,64 @@ class Oklifier:
         elif isinstance(step, str):
             step = '{index} += {step}'.format(index=index, step=step)
 
-        for_str = (
-            'for (int {index} = {start}; {index} < {end}; {step})'
+        if attributes:
+            attributes = '; ' + attributes
+        else:
+            attributes = ''
+
+        return (
+            'for (int {index} = {start}; {index} < {end}; {step}{attributes})'
         ).format(index=index,
                  start=start,
                  end=end,
-                 step=step)
+                 step=step,
+                 attributes=attributes)
 
-        return for_str + self.stringify_body(node.body, indent)
+    def stringify_range_for(self, for_node, indent, index, attr_chain):
+        start, end, step = self.get_range(attr_chain)
+        return (
+            self.stringify_for_loop(index, start, end, step)
+            + self.stringify_body(for_node.body, indent)
+        )
+
+    def stringify_okl_range_for(self, for_node, indent, index, attr_chain):
+        start, end, step = self.get_okl_range(attr_chain)
+        attr_name = attr_chain[2].name
+        attr_node = attr_chain[2].node
+
+        if attr_name == 'outer':
+            attributes = '@outer'
+        elif attr_name == 'inner':
+            attributes = '@inner'
+        elif attr_name == 'tile':
+            attributes = '@tile({size}, @outer, @inner)'.format(
+                size=self.stringify_node(attr_node.args[0])
+            )
+
+        return (
+            self.stringify_for_loop(index, start, end, step, attributes)
+            + self.stringify_body(for_node.body, indent)
+        )
+
+    def stringify_For(self, node, indent=''):
+        if not isinstance(node.target, ast.Name):
+            self.raise_error(node.target,
+                             'Can only handle one variable for the for-loop index')
+        index = self.stringify_node(node.target, indent)
+        iteration = node.iter
+
+        attr_chain = utils.get_attribute_chain(iteration)
+
+        if (len(attr_chain) == 1 and
+            attr_chain[0].name == 'range'):
+            return self.stringify_range_for(node, indent, index, attr_chain)
+        elif (len(attr_chain) > 1 and
+              attr_chain[0].name == 'okl' and
+              attr_chain[1].name == 'range'):
+            return self.stringify_okl_range_for(node, indent, index, attr_chain)
+
+        self.raise_error(iteration,
+                         'Unable to transform this iterable')
 
     def stringify_function_signature(self, node, semicolon=True):
         name = node.name
@@ -689,9 +727,9 @@ class Oklifier:
                              'len() takes exactly one argument')
 
         value = self.stringify_node(args[0])
-        if (' ' in value
-            or '[' in value
-            or '(' in value):
+        if (' ' in value or
+            '[' in value or
+            '(' in value):
             self.raise_error(args[0],
                              'Cannot transform complex len() arguments')
         return '{value}__len__'.format(value=value)

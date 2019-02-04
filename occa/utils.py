@@ -159,16 +159,18 @@ def assert_ndarray(value):
 
 def assert_malloc_src(value):
     if (not is_int(value) and
-        not isinstance(value, np.ndarray)):
-        raise ValueError('Expected an int or numpy.ndarray')
+        not isinstance(value, np.ndarray) and
+        not isinstance(value, list)):
+        raise ValueError('Expected an int, numpy.ndarray, or list')
 
 
 def assert_memory_like(value):
     from .memory import Memory
 
     if (not isinstance(value, Memory) and
-        not isinstance(value, np.ndarray)):
-        raise ValueError('Expected occa.Memory or numpy.ndarray')
+        not isinstance(value, np.ndarray) and
+        not isinstance(value, list)):
+        raise ValueError('Expected occa.Memory, numpy.ndarray, or list')
 #=======================================
 
 

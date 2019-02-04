@@ -102,6 +102,12 @@ def memcpy(dest, src,
     # Verify inputs
     utils.assert_memory_like(dest)
     utils.assert_memory_like(src)
+
+    if isinstance(dest, list):
+        dest = np.array(dest)
+    if isinstance(src, list):
+        src = np.array(src)
+
     if (not isinstance(dest, Memory) and
         not isinstance(src, Memory)):
         np.copyto(dest, src, casting='unsafe')
