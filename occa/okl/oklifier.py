@@ -174,6 +174,10 @@ class Oklifier:
             ast.While: self.stringify_While,
         }
 
+        self.function_transformers = {
+            'len': self.transform_len,
+        }
+
     def inspect_function_closure(self, func):
         closure_vars = inspect.getclosurevars(func)
         # Inspect globals
@@ -299,12 +303,18 @@ class Oklifier:
         return 'break;'
 
     def stringify_Call(self, node, indent=''):
+        func = self.stringify_node(node.func, indent)
+
+        function_transformer = self.function_transformers.get(func)
+        if function_transformer:
+            return function_transformer(node, node.args)
+
         args = ', '.join(
             self.stringify_node(arg)
             for arg in node.args
         )
         return '{func}({args})'.format(
-            func=self.stringify_node(node.func, indent),
+            func=func,
             args=args,
         )
 
@@ -643,6 +653,17 @@ class Oklifier:
             if var_name in scope:
                 return True
         return False
+
+    def transform_len(self, node, args):
+        if len(args) != 1:
+            self.raise_error(node,
+                             'len() takes exactly one argument')
+
+        value = self.stringify_node(args[0])
+        if ' ' in value:
+            self.raise_error(args[0],
+                             'Cannot transform complex len() arguments')
+        return '{value}__len__'.format(value=value)
 
     @staticmethod
     def get_last_error_node():
