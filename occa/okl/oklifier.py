@@ -1,9 +1,10 @@
 import ast
-import collections
 import inspect
 import types
 import numpy as np
 
+from . import utils
+from .range import Range
 from .exceptions import FunctionClosureError, TransformError
 
 
@@ -261,7 +262,7 @@ class Oklifier:
     def stringify_Attribute(self, node, indent=''):
         return '{name}.{value}'.format(
             name=self.stringify_node(node.value, indent),
-            value=node.attr,
+            value=self.stringify_node(node.attr, indent),
         )
 
     def stringify_AugAssign(self, node, indent=''):
@@ -280,12 +281,14 @@ class Oklifier:
             self.raise_error(node.op,
                              'Unable to handle operator')
 
+        # TODO: Check if parentheses are needed
         return str_format.format(
             left=self.stringify_node(node.left, indent),
             right=self.stringify_node(node.right, indent),
         )
 
     def stringify_BoolOp(self, node, indent=''):
+        # TODO: Check if parentheses are needed
         op = ' && ' if isinstance(node.op, ast.And) else ' || '
         return '{values}'.format(values=op.join(
             self.stringify_node(subnode, indent)
@@ -354,18 +357,46 @@ class Oklifier:
     def stringify_Expr(self, node, indent=''):
         return self.stringify_node(node.value, indent)
 
-    def get_range(self, node):
-        return 0, 10, 1
+    def get_range(self, attr_chain):
+        node = attr_chain[0].node
+        if type(node) is not ast.Call:
+            return None
 
-    def get_okl_range(self, node):
-        return 0, 10, 1
+        r = Range(*[
+            self.stringify_node(arg)
+            for arg in node.args
+        ])
+        return r.start, r.stop, r.step
+
+    def get_okl_range(self, attr_chain):
+        if len(attr_chain) < 3:
+            self.raise_error(attr_chain[1],
+                             'Missing .outer, .inner, or .tile()')
+        if len(attr_chain) > 3:
+            self.raise_error(attr_chain[3],
+                             'Unknown okl.range')
+
+        iter_steps = self.get_range([attr_chain[1]])
+
+        attr_node = attr_chain[2].node
+
+        return iter_steps
 
     def split_for_iter(self, node):
-        node_str = self.stringify_node(node)
-        if node_str.startswith('range'):
-            return self.get_range(node)
-        if node_str.startswith('okl.range'):
-            return self.get_okl_range(node)
+        attr_chain = utils.get_attribute_chain(node)
+
+        iter_steps = None
+        if (len(attr_chain) == 1
+            and attr_chain[0].name == 'range'):
+            iter_steps = self.get_range(attr_chain)
+        elif (len(attr_chain) > 1
+              and attr_chain[0].name == 'okl'
+              and attr_chain[1].name == 'range'):
+            iter_steps = self.get_okl_range(attr_chain)
+
+        if iter_steps is not None:
+            return iter_steps
+
         self.raise_error(node,
                          'Unable to transform this iterable')
 
@@ -494,6 +525,13 @@ class Oklifier:
             index=self.stringify_node(index, indent),
         )
 
+    def join_type_and_var(self, type_str, var_name):
+        if not var_name:
+            return type_str
+        if not type_str.endswith('*'):
+            type_str = type_str + ' '
+        return type_str + var_name
+
     def stringify_annotation(self, node, var_name=''):
         if node is None:
             return var_name
@@ -505,9 +543,7 @@ class Oklifier:
         if node_type is ast.Name:
             type_str = PY_TO_C_TYPES.get(self.stringify_Name(node))
             if type_str:
-                if var_name:
-                    return type_str + ' ' + var_name
-                return type_str
+                return self.join_type_and_var(type_str, var_name)
 
         elif node_type is ast.NameConstant:
             node_str = self.stringify_NameConstant(node)
@@ -517,15 +553,12 @@ class Oklifier:
                 return 'void'
 
         elif node_type is ast.Attribute:
-            type_str = '{value}.{attr}'.format(
-                value=self.stringify_node(node.value),
-                attr=node.attr,
-            )
+            type_str = self.stringify_Attribute(node)
             if not var_name:
                 return type_str
             c_type = PY_TO_C_TYPES.get(type_str)
             if c_type:
-                return c_type + ' '  + var_name
+                return self.join_type_and_var(c_type, var_name)
 
         elif node_type is ast.Subscript:
             value, index = self.split_subscript(node)
@@ -573,6 +606,9 @@ class Oklifier:
         return while_str + self.stringify_body(node.body, indent)
 
     def stringify_node(self, node, indent=''):
+        if isinstance(node, str):
+            return node
+
         node_str_func = self.stringify_node_map.get(type(node))
         if node_str_func is not None:
             return node_str_func(node, indent)
@@ -658,12 +694,3 @@ class Oklifier:
             *[func['source'] for func in functions],
             self.stringify_node(self.root),
         ])
-
-
-def py2okl(obj):
-    if not isinstance(obj, collections.Iterable):
-        return Oklifier(obj).to_str()
-    return [
-        Oklifier(item).to_str()
-        for item in obj
-    ]

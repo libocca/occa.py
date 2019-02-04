@@ -1,5 +1,5 @@
 from ..base import get_device
-from .oklifier import py2okl
+from .utils import py2okl
 
 
 class Kernel:
