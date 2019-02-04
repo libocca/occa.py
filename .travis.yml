@@ -6,11 +6,6 @@ notifications:
 
 matrix:
   include:
-    - name: "Linux · Python 3.5"
-      python: 3.5
-      os: linux
-      dist: trusty
-
     - name: "Linux · Python 3.6"
       python: 3.6
       os: linux
