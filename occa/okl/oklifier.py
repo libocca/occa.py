@@ -130,6 +130,8 @@ OKL_DECORATORS = {
 
 
 __last_error_node = None
+
+
 class Oklifier:
     def __init__(self, obj, globals=None):
         self.obj = obj
@@ -438,10 +440,10 @@ class Oklifier:
 
         return self.get_range([attr_chain[1]])
 
-    def stringify_for_loop(self, index, start, end, step, attributes=None):
+    def stringify_for_loop(self, for_node, index, start, end, step, attributes=None):
         if isinstance(step, int):
             if step == 0:
-                self.raise_error(node.iter,
+                self.raise_error(for_node.iter,
                                  'Cannot have for-loop with a step size of 0')
             if step > 0:
                 if step == 1:
@@ -472,7 +474,7 @@ class Oklifier:
     def stringify_range_for(self, for_node, indent, index, attr_chain):
         start, end, step = self.get_range(attr_chain)
         return (
-            self.stringify_for_loop(index, start, end, step)
+            self.stringify_for_loop(for_node, index, start, end, step)
             + self.stringify_body(for_node.body, indent)
         )
 
@@ -491,7 +493,7 @@ class Oklifier:
             )
 
         return (
-            self.stringify_for_loop(index, start, end, step, attributes)
+            self.stringify_for_loop(for_node, index, start, end, step, attributes)
             + self.stringify_body(for_node.body, indent)
         )
 
@@ -717,7 +719,7 @@ class Oklifier:
         if not body:
             return ' {}'
         return ' {{\n{body}\n{indent}}}'.format(body=body,
-                                               indent=indent)
+                                                indent=indent)
 
     def add_to_scope(self, var_name):
         self.scope_stack[-1].add(var_name)
