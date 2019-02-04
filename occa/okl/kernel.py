@@ -13,6 +13,12 @@ class Kernel:
     def __name__(self):
         return self.func.__name__
 
+    def __str__(self):
+        return "<occa.okl.kernel.Kernel '{name}'>".format(name=self.__name__)
+
+    def __repr__(self):
+        return self.__str__()
+
     def hash_value(self, value):
         if isinstance(value, dict):
             return hash(frozenset(value.items()))
@@ -46,7 +52,7 @@ class Kernel:
             self._kernels[kernel_hash] = kernel
         return kernel
 
-    def __call__(self, *args, props=None, **globals):
-        return self.build(get_device(),
+    def __call__(self, *args, device=None, props=None, globals=None):
+        return self.build(device or get_device(),
                           props=props,
                           globals=globals)(*args)
