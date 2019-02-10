@@ -626,7 +626,6 @@ class Oklifier:
         if node_type is ast.Name:
             type_str = PY_TO_C_TYPES.get(self.stringify_Name(node))
             if type_str:
-                print(type_str)
                 return self.join_type_and_var(type_str, var_name)
 
         elif node_type is ast.NameConstant:
@@ -642,7 +641,6 @@ class Oklifier:
                 return type_str
             c_type = PY_TO_C_TYPES.get(type_str)
             if c_type:
-                print(type_str, c_type)
                 return self.join_type_and_var(c_type, var_name)
 
         elif node_type is ast.Subscript:

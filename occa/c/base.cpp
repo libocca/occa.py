@@ -29,6 +29,14 @@ static PyObject* py_occa_set_setting(PyObject *self,
   );
   return occa::py::None();
 }
+
+static void py_occa_override_stdout(const char *str) {
+    occa::py::stdoutWrite(str);
+}
+
+static void py_occa_override_stderr(const char *str) {
+    occa::py::stderrWrite(str);
+}
 //======================================
 
 
@@ -158,7 +166,10 @@ static bool base_has_valid_module() {
   return true;
 }
 
-static void base_init_module(PyObject *module) {}
+static void base_init_module(PyObject *module) {
+  occa::io::stdout.setOverride(py_occa_override_stdout);
+  occa::io::stderr.setOverride(py_occa_override_stderr);
+}
 
 OCCA_PY_MODULE(
   base,

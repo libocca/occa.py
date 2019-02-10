@@ -34,6 +34,32 @@ namespace occa {
     //==================================
 
 
+    //---[ Sys Output ]-----------------
+    static PyObject* getSysStream(const std::string &streamName) {
+      PyObject *module = PyImport_ImportModule("sys");
+      return PyObject_GetAttrString(module, streamName.c_str());
+    }
+
+    static void sysStreamWrite(PyObject *out,
+                               const char *str) {
+      PyObject_CallMethod(out,
+                          "write",
+                          "(s)",
+                          str);
+    }
+
+    void stdoutWrite(const char *str) {
+      static PyObject *stdout = getSysStream("stdout");
+      sysStreamWrite(stdout, str);
+    }
+
+    void stderrWrite(const char *str) {
+      static PyObject *stderr = getSysStream("stderr");
+      sysStreamWrite(stderr, str);
+    }
+    //==================================
+
+
     //---[ Type Getters ]---------------
     static PyTypeObject* getTypeFromModule(const std::string &moduleName,
                                            const std::string &className) {
