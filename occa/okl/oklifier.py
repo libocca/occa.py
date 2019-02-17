@@ -196,9 +196,12 @@ class Oklifier:
                                       self.safe_str(value))
             elif isinstance(value, types.FunctionType):
                 oklifier = Oklifier(value)
+                # Override the original function name with the closure variable name
+                func_node = oklifier.root.body[0]
+                func_node.name = name
                 self.functions[name] = {
                     'signature': oklifier.stringify_function_signature(
-                        node=oklifier.root.body[0],
+                        node=func_node,
                         semicolon=True,
                     ),
                     'source': oklifier.to_str(),
