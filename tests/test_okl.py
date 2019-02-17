@@ -1,8 +1,7 @@
 import inspect
-from typing import List
 
 from occa import okl
-from occa.okl.types import Const, Exclusive, Shared
+from occa.okl.types import Array, Const, Exclusive, Shared
 
 
 def add(a: Const[float],
@@ -11,18 +10,18 @@ def add(a: Const[float],
 
 
 @okl.kernel
-def add_vectors(a: Const[List[float]],
-                b: Const[List[float]],
-                ab: List[float]) -> None:
+def add_vectors(a: Const[Array[float]],
+                b: Const[Array[float]],
+                ab: Array[float]) -> None:
     for i in range(3):
         pass
     for i in okl.range(len(a)).tile(16):
         # Type tests
         foo: bool = True
         bar: np.float64 = 3.2
-        s_foo: Shared[List[float, 20, 30]]
+        s_foo: Shared[Array[float, 20, 30]]
         e_foo: Exclusive[float]
-        bar: Const[List[float, 2]] = [1,2]
+        bar: Const[Array[float, 2]] = [1,2]
 
         s: str = 'string'
 
@@ -85,4 +84,4 @@ double add(const double a,
 
 
 def test_okl():
-    assert add_vectors.get_source().strip() == OKL_SOURCE.strip()
+    assert add_vectors.source().strip() == OKL_SOURCE.strip()

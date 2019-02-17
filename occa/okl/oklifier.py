@@ -641,10 +641,6 @@ class Oklifier:
                 return True
         return False
 
-    def get_c_type(self, type_str, default_value=None):
-        return PY_TO_C_TYPES.get(type_str, default_value)
-
-
     def safe_str(self, value):
         name = getattr(value, '__name__', None)
         return name or str(value)

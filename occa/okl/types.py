@@ -6,6 +6,10 @@ class StaticGetItem(type):
         pass
 
 
+class Array(object, metaclass=StaticGetItem):
+    pass
+
+
 class Const(object, metaclass=StaticGetItem):
     pass
 

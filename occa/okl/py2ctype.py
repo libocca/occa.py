@@ -49,9 +49,9 @@ class Py2CType:
 
         # Set to true when we need to stop trying to map Py -> C
         # For example:
-        #   Const[List[np.float32]] -> const [[float] *]
-        #                                      ^
-        #                   Don't map after this
+        #   Const[Array[np.float32]] -> const [[float] *]
+        #                                       ^
+        #                    Don't map after this
         self.found_c_type = False
         # Set to True of varname is empty
         self.applied_varname = not bool(varname)
@@ -84,6 +84,9 @@ class Py2CType:
         if node_type is ast.Name:
             return self.oklifier.stringify_Name(node)
 
+        elif node_type is ast.Num:
+            return self.oklifier.stringify_Num(node)
+
         elif node_type is ast.NameConstant:
             node_str = self.oklifier.stringify_NameConstant(node)
             if node_str == 'NULL':
@@ -96,8 +99,8 @@ class Py2CType:
             value, index = self.oklifier.split_subscript(node)
             value_str = self.oklifier.stringify_node(value)
 
-            if value_str == 'List':
-                return self.stringify_list(index)
+            if value_str == 'Array':
+                return self.stringify_array(index)
             if value_str == 'Const':
                 return 'const ' + self.node_to_c(index)
             if value_str == 'Exclusive':
@@ -108,7 +111,7 @@ class Py2CType:
         self.raise_error(node,
                          'Cannot convert Python type annotation to a C type')
 
-    def stringify_list(self, node):
+    def stringify_array(self, node):
         # Avoid adding varname while getting the inner type
         prev_applied_varname = self.applied_varname
         self.applied_varname = True
@@ -120,7 +123,7 @@ class Py2CType:
             return self.add_varname(type_str, '*')
 
         type_node, *indices = node.elts
-        type_str = self.node_to_c(node)
+        type_str = self.node_to_c(type_node)
         arrays_str = ''.join((
             '[{index}]'.format(index=self.stringify_node(index))
             for index in indices
