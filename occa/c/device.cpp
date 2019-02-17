@@ -344,28 +344,31 @@ static PyObject* Device_malloc(occa::py::Device *self,
     return occa::py::None();
   }
 
-  long long bytes = 0;
+  long long entries = 0;
   occa::py::ndArray src;
+  occa::dtype_t dtype;
   occa::properties props;
 
   occa::py::kwargParser parser;
   parser
     .startOptionalKwargs()
-    .add("bytes", bytes)
+    .add("entries", entries)
     .add("src", src)
+    .add("dtype", dtype)
     .add("props", props);
 
   if (!parser.parse(args, kwargs)) {
     return NULL;
   }
 
-  if (!bytes) {
-    bytes = src.size();
+  if (!entries) {
+    entries = src.size();
   }
 
   OCCA_TRY(
     return occa::py::toPy(
-      self->device->malloc(bytes,
+      self->device->malloc(entries,
+                           dtype,
                            src.ptr(),
                            props)
     );

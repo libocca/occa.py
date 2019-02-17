@@ -3,6 +3,7 @@ import inspect
 import types
 import numpy as np
 
+from .. import utils as occa_utils
 from . import utils
 from .py2ctype import py2ctype
 from .range import Range
@@ -66,24 +67,7 @@ VALID_GLOBAL_NAMES = {
 }
 
 
-VALID_GLOBAL_VALUE_TYPES = {
-    type(None),
-    bool,
-    int,
-    float,
-    str,
-    np.bool_,
-    np.int8,
-    np.uint8,
-    np.int16,
-    np.uint16,
-    np.int32,
-    np.uint32,
-    np.int64,
-    np.uint64,
-    np.float32,
-    np.float64,
-}
+VALID_GLOBAL_VALUE_TYPES = set(occa_utils.TYPES_TO_C_TYPES.keys())
 
 
 VALID_BUILTINS = {

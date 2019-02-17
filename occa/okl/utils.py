@@ -1,5 +1,6 @@
 import ast
 import collections
+import numpy as np
 
 from . import attrorderer, oklifier
 from .exceptions import TransformError

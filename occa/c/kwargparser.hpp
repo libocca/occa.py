@@ -24,6 +24,7 @@ namespace occa {
         kernel,
         stream,
         streamTag,
+        dtype,
         properties,
         json,
       };
@@ -67,6 +68,7 @@ namespace occa {
       DEFINE_ADD(occa::kernel        , argType::kernel)
       DEFINE_ADD(occa::stream        , argType::stream)
       DEFINE_ADD(occa::streamTag     , argType::streamTag)
+      DEFINE_ADD(occa::dtype_t       , argType::dtype)
       DEFINE_ADD(occa::properties    , argType::properties)
       DEFINE_ADD(occa::json          , argType::json)
 
@@ -185,6 +187,14 @@ namespace occa {
         );
       }
 
+      inline void setDtype(const int index,
+                           void *value) {
+        setInput<occa::dtype_t, occa::dtype_t&>(
+          index,
+          *(((occa::py::dtype*) value)->dtype)
+        );
+      }
+
       inline void setProperties(const int index,
                                 void *value) {
         *((occa::properties*) inputs[index]) = occa::properties(str(value));
@@ -213,6 +223,7 @@ namespace occa {
         case argType::kernel    : return setKernel(index, value);
         case argType::stream    : return setStream(index, value);
         case argType::streamTag : return setStreamTag(index, value);
+        case argType::dtype     : return setDtype(index, value);
         case argType::properties: return setProperties(index, value);
         case argType::json      : return setJson(index, value);
         }

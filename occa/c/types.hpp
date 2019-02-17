@@ -31,6 +31,11 @@ namespace occa {
       PyObject_HEAD
       occa::streamTag *streamTag;
     } StreamTag;
+
+    typedef struct {
+      PyObject_HEAD
+      occa::dtype_t *dtype;
+    } dtype;
     //==================================
 
 
@@ -97,6 +102,11 @@ namespace occa {
     PyTypeObject* StreamTagType() {
       static PyTypeObject *StreamTag = getTypeFromModule("occa.c.streamtag", "StreamTag");
       return StreamTag;
+    }
+
+    PyTypeObject* dtypeType() {
+      static PyTypeObject *dtype = getTypeFromModule("occa.c.dtype", "dtype");
+      return dtype;
     }
     //==================================
 

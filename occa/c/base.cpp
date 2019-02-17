@@ -155,6 +155,11 @@ static PyObject* py_occa_memcpy(PyObject *self,
   return occa::py::None();
 }
 //======================================
+
+
+//---[ dtype ]--------------------------
+//======================================
+
 #define BASE_METHOD_NO_ARGS(FUNC)               \
   OCCA_PY_METHOD_NO_ARGS(#FUNC, py_occa_##FUNC)
 

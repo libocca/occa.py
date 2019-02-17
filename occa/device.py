@@ -2,6 +2,7 @@ import json
 import numpy as np
 
 from . import c, utils
+from . import dtype as occa_dtype
 from .exceptions import UninitializedError
 
 
@@ -175,8 +176,9 @@ class Device:
         utils.assert_valid_dtype(dtype)
 
         return Memory(
-            self._c.malloc(bytes=(entries * dtype.itemsize),
+            self._c.malloc(entries=entries,
                            src=src,
+                           dtype=occa_dtype.get_occa_dtype(dtype),
                            props=props),
             dtype=dtype,
         )

@@ -44,6 +44,26 @@ VALID_TYPES = set(PY_TO_DTYPE.keys())
 VALID_TYPES.update(VALID_NP_DTYPES)
 
 
+TYPES_TO_C_TYPES = {
+    type(None): 'void',
+    bool: 'bool',
+    int: 'long',
+    float: 'double',
+    str: 'char *',
+    np.bool_: 'bool',
+    np.int8: 'char',
+    np.uint8: 'char',
+    np.int16: 'short',
+    np.uint16: 'short',
+    np.int32: 'int',
+    np.uint32: 'int',
+    np.int64: 'long',
+    np.uint64: 'long',
+    np.float32: 'float',
+    np.float64: 'double',
+}
+
+
 def is_int(value):
     return (isinstance(value, int) or
             isinstance(value, np.integer))

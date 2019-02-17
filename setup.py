@@ -140,7 +140,8 @@ ext_modules = [
     get_ext_module(module)
     for module in ['base',
                    'device', 'kernel', 'memory',
-                   'stream', 'streamtag']
+                   'stream', 'streamtag',
+                   'dtype']
 ]
 
 
