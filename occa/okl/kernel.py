@@ -29,16 +29,18 @@ class Kernel:
               for val in values
               if val is not None))
 
-    def get_source(self, globals=None):
+    def source(self, *, globals=None, _show_full_stacktrace=False):
         if not globals:
             if not self._source:
-                self._source = py2okl(self.func)
+                self._source = py2okl(self.func, _show_full_stacktrace=_show_full_stacktrace)
             return self._source
 
         globals_hash = self.hash_value(globals)
         source = self._hashed_sources.get(globals_hash)
         if source is None:
-            source = py2okl(self.func, globals=globals)
+            source = py2okl(self.func,
+                            globals=globals,
+                            _show_full_stacktrace=_show_full_stacktrace)
             self._hashed_sources[globals_hash] = source
         return source
 
@@ -46,7 +48,7 @@ class Kernel:
         kernel_hash = self.hash_values(device, props, globals)
         kernel = self._kernels.get(kernel_hash)
         if kernel is None or not kernel.is_initialized:
-            kernel = device.build_kernel_from_string(self.get_source(globals=globals),
+            kernel = device.build_kernel_from_string(self.source(globals=globals),
                                                      self.__name__,
                                                      props)
             self._kernels[kernel_hash] = kernel

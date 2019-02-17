@@ -4,6 +4,7 @@ import types
 import numpy as np
 
 from . import utils
+from .py2ctype import py2ctype
 from .range import Range
 from .exceptions import FunctionClosureError, TransformError
 
@@ -62,36 +63,6 @@ COMPARE_OP_STR = {
 
 VALID_GLOBAL_NAMES = {
     'okl',
-}
-
-
-PY_TO_C_TYPES = {
-    'bool': 'bool',
-    'int': 'int',
-    'float': 'double',
-    'str': 'char *',
-    'bool_': 'bool',
-    'int8': 'char',
-    'uint8': 'char',
-    'int16': 'short',
-    'uint16': 'short',
-    'int32': 'int',
-    'uint32': 'int',
-    'int64': 'long',
-    'uint64': 'long',
-    'float32': 'float',
-    'float64': 'double',
-    'np.bool_': 'bool',
-    'np.int8': 'char',
-    'np.uint8': 'char',
-    'np.int16': 'short',
-    'np.uint16': 'short',
-    'np.int32': 'int',
-    'np.uint32': 'int',
-    'np.int64': 'long',
-    'np.uint64': 'long',
-    'np.float32': 'float',
-    'np.float64': 'double',
 }
 
 
@@ -273,10 +244,10 @@ class Oklifier:
         return args_str
 
     def stringify_AnnAssign(self, node, indent=''):
-        var_name = self.stringify_node(node.target)
-        self.add_to_scope(var_name)
+        varname = self.stringify_node(node.target)
+        self.add_to_scope(varname)
 
-        node_str = self.stringify_annotation(node.annotation, var_name)
+        node_str = self.stringify_annotation(node.annotation, varname)
         if node.value:
             node_str += ' = {value}'.format(
                 value=self.stringify_node(node.value),
@@ -608,71 +579,10 @@ class Oklifier:
             index=self.stringify_node(index, indent),
         )
 
-    def join_type_and_var(self, type_str, var_name):
-        if not var_name:
-            return type_str
-        if not type_str.endswith('*'):
-            type_str = type_str + ' '
-        return type_str + var_name
-
-    def stringify_annotation(self, node, var_name=''):
-        if node is None:
-            return var_name
-
-        if isinstance(node, str):
-            return node
-
-        node_type = type(node)
-        if node_type is ast.Name:
-            type_str = PY_TO_C_TYPES.get(self.stringify_Name(node))
-            if type_str:
-                return self.join_type_and_var(type_str, var_name)
-
-        elif node_type is ast.NameConstant:
-            node_str = self.stringify_NameConstant(node)
-            if node_str == 'NULL':
-                if var_name:
-                    return 'void ' + var_name
-                return 'void'
-
-        elif node_type is ast.Attribute:
-            type_str = self.stringify_Attribute(node)
-            if not var_name:
-                return type_str
-            c_type = PY_TO_C_TYPES.get(type_str)
-            if c_type:
-                return self.join_type_and_var(c_type, var_name)
-
-        elif node_type is ast.Subscript:
-            value, index = self.split_subscript(node)
-            value_str = self.stringify_node(value)
-            if value_str == 'List':
-                return self.stringify_list_annotation(index, var_name)
-            if value_str == 'Const':
-                return 'const ' + self.stringify_annotation(index, var_name)
-            if value_str == 'Exclusive':
-                return '@exclusive ' + self.stringify_annotation(index, var_name)
-            if value_str == 'Shared':
-                return '@shared ' + self.stringify_annotation(index, var_name)
-
-        self.raise_error(node,
-                         'Cannot handle type annotation')
-
-    def stringify_list_annotation(self, node, var_name):
-        if not isinstance(node, ast.Tuple):
-            type_str = self.stringify_annotation(node)
-            type_str = PY_TO_C_TYPES.get(type_str, type_str)
-            if not type_str.endswith('*'):
-                type_str += ' '
-            return type_str + '*' + var_name
-
-        type_node, *indices = node.elts
-        type_str = self.stringify_annotation(type_node)
-        arrays_str = ''.join((
-            '[{index}]'.format(index=self.stringify_node(index))
-            for index in indices
-        ))
-        return type_str + ' ' + var_name + arrays_str
+    def stringify_annotation(self, node, varname=''):
+        return py2ctype(node,
+                        varname=varname,
+                        oklifier=self)
 
     def stringify_UnaryOp(self, node, indent=''):
         str_format = UNARY_OP_FORMATS.get(type(node.op))
@@ -719,14 +629,18 @@ class Oklifier:
         return ' {{\n{body}\n{indent}}}'.format(body=body,
                                                 indent=indent)
 
-    def add_to_scope(self, var_name):
-        self.scope_stack[-1].add(var_name)
+    def add_to_scope(self, varname):
+        self.scope_stack[-1].add(varname)
 
-    def is_defined(self, var_name):
+    def is_defined(self, varname):
         for scope in self.scope_stack:
-            if var_name in scope:
+            if varname in scope:
                 return True
         return False
+
+    def get_c_type(self, type_str, default_value=None):
+        return PY_TO_C_TYPES.get(type_str, default_value)
+
 
     def safe_str(self, value):
         name = getattr(value, '__name__', None)
@@ -754,37 +668,10 @@ class Oklifier:
         global __last_error_node
         __last_error_node = node
 
-        error_line = node.lineno - 1
-        char_pos = node.col_offset + self.source_indent_size
-
-        error_message = 'Error: {message}\n'.format(message=message)
-
-        if self.source:
-            source_lines = self.source.splitlines()
-
-            # Get context lines
-            lines = [
-                line
-                for line in range(error_line - 2, error_line + 3)
-                if 0 <= line < len(source_lines)
-            ]
-            # Stringify lines and pad them
-            lines_str = [str(line + 1) for line in lines]
-            char_size = max(len(line) for line in lines_str)
-            lines_str = [line.ljust(char_size) for line in lines_str]
-
-            prefix = '   '
-
-            for index, line in enumerate(lines):
-                error_message += prefix
-                error_message += lines_str[index]
-                error_message += ' | '
-                error_message += source_lines[line] + '\n'
-                if line == error_line:
-                    error_message += prefix
-                    error_message += ' ' * char_size
-                    error_message += ' | '
-                    error_message += (' ' * char_pos) + '^\n'
+        error_message = utils.get_node_error_message(node,
+                                                     message,
+                                                     self.source,
+                                                     self.source_indent_size)
 
         raise TransformError(error_message)
 
