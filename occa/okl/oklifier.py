@@ -32,7 +32,7 @@ BIN_OP_FORMATS = {
     ast.RShift: '{left} >> {right}',
     ast.BitOr: '{left} | {right}',
     ast.BitAnd: '{left} & {right}',
-    ast.FloorDiv: 'floor({left} / {right})',
+    ast.FloorDiv: '((int) ({left} / {right}))',
 }
 
 
@@ -47,7 +47,7 @@ AUG_OP_FORMATS = {
     ast.RShift: '{left} >>= {right}',
     ast.BitOr: '{left} |= {right}',
     ast.BitAnd: '{left} &= {right}',
-    ast.FloorDiv: '{left} = floor({left} /= {right})',
+    ast.FloorDiv: '{left} = (int) ({left} / {right})',
 }
 
 
@@ -72,6 +72,7 @@ VALID_GLOBAL_VALUE_TYPES = set(occa_utils.TYPES_TO_C_TYPES.keys())
 
 VALID_BUILTINS = {
     'abs',
+    'exp',
     'len',
     'min',
     'max',
@@ -101,6 +102,10 @@ class Oklifier:
         self.constants = []
         self.scope_stack = []
 
+        if globals:
+            for name, value in globals.items():
+                self.globals[self.safe_str(name)] = self.safe_str(value)
+
         if isinstance(obj, ast.AST):
             self.root = obj
         elif isinstance(obj, types.FunctionType):
@@ -109,10 +114,6 @@ class Oklifier:
             self.root = self.parse_source()
         else:
             raise TypeError('Unable to oklify object')
-
-        if globals:
-            for name, value in globals.items():
-                self.globals[self.safe_str(name)] = self.safe_str(value)
 
         self.stringify_node_map = {
             ast.AnnAssign: self.stringify_AnnAssign,
@@ -187,7 +188,8 @@ class Oklifier:
 
         # Inspect globals
         for name, value in used_vars.items():
-            if name in VALID_GLOBAL_NAMES:
+            if (name in VALID_GLOBAL_NAMES or
+                name in self.globals):
                 continue
 
             if type(value) in VALID_GLOBAL_VALUE_TYPES:
@@ -196,7 +198,7 @@ class Oklifier:
                 continue
 
             if isinstance(value, types.FunctionType):
-                oklifier = Oklifier(value)
+                oklifier = Oklifier(value, globals=self.globals)
                 # Override the original function name with the closure variable name
                 func_node = oklifier.root.body[0]
                 func_node.name = name
@@ -659,9 +661,9 @@ class Oklifier:
             length=length
         )
 
-        for line_start in range(0, length, 10):
+        for line_start in range(0, length, 5):
             c_type += '  '
-            for i in range(line_start, min(length, line_start + 10)):
+            for i in range(line_start, min(length, line_start + 5)):
                 c_type += str(array[i])
                 if i < (length - 1):
                     c_type += ', '
