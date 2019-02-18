@@ -64,20 +64,24 @@ def get_node_error_message(node,
     return error_message
 
 
-def py2okl(obj, *, globals=None, _show_full_stacktrace=False):
+def py2okl(obj, *, globals=None, **opts):
     if isinstance(obj, str):
         return obj
     if isinstance(obj, collections.Iterable):
         return [
             py2okl(item,
                    globals=globals,
-                   _show_full_stacktrace=_show_full_stacktrace)
+                   **opts)
             for item in obj
         ]
-    if not _show_full_stacktrace:
+    if not opts.get('full_stacktrace'):
         try:
-            return oklifier.Oklifier(obj, globals=globals).to_str()
+            return oklifier.Oklifier(obj,
+                                     globals=globals,
+                                     **opts).to_str()
         except TransformError as e:
             raise TransformError(str(e)) from None
     else:
-        return oklifier.Oklifier(obj, globals=globals).to_str()
+        return oklifier.Oklifier(obj,
+                                 globals=globals,
+                                 **opts).to_str()

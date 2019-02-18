@@ -1,4 +1,5 @@
 import ast
+import numpy as np
 
 from . import utils
 from . import oklifier as oklifier_module
@@ -160,5 +161,14 @@ class Py2CType:
         raise TransformError(error_message)
 
 
-def py2ctype(node, varname='', oklifier=None):
-    return Py2CType(node, varname, oklifier).to_c()
+def py2ctype(src, varname='', oklifier=None):
+    # Convert type and dtypes to strings
+    if isinstance(src, type):
+        src = src.__name__
+    elif isinstance(src, np.dtype):
+        src = 'np.' + src.name
+
+    if isinstance(src, str):
+        return PY_TO_C_TYPES.get(src)
+
+    return Py2CType(src, varname, oklifier).to_c()

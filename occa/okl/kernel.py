@@ -3,11 +3,12 @@ from .utils import py2okl
 
 
 class Kernel:
-    def __init__(self, func):
+    def __init__(self, func, **opts):
         self.func = func
         self._source = None
         self._hashed_sources = dict()
         self._kernels = dict()
+        self._opts = opts
 
     @property
     def __name__(self):
@@ -29,10 +30,11 @@ class Kernel:
               for val in values
               if val is not None))
 
-    def source(self, *, globals=None, _show_full_stacktrace=False):
+    def source(self, *, globals=None, **opts):
         if not globals:
             if not self._source:
-                self._source = py2okl(self.func, _show_full_stacktrace=_show_full_stacktrace)
+                self._source = py2okl(self.func,
+                                      **{**self._opts, **opts})
             return self._source
 
         globals_hash = self.hash_value(globals)
@@ -40,7 +42,7 @@ class Kernel:
         if source is None:
             source = py2okl(self.func,
                             globals=globals,
-                            _show_full_stacktrace=_show_full_stacktrace)
+                            **{**self._opts, **opts})
             self._hashed_sources[globals_hash] = source
         return source
 

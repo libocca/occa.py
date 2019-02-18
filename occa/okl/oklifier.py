@@ -7,7 +7,7 @@ from .. import utils as occa_utils
 from . import utils
 from .py2ctype import py2ctype
 from .range import Range
-from .exceptions import FunctionClosureError, TransformError
+from .exceptions import ClosureError, TransformError
 
 
 INDENT_TAB = '  '
@@ -88,13 +88,17 @@ __last_error_node = None
 
 
 class Oklifier:
-    def __init__(self, obj, globals=None):
+    def __init__(self, obj, *,
+                 globals=None,
+                 **opts):
         self.obj = obj
         self.source = None
         self.source_indent_size = 0
+        self.opts = self.initialize_opts(opts)
 
         self.globals = dict()
         self.functions = dict()
+        self.constants = []
         self.scope_stack = []
 
         if isinstance(obj, ast.AST):
@@ -143,6 +147,14 @@ class Oklifier:
             'len': self.transform_len,
         }
 
+    @staticmethod
+    def initialize_opts(opts):
+        full_opts = dict()
+
+        full_opts['max_closure_array_length'] = opts.get('max_closure_array_length', 50)
+
+        return full_opts
+
     def parse_source(self):
         nindex = self.source.find('\n')
         if nindex >= 0:
@@ -175,10 +187,15 @@ class Oklifier:
 
         # Inspect globals
         for name, value in used_vars.items():
+            if name in VALID_GLOBAL_NAMES:
+                continue
+
             if type(value) in VALID_GLOBAL_VALUE_TYPES:
                 self.globals[name] = (self.stringify_constant(value) or
                                       self.safe_str(value))
-            elif isinstance(value, types.FunctionType):
+                continue
+
+            if isinstance(value, types.FunctionType):
                 oklifier = Oklifier(value)
                 # Override the original function name with the closure variable name
                 func_node = oklifier.root.body[0]
@@ -190,15 +207,31 @@ class Oklifier:
                     ),
                     'source': oklifier.to_str(),
                 }
-            elif name not in VALID_GLOBAL_NAMES:
-                raise FunctionClosureError(
-                    'Unable to transform non-local variable: {}'.format(name)
+                continue
+
+            if isinstance(value, np.ndarray):
+                length = len(value)
+                max_length = self.opts['max_closure_array_length']
+                if length > max_length:
+                    raise ClosureError(
+                        'Captured array {name} is too big ({len}, max: {max})'
+                        .format(name=name,
+                                len=length,
+                                max=max_length)
+                    )
+                self.constants.append(
+                    self.stringify_ndarray(value, name)
                 )
+                continue
+
+            raise ClosureError(
+                'Unable to transform non-local variable: {}'.format(name)
+            )
 
         # Inspect builtins
         for builtin in used_builtins.keys():
             if builtin not in VALID_BUILTINS:
-                raise FunctionClosureError(
+                raise ClosureError(
                     'Unable to transform builtin: {}'.format(builtin)
                 )
 
@@ -616,6 +649,27 @@ class Oklifier:
         return ' {{\n{body}\n{indent}}}'.format(body=body,
                                                 indent=indent)
 
+    def stringify_ndarray(self, array, name):
+        length = len(array)
+
+        # TODO: Add @constant
+        c_type = 'const {ctype} {name}[{length}] = [\n'.format(
+            ctype=py2ctype(array.dtype),
+            name=name,
+            length=length
+        )
+
+        for line_start in range(0, length, 10):
+            c_type += '  '
+            for i in range(line_start, min(length, line_start + 10)):
+                c_type += str(array[i])
+                if i < (length - 1):
+                    c_type += ', '
+            c_type += '\n'
+        c_type += '];'
+
+        return c_type
+
     def add_to_scope(self, varname):
         self.scope_stack[-1].add(varname)
 
@@ -661,6 +715,7 @@ class Oklifier:
     def to_str(self):
         functions = self.functions.values()
         return '\n\n'.join([
+            *self.constants,
             *[func['signature'] for func in functions],
             *[func['source'] for func in functions],
             self.stringify_node(self.root),

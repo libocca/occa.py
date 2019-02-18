@@ -1,16 +1,20 @@
 import inspect
+import numpy as np
 
 from occa import okl
 from occa.okl.types import Array, Const, Exclusive, Shared
 
 
+weights = np.array([0, 1, 2, 3], dtype=np.float32)
+
+
 def add(a: Const[float],
-        b: Const[float]) -> float:
+         b: Const[float]) -> float:
     return a + b
 
 
 @okl.kernel
-def add_vectors(a: Const[Array[float]],
+def kernel_test(a: Const[Array[float]],
                 b: Const[Array[float]],
                 ab: Array[float]) -> None:
     for i in range(3):
@@ -24,6 +28,7 @@ def add_vectors(a: Const[Array[float]],
         bar: Const[Array[float, 2]] = [1,2]
 
         s: str = 'string'
+        w: np.float32 = weights[i]
 
         # Flow tests
         for j in range(10):
@@ -45,6 +50,10 @@ def add_vectors(a: Const[Array[float]],
 
 
 OKL_SOURCE = '''
+const float weights[4] = [
+  0.0, 1.0, 2.0, 3.0
+];
+
 double add(const double a,
            const double b);
 
@@ -53,7 +62,7 @@ double add(const double a,
   return a + b;
 }
 
-@kernel void add_vectors(const double *a,
+@kernel void kernel_test(const double *a,
                          const double *b,
                          double *ab) {
   for (int i = 0; i < 3; ++i) {}
@@ -64,6 +73,7 @@ double add(const double a,
     @exclusive double e_foo;
     const double bar[2] = {1, 2};
     char *s = "string";
+    float w = weights[i];
     for (int j = 0; j < 10; ++j) {}
     if (i > 10) {
       continue;
@@ -79,9 +89,8 @@ double add(const double a,
     ab[i] = add(a[i], b[i]);
   }
 }
-
 '''
 
 
 def test_okl():
-    assert add_vectors.source().strip() == OKL_SOURCE.strip()
+    assert kernel_test.source().strip() == OKL_SOURCE.strip()
