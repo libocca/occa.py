@@ -197,6 +197,10 @@ class Oklifier:
                                       self.safe_str(value))
                 continue
 
+            if isinstance(value, (type, np.dtype)):
+                self.globals[name] = py2ctype(value)
+                continue
+
             if isinstance(value, types.FunctionType):
                 oklifier = Oklifier(value, globals=self.globals)
                 # Override the original function name with the closure variable name
