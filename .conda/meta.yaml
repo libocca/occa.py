@@ -1,0 +1,47 @@
+package:
+  name: occa
+  version: {{ GIT_DESCRIBE_TAG }}
+
+source:
+  git_url: ../
+
+build:
+  number: 0
+  # Note that setting the build string to GIT_BUILD_STR will override the
+  # default value with the Python and NumPy versions. Use for development
+  # versions only.
+  #string: {{ GIT_BUILD_STR }}
+  script: "{{ PYTHON }} setup.py install --single-version-externally-managed --record=record.txt"
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - git
+  host:
+    - python
+    - numpy >=1.7
+    - setuptools >=28.0.0
+    - flake8
+    - pytest >=3.6
+    - pytest-cov
+  run:
+    - python
+    - numpy >=1.7
+
+test:
+  imports:
+    - occa
+    - occa.c
+    - occa.okl
+  requires:
+    - pytest >=3.6
+
+about:
+  home: https://libocca.org
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: Portable Approach for Parallel Architectures
+  doc_url:
+  dev_url: https://github.com/libocca/occa.py
