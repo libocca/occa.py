@@ -7,7 +7,7 @@ from .exceptions import TransformError
 
 
 def flatten(obj):
-    if isinstance(obj, collections.Iterable):
+    if isinstance(obj, collections.abc.Iterable):
         return [
             item
             for obj_item in obj
@@ -67,7 +67,7 @@ def get_node_error_message(node,
 def py2okl(obj, *, globals=None, **opts):
     if isinstance(obj, str):
         return obj
-    if isinstance(obj, collections.Iterable):
+    if isinstance(obj, collections.abc.Iterable):
         return [
             py2okl(item,
                    globals=globals,

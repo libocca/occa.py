@@ -31,8 +31,8 @@ static int dtype_init(occa::py::dtype *self,
     if (hasJson) {
       occa::dtype_t dtype = occa::dtype_t::fromJson(json);
       self->dtype = new occa::dtype_t(dtype);
-      if (!dtype.isGlobal()) {
-        self->dtype->setAsGlobal();
+      if (!dtype.isRegistered()) {
+        self->dtype->registerType();
       }
     } else {
       self->dtype = new occa::dtype_t(

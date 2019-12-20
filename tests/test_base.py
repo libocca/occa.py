@@ -19,7 +19,7 @@ def test_settings():
     settings = occa.settings()
     assert isinstance(settings, dict)
     assert 'version' in settings
-    assert 'okl-version' in settings
+    assert 'okl_version' in settings
     assert 'foobar' not in settings
 
     occa.set_setting('foobar', 1)
